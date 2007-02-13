@@ -17,5 +17,5 @@ crl = X509CRL(open(certs_path + '/crl.pem').read())
 
 print 'Cert subject: ', cert.subject
 print 'Cert issuer:  ', cert.issuer
-
+print 'Cert serial:  ', cert.serial_number
 
