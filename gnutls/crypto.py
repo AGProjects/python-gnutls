@@ -120,15 +120,28 @@ class X509Cert(object):
 
     @property
     def serial_number(self):
-        size = c_size_t(40)
-        serial = create_string_buffer(size.value)
+        size = c_size_t(1)
+        serial = c_ulong()
         # int gnutls_x509_crt_get_serial (gnutls_x509_crt_t cert, void * result, size_t * result_size)
-        retcode = gnutls_x509_crt_get_serial(self._cert, cast(serial, c_void_p), byref(size))
+        retcode = gnutls_x509_crt_get_serial(self._cert, cast(byref(serial), c_void_p), byref(size))
         if retcode == GNUTLS_E_SHORT_MEMORY_BUFFER:
-            serial = create_string_buffer(size.value)
+            import struct, sys
+            serial = create_string_buffer(size.value * sizeof(c_void_p))
             retcode = gnutls_x509_crt_get_serial(self._cert, cast(serial, c_void_p), byref(size))
-        GNUTLSException.check(retcode)
-        return serial.value
+            GNUTLSException.check(retcode)
+            pad = size.value * sizeof(c_void_p) - len(serial.value)
+            format = '@%dL' % size.value
+            numbers = list(struct.unpack(format, serial.value + pad*'\x00'))
+            if sys.byteorder == 'little':
+                numbers.reverse()
+            number = 0
+            offset = sizeof(c_void_p) * 8
+            for n in numbers:
+                number = (number<<offset) + n
+            return number
+        else:
+            GNUTLSException.check(retcode)
+            return serial.value
 
     @property
     def activation_time(self):
