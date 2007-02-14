@@ -147,6 +147,8 @@ class X509Cert(object):
     def activation_time(self):
         # time_t gnutls_x509_crt_get_activation_time (gnutls_x509_crt_t cert)
         retcode = gnutls_x509_crt_get_activation_time(self._cert)
+        if retcode == -1:
+            raise GNUTLSError("cannot retrieve activation time")
         GNUTLSException.check(retcode)
         return retcode
 
@@ -154,6 +156,8 @@ class X509Cert(object):
     def expiration_time(self):
         # time_t gnutls_x509_crt_get_expiration_time (gnutls_x509_crt_t cert)
         retcode = gnutls_x509_crt_get_expiration_time(self._cert)
+        if retcode == -1:
+            raise GNUTLSError("cannot not retrieve expiration time")
         GNUTLSException.check(retcode)
         return retcode
 
