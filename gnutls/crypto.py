@@ -10,7 +10,7 @@ __all__ = ['X509_FMT_DER', 'X509_FMT_PEM', 'X509Cert', 'X509CRL', 'PrivateKey']
 import re
 from ctypes import *
 
-from gnutls import *
+from gnutls.errors import *
 from gnutls.library.constants import *
 from gnutls.library.types import *
 from gnutls.library.functions import *
