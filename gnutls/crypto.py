@@ -10,6 +10,7 @@ __all__ = ['X509_FMT_DER', 'X509_FMT_PEM', 'X509Cert', 'X509CRL', 'PrivateKey']
 import re
 from ctypes import *
 
+from gnutls import *
 from gnutls.library.constants import *
 from gnutls.library.types import *
 from gnutls.library.functions import *
@@ -25,19 +26,7 @@ CERT_SIGNER_NOT_FOUND   = GNUTLS_CERT_SIGNER_NOT_FOUND
 CERT_SIGNER_NOT_CA      = GNUTLS_CERT_SIGNER_NOT_CA
 CERT_INSECURE_ALGORITHM = GNUTLS_CERT_INSECURE_ALGORITHM
 
-class Error(Exception): pass
-class GNUTLSError(Error): pass
 class X509NameError(Error): pass
-
-class GNUTLSException(object):
-    @classmethod
-    def check(cls, retcode):
-        if retcode == 0:
-            return
-        elif retcode in (GNUTLS_E_MEMORY_ERROR, GNUTLS_E_SHORT_MEMORY_BUFFER):
-            raise MemoryError(gnutls_strerror(retcode))
-        else:
-            raise GNUTLSError(gnutls_strerror(retcode))
 
 
 class X509NameMeta(type):
