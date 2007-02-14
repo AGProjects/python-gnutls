@@ -5,7 +5,7 @@
 
 # TODO: better error handling and check the error hierarchy
 
-__all__ = ['X509_FMT_DER', 'X509_FMT_PEM', 'X509Cert', 'X509CRL', 'PrivateKey']
+__all__ = ['X509_FMT_DER', 'X509_FMT_PEM', 'X509Certificate', 'X509CRL', 'X509PrivateKey']
 
 import re
 from ctypes import *
@@ -67,7 +67,7 @@ class X509Name(str):
         str.__setattr__(self, name, value)
 
 
-class X509Cert(object):
+class X509Certificate(object):
     def __init__(self, buffer, format=X509_FMT_PEM):
         self.__deinit = gnutls_x509_crt_deinit
         self._cert = gnutls_x509_crt_t()
@@ -157,8 +157,8 @@ class X509Cert(object):
 
     def check_issuer(self, issuer):
         '''Return True if the certificate was issued by the given issuer, False otherwise.'''
-        if not isinstance(issuer, X509Cert):
-            raise TypeError("issuer must be a X509Cert object")
+        if not isinstance(issuer, X509Certificate):
+            raise TypeError("issuer must be a X509Certificate object")
         # int gnutls_x509_crt_check_issuer (gnutls_x509_crt_t cert, gnutls_x509_crt_t issuer)
         retcode = gnutls_x509_crt_check_issuer(self._cert, issuer._cert)
         GNUTLSException.check(retcode)
@@ -168,7 +168,7 @@ class X509Cert(object):
         self.__deinit(self._cert)
 
 
-class PrivateKey(object):
+class X509PrivateKey(object):
     def __init__(self, buffer, format=X509_FMT_PEM):
         self.__deinit = gnutls_x509_privkey_deinit
         self._key = gnutls_x509_privkey_t()
