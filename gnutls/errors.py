@@ -15,7 +15,7 @@ class X509NameError(Error): pass
 class GNUTLSException(object):
     @classmethod
     def check(cls, retcode):
-        if retcode == 0:
+        if retcode >= 0:
             return
         elif retcode in (GNUTLS_E_MEMORY_ERROR, GNUTLS_E_SHORT_MEMORY_BUFFER):
             raise MemoryError(gnutls_strerror(retcode))
