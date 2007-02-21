@@ -234,4 +234,3 @@ class X509CRL(object):
     def __del__(self):
         self.__deinit(self._crl)
 
-

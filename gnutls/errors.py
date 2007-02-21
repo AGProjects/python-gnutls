@@ -10,6 +10,7 @@ from gnutls.library.functions import gnutls_strerror
 
 class Error(Exception): pass
 class GNUTLSError(Error): pass
+class VerifyError(Error): pass
 class X509NameError(Error): pass
 
 class GNUTLSException(object):
