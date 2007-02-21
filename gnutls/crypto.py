@@ -76,7 +76,10 @@ class X509Certificate(object):
         # int gnutls_x509_crt_init (gnutls_x509_crt_t * cert)
         retcode = gnutls_x509_crt_init(byref(self._cert))
         GNUTLSException.check(retcode)
-        data = gnutls_datum_t(cast(c_char_p(buffer), POINTER(c_ubyte)), c_uint(len(buffer)))
+        if isinstance(buffer, gnutls_datum_t): ## accept raw certificate data in GNUTLS' datum_t format
+            data = buffer
+        else:
+            data = gnutls_datum_t(cast(c_char_p(buffer), POINTER(c_ubyte)), c_uint(len(buffer)))
         # int gnutls_x509_crt_import (gnutls_x509_crt_t cert, const gnutls_datum_t * data, gnutls_x509_crt_fmt_t format
         retcode = gnutls_x509_crt_import(self._cert, byref(data), format)
         GNUTLSException.check(retcode)
