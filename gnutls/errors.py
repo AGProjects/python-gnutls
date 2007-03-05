@@ -18,6 +18,8 @@ class GNUTLSException(object):
     def check(cls, retcode):
         if retcode >= 0:
             return
+        elif retcode == GNUTLS_E_AGAIN:
+            raise WouldBlockError(gnutls_strerror(retcode))
         elif retcode in (GNUTLS_E_MEMORY_ERROR, GNUTLS_E_SHORT_MEMORY_BUFFER):
             raise MemoryError(gnutls_strerror(retcode))
         elif retcode in (GNUTLS_E_NO_CERTIFICATE_FOUND, ):
