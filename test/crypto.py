@@ -10,6 +10,7 @@ from gnutls.crypto import *
 certs_path = os.path.join(script_path, 'certs')
 
 cert = X509Certificate(open(certs_path + '/valid.crt').read())
+revoked_cert = X509Certificate(open(certs_path + '/revoked.crt').read())
 key = X509PrivateKey(open(certs_path + '/valid.key').read())
 
 ca = X509Certificate(open(certs_path + '/ca.pem').read())
@@ -18,4 +19,4 @@ crl = X509CRL(open(certs_path + '/crl.pem').read())
 print 'Cert subject: ', cert.subject
 print 'Cert issuer:  ', cert.issuer
 print 'Cert serial:  ', cert.serial_number
-
+print 'Certificate was revoked: ', crl.check_revocation(revoked_cert)
