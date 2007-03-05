@@ -28,5 +28,6 @@ session.handshake()
 session.send("test\n")
 buf = session.recv(1024)
 print 'Received: ', buf
-session.shutdown(1)
+session.bye()
+session.shutdown(2)
 session.close()

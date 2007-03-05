@@ -175,14 +175,12 @@ class Session(object):
             return None
         raw_cert = cert_list[0] # we should get the address of the first element in the list
         return X509Certificate(raw_cert, X509_FMT_DER)
-            
-    def shutdown(self, how):
-        # how - GNUTLS_SHUT_RDWR, GNUTLS_SHUT_WR for gnutls_bye
-        # how - SHUT_RD, SHUT_WR, SHUT_RDWR for socket.shutdown, decide on what to call -Mircea
-        # int gnutls_bye (gnutls_session_t session, gnutls_close_request_t how)
-        retcode = gnutls_bye(self._session, GNUTLS_SHUT_RDWR)
+    
+    def bye(self, how=GNUTLS_SHUT_RDWR):
+        if how not in (GNUTLS_SHUT_RDWR, GNUTLS_SHUT_WR):
+            raise ValueError("Invalid argument: " + how)
+        retcode = gnutls_bye(self._session, how)
         GNUTLSException.check(retcode)
-        self.sock.shutdown(how)
     
     def verify_peer(self):
         # int gnutls_certificate_verify_peers2 (gnutls_session_t session, unsigned int * status)
@@ -210,7 +208,7 @@ class Session(object):
             raise CertificateError("certificate is not yet activated")
     
     def __getattr__(self, name):
-        # called for: fileno, getpeername, getsockname, getsockopt, sesockopt, setblocking underlying socket methods
+        # called for: fileno, getpeername, getsockname, getsockopt, sesockopt, setblocking, shutdown, close underlying socket methods
         return getattr(self.sock, name)
 
 

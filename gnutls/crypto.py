@@ -1,7 +1,7 @@
 # Copyright (C) 2007 AG Projects
 #
 
-"""GNUTLS crypo support"""
+"""GNUTLS crypto support"""
 
 # TODO: better error handling and check the error hierarchy
 

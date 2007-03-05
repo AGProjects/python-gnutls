@@ -55,5 +55,6 @@ while True:
         except Exception, e:
             print "Error in reception: ", e
             break
-    session.shutdown(1)
+    session.bye()
+    session.shutdown(2)
     session.close()
