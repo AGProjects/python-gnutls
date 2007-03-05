@@ -191,23 +191,23 @@ class Session(object):
         GNUTLSException.check(retcode)
         status = int(status.value)
         if status & GNUTLS_CERT_INVALID:
-            raise VerifyError("invalid certificate")
+            raise CertificateError("invalid certificate")
         elif status & GNUTLS_CERT_SIGNER_NOT_FOUND:
-            raise VerifyError("couldn't find certificate signer")
+            raise CertificateError("couldn't find certificate signer")
         elif status & GNUTLS_CERT_REVOKED:
-            raise VerifyError("certificate was revoked")
+            raise CertificateError("certificate was revoked")
         elif status & GNUTLS_CERT_SIGNER_NOT_CA:
-            raise VerifyError("certificate signer is not a CA")
+            raise CertificateError("certificate signer is not a CA")
         elif status & GNUTLS_CERT_INSECURE_ALGORITHM:
-            raise VerifyError("insecure algorithm")
+            raise CertificateError("insecure algorithm")
         self.verify_cert(self.peer_certificate)
 
     def verify_cert(self, cert):
         '''The callback function to make additional checks for the peer certificate.'''
         if cert.expiration_time < time.time():
-            raise VerifyError("certificate has expired")
+            raise CertificateError("certificate has expired")
         if cert.activation_time > time.time():
-            raise VerifyError("certificate is not yet activated")
+            raise CertificateError("certificate is not yet activated")
     
     def __getattr__(self, name):
         # called for: fileno, getpeername, getsockname, getsockopt, sesockopt, setblocking underlying socket methods
