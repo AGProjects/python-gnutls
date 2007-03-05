@@ -167,6 +167,15 @@ class X509Certificate(object):
         GNUTLSException.check(retcode)
         return bool(retcode)
 
+    def check_hostname(self, hostname):
+        '''Return True if the hostname matches the DNSName/IPAddress subject alternative name extension
+           of this certificate, False otherwise.'''
+        # see http://www.ietf.org/rfc/rfc2459.txt, section 4.2.1.7 Subject Alternative Name
+        # int gnutls_x509_crt_check_hostname (gnutls_x509_crt_t cert, const char * hostname)
+        retcode = gnutls_x509_crt_check_hostname(self._cert, hostname)
+        GNUTLSException.check(retcode)
+        return bool(retcode)
+    
     def __del__(self):
         self.__deinit(self._cert)
 
