@@ -23,10 +23,12 @@ from gnutls.library.functions import *
 
 class X509Credentials(object):
     
-    def __init__(self, cert, key, trusted=[], crl=[]):
+    def __init__(self, cert, key, trusted=[], crl_list=[]):
         '''Credentials object containing an X509 certificate, a private key and 
            optionally a list of trusted CAs and a list of CRLs.'''
         self.__deinit = gnutls_certificate_free_credentials
+        trusted = tuple(trusted)
+        crl_list = tuple(crl_list)
         self._cred = gnutls_certificate_credentials_t()
         retcode = gnutls_certificate_allocate_credentials(byref(self._cred))
         GNUTLSException.check(retcode)
@@ -40,15 +42,8 @@ class X509Credentials(object):
             for i in range(size): block[i] = trusted[i]._cert
             retcode = gnutls_certificate_set_x509_trust(self._cred, cast(byref(block), POINTER(gnutls_x509_crt_t)), size)
             GNUTLSException.check(retcode)
-        if crl:
-            # int gnutls_certificate_set_x509_crl (gnutls_certificate_credentials_t res, gnutls_x509_crl_t * crl_list, int crl_list_size)
-            size = len(crl)
-            block = (gnutls_x509_crl_t * size)() ## declare the array of gnutls_x509_crl_t elements
-            for i in range(size): block[i] = crl[i]._crl
-            retcode = gnutls_certificate_set_x509_crl(self._cred, cast(byref(block), POINTER(gnutls_x509_crl_t)), size)
-            GNUTLSException.check(retcode)
         self._trusted = trusted
-        self._crl = crl
+        self._crl_list = crl_list
         self._max_depth = 5
         self._max_bits = 8200
         self._type = GNUTLS_CRD_CERTIFICATE
@@ -59,6 +54,7 @@ class X509Credentials(object):
         return self._trusted
     def _set_trusted(self, trusted):
         # int gnutls_certificate_set_x509_trust (gnutls_certificate_credentials_t res, gnutls_x509_crt_t * ca_list, int ca_list_size)
+        trusted = tuple(trusted)
         size = len(trusted)
         block = (gnutls_x509_crt_t * size)() ## declare the array of gnutls_x509_crt_t elements
         for i in range(size): block[i] = trusted[i]._cert
@@ -67,6 +63,13 @@ class X509Credentials(object):
         self._trusted = trusted
     trusted = property(_get_trusted, _set_trusted)
     del _get_trusted, _set_trusted
+
+    def _get_crl_list(self):
+        return self._crl_list
+    def _set_crl_list(self, crl_list):
+        self._crl_list = tuple(crl_list)
+    crl_list = property(_get_crl_list, _set_crl_list)
+    del _get_crl_list, _set_crl_list
 
     def _get_max_verify_length(self):
         return self._max_depth
