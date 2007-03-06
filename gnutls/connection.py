@@ -201,16 +201,17 @@ class Session(object):
             raise CertificateError("certificate signer is not a CA")
         elif status & GNUTLS_CERT_INSECURE_ALGORITHM:
             raise CertificateError("insecure algorithm")
-        peer_cert = self.peer_certificate
-        if peer_cert.expiration_time < time.time():
-            raise CertificateError("certificate has expired")
-        if peer_cert.activation_time > time.time():
-            raise CertificateError("certificate is not yet activated")
-        self.verify_cert(peer_cert)
+        self.verify_cert(self.peer_certificate)
 
     def verify_cert(self, peer_cert):
         '''Override this method to make additional checks on the peer certificate.'''
-        pass
+        now = time.time()
+        if peer_cert.activation_time > now:
+            raise CertificateError("certificate is not yet activated")        
+        if peer_cert.expiration_time < now:
+            raise CertificateError("certificate has expired")
+        for crl in self.cred.crl_list:
+            crl.check_revocation(peer_cert)
     
     def __getattr__(self, name):
         # called for: fileno, getpeername, getsockname, getsockopt, sesockopt, setblocking, shutdown, close underlying socket methods
