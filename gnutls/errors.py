@@ -3,13 +3,14 @@
 
 """GNUTLS errors"""
 
-__all__ = ['Error', 'GNUTLSError', 'CertificateError', 'X509NameError', 'GNUTLSException']
+__all__ = ['Error', 'GNUTLSError', 'WouldBlockError', 'CertificateError', 'X509NameError', 'GNUTLSException']
 
 from gnutls.library.constants import *
 from gnutls.library.functions import gnutls_strerror
 
 class Error(Exception): pass
 class GNUTLSError(Error): pass
+class WouldBlockError(GNUTLSError): pass
 class CertificateError(Error): pass
 class X509NameError(Error): pass
 
