@@ -15,6 +15,7 @@ except ImportError:
 
 from errno import EWOULDBLOCK
 
+from twisted.python import failure
 from twisted.internet import base, address, tcp
 from twisted.internet import error
 from twisted.internet.protocol import BaseProtocol
@@ -167,7 +168,7 @@ class TLSServer(tcp.Server):
             self.startReading()
             return
         except GNUTLSError, e:
-            self.connectionLost(reason = str(e))
+            self.connectionLost(reason = failure.Failure(e))
             return
         
         # verify peer after the handshake was completed
@@ -175,7 +176,7 @@ class TLSServer(tcp.Server):
             self.socket.verify_peer()
         except CertificateError, e:
             self.stopReading()
-            self.connectionLost(reason = str(e))
+            self.connectionLost(reason = failure.Failure(e))
             return
         
         # If I have reached this point without raising or returning, that means
