@@ -233,9 +233,8 @@ class ClientSession(Session):
         # int gnutls_credentials_set (gnutls_session_t session, gnutls_credentials_type_t type, void * cred)
         retcode = gnutls_credentials_set(self._session, cred._type, cast(cred._cred, c_void_p))
         GNUTLSException.check(retcode)
-        sd = sock.fileno()
         # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
-        gnutls_transport_set_ptr(self._session, sd)
+        gnutls_transport_set_ptr(self._session, sock.fileno())
         self.sock = sock
         self.cred = cred
         
@@ -289,9 +288,8 @@ class ServerSession(Session):
         GNUTLSException.check(retcode)
         gnutls_certificate_server_set_request(self._session, GNUTLS_CERT_REQUEST)
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
-        sd = sock.fileno()
         # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
-        gnutls_transport_set_ptr(self._session, sd)
+        gnutls_transport_set_ptr(self._session, sock.fileno())
         self.sock = sock
         self.cred = cred
         
