@@ -233,20 +233,11 @@ class ClientSession(Session):
         # int gnutls_credentials_set (gnutls_session_t session, gnutls_credentials_type_t type, void * cred)
         retcode = gnutls_credentials_set(self._session, cred._type, cast(cred._cred, c_void_p))
         GNUTLSException.check(retcode)
+        sd = sock.fileno()
+        # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
+        gnutls_transport_set_ptr(self._session, sd)
         self.sock = sock
         self.cred = cred
-        
-    def connect(self, address):
-        self.sock.connect(address)
-        sd = self.fileno()
-        # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
-        gnutls_transport_set_ptr(self._session, sd)
-    
-    def connect_ex(self, address):
-        self.sock.connect_ex(address)
-        sd = self.fileno()
-        # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
-        gnutls_transport_set_ptr(self._session, sd)
         
     def handshake(self):
         # int gnutls_handshake (gnutls_session_t session)
