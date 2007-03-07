@@ -3,14 +3,14 @@
 
 """GNUTLS errors"""
 
-__all__ = ['Error', 'GNUTLSError', 'WouldBlockError', 'CertificateError', 'X509NameError', 'GNUTLSException']
+__all__ = ['Error', 'GNUTLSError', 'OperationWouldBlock', 'CertificateError', 'X509NameError', 'GNUTLSException']
 
 from gnutls.library.constants import *
 from gnutls.library.functions import gnutls_strerror
 
 class Error(Exception): pass
 class GNUTLSError(Error): pass
-class WouldBlockError(GNUTLSError): pass
+class OperationWouldBlock(GNUTLSError): pass
 class CertificateError(Error): pass
 class X509NameError(Error): pass
 
@@ -20,7 +20,7 @@ class GNUTLSException(object):
         if retcode >= 0:
             return
         elif retcode == GNUTLS_E_AGAIN:
-            raise WouldBlockError(gnutls_strerror(retcode))
+            raise OperationWouldBlock(gnutls_strerror(retcode))
         elif retcode in (GNUTLS_E_MEMORY_ERROR, GNUTLS_E_SHORT_MEMORY_BUFFER):
             raise MemoryError(gnutls_strerror(retcode))
         elif retcode in (GNUTLS_E_NO_CERTIFICATE_FOUND, ):

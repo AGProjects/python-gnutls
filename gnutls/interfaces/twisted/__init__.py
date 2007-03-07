@@ -27,7 +27,7 @@ class AsyncClientSession(ClientSession):
     def recv(self, bufsize):
         try:
             return super(AsyncClientSession, self).recv(bufsize)
-        except WouldBlockError, e:
+        except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
         except GNUTLSError:
             return ''
@@ -36,7 +36,7 @@ class AsyncClientSession(ClientSession):
         try:
             buffer = str(buffer)
             return super(AsyncClientSession, self).send(buffer)
-        except WouldBlockError, e:
+        except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
         except GNUTLSError:
             return -1
@@ -47,7 +47,7 @@ class AsyncServerSession(ServerSession):
     def recv(self, bufsize):
         try:
             return super(AsyncServerSession, self).recv(bufsize)
-        except WouldBlockError, e:
+        except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
         except GNUTLSError:
             return ''
@@ -56,7 +56,7 @@ class AsyncServerSession(ServerSession):
         try:
             buffer = str(buffer)
             return super(AsyncServerSession, self).send(buffer)
-        except WouldBlockError, e:
+        except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
         except GNUTLSError:
             return -1
@@ -96,7 +96,7 @@ class TLSClient(tcp.Client):
     def doHandshake(self):
         try:
             self.socket.handshake()
-        except WouldBlockError, e:
+        except OperationWouldBlock, e:
             self.startReading()
             return
         except GNUTLSError, e:
@@ -163,7 +163,7 @@ class TLSServer(tcp.Server):
     def doHandshake(self):
         try:
             self.socket.handshake()
-        except WouldBlockError, e:
+        except OperationWouldBlock, e:
             self.startReading()
             return
         except GNUTLSError, e:
@@ -190,7 +190,7 @@ class TLSServer(tcp.Server):
     def doBye(self):
         try:
             self.socket.bye()
-        except WouldBlockError, e:
+        except OperationWouldBlock, e:
             self.startReading()
             return
         except:
