@@ -180,7 +180,7 @@ class TLSServer(TLSMixin, tcp.Server):
         # we first stop and then start, to reset any references to the old doRead
         self.stopReading()
         self.startReading()
-        self.protocol.makeConnection = self._originalMakeConnection
+        del self.protocol.makeConnection
         self.protocol.makeConnection(self)
 
     def startTLS(self):
@@ -204,12 +204,7 @@ class TLSPort(tcp.Port):
         return ServerSessionFactory(sock, self.credentials, AsyncServerSession)
 
     def _preMakeConnection(self, transport):
-        def makeConnection(protocol, transport):
-            pass
-        protocol = transport.protocol
-        transport._originalMakeConnection = protocol.makeConnection
-        method = new.instancemethod(makeConnection, protocol, protocol.__class__)
-        protocol.makeConnection = method
+        transport.protocol.makeConnection = lambda *args: None
         transport.startTLS()
         return tcp.Port._preMakeConnection(self, transport)
 
