@@ -12,7 +12,7 @@ try:
 except ImportError:
     fcntl = None
 
-from errno import EWOULDBLOCK
+from errno import EWOULDBLOCK, EINTR
 
 from twisted.python import failure
 from twisted.internet import main, base, address, tcp, error
@@ -29,6 +29,8 @@ class AsyncClientSession(ClientSession):
             return super(AsyncClientSession, self).recv(bufsize)
         except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
+        except OperationInterrupted, e:
+            raise socket.error(EINTR)
         except GNUTLSError:
             return ''
 
@@ -38,6 +40,8 @@ class AsyncClientSession(ClientSession):
             return super(AsyncClientSession, self).send(buffer)
         except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
+        except OperationInterrupted, e:
+            raise socket.error(EINTR)
         except GNUTLSError:
             return -1
 
@@ -49,6 +53,8 @@ class AsyncServerSession(ServerSession):
             return super(AsyncServerSession, self).recv(bufsize)
         except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
+        except OperationInterrupted, e:
+            raise socket.error(EINTR)
         except GNUTLSError:
             return ''
 
@@ -58,6 +64,8 @@ class AsyncServerSession(ServerSession):
             return super(AsyncServerSession, self).send(buffer)
         except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
+        except OperationInterrupted, e:
+            raise socket.error(EINTR)
         except GNUTLSError:
             return -1
 
