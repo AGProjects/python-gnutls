@@ -5,9 +5,7 @@
 
 __all__ = ['connectTLS', 'listenTLS']
 
-import new
 import socket
-import time
 try:
     import fcntl
 except ImportError:
