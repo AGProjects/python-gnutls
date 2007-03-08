@@ -16,6 +16,11 @@ class OperationWouldBlock(GNUTLSError): pass
 class CertificateError(Error): pass
 class X509NameError(Error): pass
 
+class ErrorMessage(str):
+    def __new__(cls, code):
+        obj = str.__new__(cls, gnutls_strerror(code))
+        obj.code = code
+        return obj
 
 class GNUTLSException(object):
     @classmethod
@@ -29,4 +34,4 @@ class GNUTLSException(object):
         elif retcode in (GNUTLS_E_NO_CERTIFICATE_FOUND, ):
             raise CertificateError(gnutls_strerror(retcode))
         else:
-            raise GNUTLSError(gnutls_strerror(retcode))
+            raise GNUTLSError(ErrorMessage(retcode))
