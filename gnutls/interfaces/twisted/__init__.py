@@ -82,7 +82,7 @@ class TLSMixin:
             return e
         self.stopReading()
         del self.doRead
-        return main.CONNECTION_DONE
+        return self._close_reason
 
 
 class TLSClient(TLSMixin, tcp.Client):
@@ -136,6 +136,10 @@ class TLSClient(TLSMixin, tcp.Client):
         self.startReading()
         self.startTLS()
 
+    def loseConnection(self, reason=main.CONNECTION_DONE):
+        self._close_reason = reason
+        tcp.Client.loseConnection(self, failure.Failure(reason))
+
 
 class TLSConnector(base.BaseConnector):
     def __init__(self, host, port, factory, credentials, timeout, bindAddress, reactor=None):
@@ -186,6 +190,10 @@ class TLSServer(TLSMixin, tcp.Server):
     def startTLS(self):
         self.startReading()
         self.doRead = self.doHandshake
+
+    def loseConnection(self, reason=main.CONNECTION_DONE):
+        self._close_reason = reason
+        tcp.Server.loseConnection(self, failure.Failure(reason))
 
 
 class TLSPort(tcp.Port):
