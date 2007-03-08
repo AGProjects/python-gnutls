@@ -167,15 +167,13 @@ class TLSServer(TLSMixin, tcp.Server):
             self.startReading()
             return
         except GNUTLSError, e:
-            self.connectionLost(reason = failure.Failure(e))
-            return
+            return e
         
         # verify peer after the handshake was completed
         try:
             self.socket.verify_peer()
-        except CertificateError, e:
-            self.stopReading()
-            self.connectionLost(reason = failure.Failure(e))
+        except (GNUTLSError, CertificateError), e:
+            self.loseConnection(e)
             return
         
         # If I have reached this point without raising or returning, that means
