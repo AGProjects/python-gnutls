@@ -16,8 +16,7 @@ except ImportError:
 from errno import EWOULDBLOCK
 
 from twisted.python import failure
-from twisted.internet import base, address, tcp
-from twisted.internet import error
+from twisted.internet import main, base, address, tcp, error
 from twisted.internet.protocol import BaseProtocol
 
 from gnutls.connection import *
@@ -63,7 +62,27 @@ class AsyncServerSession(ServerSession):
             return -1
 
 
-class TLSClient(tcp.Client):
+class TLSMixin:
+    """TLS specific functionality common to both clients and servers"""
+
+    def _postLoseConnection(self):
+        self.doRead = self._sendBye
+        self.startReading()
+        return self._sendBye()
+
+    def _sendBye(self):
+        try:
+            self.socket.bye()
+        except OperationWouldBlock, e:
+            return None
+        except GNUTLSError, e:
+            return e
+        self.stopReading()
+        del self.doRead
+        return main.CONNECTION_DONE
+
+
+class TLSClient(TLSMixin, tcp.Client):
     """I am an TLS client."""
     
     def __init__(self, host, port, bindAddress, credentials, connector, reactor=None):
@@ -126,6 +145,7 @@ class TLSClient(tcp.Client):
         self.startReading()
         self.startTLS()
 
+
 class TLSConnector(base.BaseConnector):
     def __init__(self, host, port, factory, credentials, timeout, bindAddress, reactor=None):
         self.host = host
@@ -141,7 +161,7 @@ class TLSConnector(base.BaseConnector):
         return address.IPv4Address('TCP', self.host, self.port, 'TLS')
 
 
-class TLSServer(tcp.Server):
+class TLSServer(TLSMixin, tcp.Server):
     """I am an TLS server.
     
     I am a serverside network connection transport; a socket which came from an
@@ -187,26 +207,6 @@ class TLSServer(tcp.Server):
         self.startReading()
         self.protocol.makeConnection = self._originalMakeConnection
         self.protocol.makeConnection(self)
-
-    def doBye(self):
-        try:
-            self.socket.bye()
-        except OperationWouldBlock, e:
-            self.startReading()
-            return
-        except:
-            pass
-        del self.doRead
-        self.stopReading()
-        self.startReading()
-        tcp.Server.connectionLost(self, self._connectionLostReason)
-        
-    def connectionLost(self, reason):
-        # if str(reason.value) == 'Uh: Filedescriptor went away.': return
-        self._connectionLostReason = reason
-        self.startReading()
-        self.doRead = self.doBye
-        self.doBye() # we need to initiate the TLS bye procedure
 
     def startTLS(self):
         self.startReading()
@@ -259,3 +259,4 @@ setattr(PosixReactorBase, 'connectTLS', method)
 
 method = new.instancemethod(listenTLS, None, PosixReactorBase)
 setattr(PosixReactorBase, 'listenTLS', method)
+
