@@ -26,7 +26,7 @@ class AsyncClientSession(ClientSession):
 
     def recv(self, bufsize):
         try:
-            return super(AsyncClientSession, self).recv(bufsize)
+            return ClientSession.recv(self, bufsize)
         except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
         except OperationInterrupted, e:
@@ -36,8 +36,7 @@ class AsyncClientSession(ClientSession):
 
     def send(self, buffer):
         try:
-            buffer = str(buffer)
-            return super(AsyncClientSession, self).send(buffer)
+            return ClientSession.send(self, str(buffer))
         except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
         except OperationInterrupted, e:
@@ -50,7 +49,7 @@ class AsyncServerSession(ServerSession):
 
     def recv(self, bufsize):
         try:
-            return super(AsyncServerSession, self).recv(bufsize)
+            return ServerSession.recv(self, bufsize)
         except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
         except OperationInterrupted, e:
@@ -60,8 +59,7 @@ class AsyncServerSession(ServerSession):
 
     def send(self, buffer):
         try:
-            buffer = str(buffer)
-            return super(AsyncServerSession, self).send(buffer)
+            return ServerSession.send(self, str(buffer))
         except OperationWouldBlock, e:
             raise socket.error(EWOULDBLOCK)
         except OperationInterrupted, e:

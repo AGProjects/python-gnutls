@@ -24,6 +24,7 @@ class EchoProtocol(LineOnlyReceiver):
     def lineReceived(self, line):
         if line == 'quit':
             self.transport.loseConnection()
+            return
         self.sendLine(line)
 
     def connectionLost(self, reason):
