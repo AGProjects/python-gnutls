@@ -16,13 +16,15 @@ from twisted.internet import reactor
 
 class EchoProtocol(LineOnlyReceiver):
     delimiter = '\n'
-    
+
     def connectionMade(self):
         self.sendLine('echo')
-    
+
     def lineReceived(self, line):
         print 'received: ', line
         self.transport.loseConnection()
+
+    def connectionLost(self, reason):
         reactor.stop()
 
 class EchoFactory(ClientFactory):
