@@ -3,7 +3,8 @@
 
 """GNUTLS Twisted interface"""
 
-__all__ = ['connectTLS', 'listenTLS']
+__all__ = ['AsyncClientSession', 'AsyncServerSession', 'TLSMixin', 'TLSClient',
+           'TLSServer', 'TLSConnector', 'TLSPort', 'connectTLS', 'listenTLS']
 
 import socket
 try:
@@ -19,6 +20,7 @@ from twisted.internet.protocol import BaseProtocol
 
 from gnutls.connection import *
 from gnutls.errors import *
+
 
 class AsyncClientSession(ClientSession):
 
@@ -205,6 +207,7 @@ class TLSPort(tcp.Port):
         transport.protocol.makeConnection = lambda *args: None
         transport.startTLS()
         return tcp.Port._preMakeConnection(self, transport)
+
 
 def connectTLS(reactor, host, port, factory, credentials, timeout=30, bindAddress=None):
     c = TLSConnector(host, port, factory, credentials, timeout, bindAddress, reactor)
