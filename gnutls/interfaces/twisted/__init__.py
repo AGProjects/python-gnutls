@@ -108,7 +108,6 @@ class TLSClient(TLSMixin, tcp.Client):
         try:
             self.socket.handshake()
         except OperationWouldBlock, e:
-            self.startReading()
             return
         except GNUTLSError, e:
             self.failIfNotConnected(err = error.getConnectError(str(e)))
@@ -130,10 +129,10 @@ class TLSClient(TLSMixin, tcp.Client):
         
     def startTLS(self):
         self.doRead = self.doHandshake
+        self.startReading()
         self.doHandshake()
 
     def _connectDone(self):
-        self.startReading()
         self.startTLS()
 
     def loseConnection(self, reason=main.CONNECTION_DONE):
@@ -164,7 +163,6 @@ class TLSServer(TLSMixin, tcp.Server):
         try:
             self.socket.handshake()
         except OperationWouldBlock, e:
-            self.startReading()
             return
         except GNUTLSError, e:
             return e
@@ -186,8 +184,8 @@ class TLSServer(TLSMixin, tcp.Server):
         self.protocol.makeConnection(self)
 
     def startTLS(self):
-        self.startReading()
         self.doRead = self.doHandshake
+        self.startReading()
 
     def loseConnection(self, reason=main.CONNECTION_DONE):
         self._close_reason = reason
