@@ -12,20 +12,24 @@ from gnutls.interfaces import twisted
 
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineOnlyReceiver
-from twisted.internet.error import CannotListenError
+from twisted.internet.error import CannotListenError, ConnectionDone
 from twisted.internet import reactor
 
 class EchoProtocol(LineOnlyReceiver):
     delimiter = '\n'
 
     def connectionMade(self):
-        print 'new connection from : ', self.transport.getPeerCertificate().subject
+        print 'New connection from:', self.transport.getPeerCertificate().subject
 
     def lineReceived(self, line):
         if line == 'quit':
             self.transport.loseConnection()
         self.sendLine(line)
-        
+
+    def connectionLost(self, reason):
+        if reason.type != ConnectionDone:
+            print "Connection was lost:", str(reason.value)
+
 class EchoFactory(Factory):
     protocol = EchoProtocol
 
