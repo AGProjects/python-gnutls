@@ -65,6 +65,9 @@ class AsyncServerSession(ServerSession):
 class TLSMixin:
     """TLS specific functionality common to both clients and servers"""
 
+    def getPeerCertificate(self):
+        return self.socket.peer_certificate
+
     def _postLoseConnection(self):
         self.doRead = self._sendBye
         self.startReading()
@@ -88,18 +91,6 @@ class TLSClient(TLSMixin, tcp.Client):
     def __init__(self, host, port, bindAddress, credentials, connector, reactor=None):
         self.credentials = credentials
         tcp.Client.__init__(self, host, port, bindAddress, connector, reactor)
-
-    def getHost(self):
-        """Returns the address from which I am connecting."""
-        h, p = self.socket.getsockname()
-        return address.IPv4Address('TCP', h, p, 'TLS')
-
-    def getPeer(self):
-        """Returns the address that I am connected."""
-        return address.IPv4Address('TCP', self.addr[0], self.addr[1], 'TLS')
-
-    def getPeerCertificate(self):
-        return self.socket.peer_certificate
 
     def createInternetSocket(self): # overrides BaseClient.createInternetSocket
         """(internal) Create a non-blocking socket using
@@ -157,9 +148,6 @@ class TLSConnector(base.BaseConnector):
     def _makeTransport(self):
         return TLSClient(self.host, self.port, self.bindAddress, self.credentials, self, self.reactor)
 
-    def getDestination(self):
-        return address.IPv4Address('TCP', self.host, self.port, 'TLS')
-
 
 class TLSServer(TLSMixin, tcp.Server):
     """I am an TLS server.
@@ -167,19 +155,6 @@ class TLSServer(TLSMixin, tcp.Server):
     I am a serverside network connection transport; a socket which came from an
     accept() on a server.
     """
-
-    def getHost(self):
-        """Return server's address."""
-        h, p = self.socket.getsockname()
-        return address.IPv4Address('TCP', h, p, 'TLS')
-
-    def getPeer(self):
-        """Return address of peer."""
-        h, p = self.client
-        return address.IPv4Address('TCP', h, p, 'TLS')
-
-    def getPeerCertificate(self):
-        return self.socket.peer_certificate
 
     def doHandshake(self):
         try:
