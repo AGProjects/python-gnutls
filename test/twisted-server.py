@@ -10,7 +10,6 @@ from gnutls.connection import *
 from gnutls.errors import *
 from gnutls.interfaces import twisted
 
-from twisted.internet import pollreactor; pollreactor.install()
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.error import CannotListenError
@@ -41,3 +40,4 @@ cred = X509Credentials(cert, key, [ca])
 
 reactor.listenTLS(10000, EchoFactory(), cred)
 reactor.run()
+
