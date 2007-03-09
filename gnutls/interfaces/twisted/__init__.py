@@ -88,7 +88,7 @@ class TLSMixin:
             return e
         self.stopReading()
         del self.doRead
-        return self._close_reason
+        return getattr(self, '_close_reason', main.CONNECTION_DONE)
 
 
 class TLSClient(TLSMixin, tcp.Client):
