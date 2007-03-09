@@ -270,12 +270,20 @@ class ServerSession(Session):
         self.__deinit = gnutls_deinit
         self._session = gnutls_session_t()
         # void gnutls_certificate_set_params_function (gnutls_certificate_credentials_t res, gnutls_params_function * func)
-        #params_func = gnutls_params_function(get_params)        
-        #gnutls_certificate_set_params_function(cred._cred, params_func)
-        if not self.dh_params:
-            gnutls_dh_params_init(byref(self.dh_params))
-            gnutls_dh_params_generate2(self.dh_params, self.DH_BITS)
-        gnutls_certificate_set_dh_params(cred._cred, self.dh_params)
+        #
+        # v1
+        #callback = gnutls_params_function(self.__get_params)
+        #gnutls_certificate_set_params_function(cred._cred, callback)
+        #
+        # v2
+        gnutls_certificate_set_params_function(cred._cred, self.__get_params_2)
+        #
+        # v3
+        #if not self.dh_params:
+        #    gnutls_dh_params_init(byref(self.dh_params))
+        #    gnutls_dh_params_generate2(self.dh_params, self.DH_BITS)
+        #gnutls_certificate_set_dh_params(cred._cred, self.dh_params)
+        #
         # int gnutls_init (gnutls_session_t * session, gnutls_connection_end_t con_end)
         retcode = gnutls_init(byref(self._session), GNUTLS_SERVER)
         GNUTLSException.check(retcode)
@@ -315,12 +323,21 @@ class ServerSession(Session):
     
     # Callback functions
     
-    @staticmethod
-    def get_params(session, type, st):
+    def __get_params(self, session, type, st):
         '''The callback function to be used when a session requests DH
            or RSA parameters.'''
         # static int get_params( gnutls_session_t session, gnutls_params_type_t type, gnutls_params_st *st)
         # see example http://www.gnu.org/software/gnutls/manual/gnutls.html#Parameters-stored-in-credentials -Mircea
+        print "get_params called with:", self, session, type, st
+        return 0
+
+    @gnutls_params_function
+    def __get_params_2(session, type, st):
+        '''The callback function to be used when a session requests DH
+           or RSA parameters.'''
+        # static int get_params( gnutls_session_t session, gnutls_params_type_t type, gnutls_params_st *st)
+        # see example http://www.gnu.org/software/gnutls/manual/gnutls.html#Parameters-stored-in-credentials -Mircea
+        print "get_params called with:", session, type, st
         return 0
         
     def __del__(self):
