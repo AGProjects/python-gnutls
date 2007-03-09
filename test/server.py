@@ -20,6 +20,7 @@ crl = X509CRL(open(certs_path + '/crl.pem').read())
 cred = X509Credentials(cert, key, [ca], [crl])
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 ssf = ServerSessionFactory(sock, cred)
 ssf.bind(('0.0.0.0', 10000))
 ssf.listen(10)
