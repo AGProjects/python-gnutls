@@ -324,25 +324,20 @@ class ServerSession(Session):
 
 
 class ServerSessionFactory(object):
-    DH_BITS = 1024
+    DH_BITS  = 1024
+    RSA_BITS = 1024
 
-    def __init__(self, sock, cred, session_cls=ServerSession):        
+    dh_params  = None
+    rsa_params = None
+
+    def __init__(self, sock, cred, session_cls=ServerSession):
         if not issubclass(session_cls, ServerSession):
             raise TypeError, "session_cls must be a subclass of ServerSession"
         self.sock = sock
         self.cred = cred
         self.session_cls = session_cls
-        self._dh_params  = None
-        self._rsa_params = None
-        #self._dh_params  = gnutls_dh_params_t()
-        #self._rsa_params = gnutls_rsa_params_t()
-        # void gnutls_certificate_set_params_function (gnutls_certificate_credentials_t res, gnutls_params_function * func)
-        callback = gnutls_params_function(self.__get_params)
-        gnutls_certificate_set_params_function(cred._cred, callback)
-        #if not self._dh_params:
-        #    gnutls_dh_params_init(byref(self._dh_params))
-        #    gnutls_dh_params_generate2(self._dh_params, self.DH_BITS)
-        #gnutls_certificate_set_dh_params(cred._cred, self._dh_params)
+        self.cred.set_params_callback(self.__get_params)
+        self.generate_dh_params()
 
     def __getattr__(self, name):
         return getattr(self.sock, name)
@@ -358,11 +353,21 @@ class ServerSessionFactory(object):
         session = self.session_cls(new_sock, self.cred)
         return (session, address)
 
+    def generate_dh_params(self, bits=DH_BITS):
+        reference = self.dh_params ## keep a reference to preserve it until replaced
+        ServerSessionFactory.dh_params  = DHParams(bits)
+        del reference
+
+    def generate_rsa_params(self, bits=RSA_BITS):
+        reference = self.rsa_params ## keep a reference to preserve it until replaced
+        ServerSessionFactory.rsa_params = RSAParams(bits)
+        del reference
+
     # Callback functions
     def __get_params(self, session, type, st):
         """Callback function that is used when a session requests DH or RSA parameters"""
         # static int get_params( gnutls_session_t session, gnutls_params_type_t type, gnutls_params_st *st)
         # see example http://www.gnu.org/software/gnutls/manual/gnutls.html#Parameters-stored-in-credentials -Mircea
-        print "get_params called with:", self, session, type, st
+        print "get_params callback:", session, type, st
         return 0
 
