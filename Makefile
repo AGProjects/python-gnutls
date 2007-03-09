@@ -22,4 +22,4 @@ gnutls.xml: /usr/include/gnutls/gnutls.h /usr/include/gnutls/x509.h
 
 clean::
 	rm -rf *~ gnutls.xml gnutls/__init__.pyc
-	(cd gnutls/library; rm -rf *.pyc constants.py types.py functions.py)
+	(cd gnutls/library; rm -rf *.pyc constants.py types.py functions.py functions.py.bak)
