@@ -51,6 +51,21 @@ class X509Credentials(object):
     def __del__(self):
         self.__deinit(self._cred)
 
+    def set_params_callback(self, callback):
+        # void gnutls_certificate_set_params_function (gnutls_certificate_credentials_t res, gnutls_params_function * func)
+        callback = gnutls_params_function(callback)
+        gnutls_certificate_set_params_function(self._cred, callback)
+
+    def set_dh_params(self, params):
+        if type(params) is not DHParams:
+            raise TypeError("params must be of type DHParams")
+        gnutls_certificate_set_dh_params(self._cred, params._params)
+
+    def set_rsa_params(self, params):
+        if type(params) is not RSAParams:
+            raise TypeError("params must be of type RSAParams")
+        gnutls_certificate_set_rsa_export_params(self._cred, params._params)
+
     # Properties
 
     def _get_trusted(self):
