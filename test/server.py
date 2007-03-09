@@ -49,12 +49,12 @@ while True:
             else:
                 if buf.strip().lower() == 'quit':
                     print "Got quit command, closing connection"
+                    session.bye()
                     break
             buf = buf.rstrip() + " ACK!\n"
             session.send(buf)
         except Exception, e:
             print "Error in reception: ", e
             break
-    session.bye()
     session.shutdown(2)
     session.close()
