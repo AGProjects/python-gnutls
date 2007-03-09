@@ -22,7 +22,7 @@ from gnutls.library.functions import *
 
 
 class X509Credentials(object):
-    
+
     def __init__(self, cert, key, trusted=[], crl_list=[]):
         '''Credentials object containing an X509 certificate, a private key and 
            optionally a list of trusted CAs and a list of CRLs.'''
@@ -47,6 +47,9 @@ class X509Credentials(object):
         self._max_depth = 5
         self._max_bits = 8200
         self._type = GNUTLS_CRD_CERTIFICATE
+
+    def __del__(self):
+        self.__deinit(self._cred)
 
     # Properties
 
@@ -89,21 +92,22 @@ class X509Credentials(object):
     max_verify_bits = property(_get_max_verify_bits, _set_max_verify_bits)
     del _get_max_verify_bits, _set_max_verify_bits
 
-    def __del__(self):
-        self.__deinit(self._cred)
-
 
 class Session(object):
     '''Abstract class representing a TLS session created from a TCP socket
        and a Credentials object.'''
-    
+
     def __init__(self, sock, cred):
         '''Must create a self._session GNUTLS structure using the given credentials.
            Also the sock and cred objects must be attached to the Session object.'''
         raise NotImplementedError
 
+    def __getattr__(self, name):
+        # called for: fileno, getpeername, getsockname, getsockopt, sesockopt, setblocking, shutdown, close underlying socket methods
+        return getattr(self.sock, name)
+
     # Session properties
-    
+
     def _get_credentials(self):
         return self.cred
     def _set_credentials(self, credentials):
@@ -114,7 +118,7 @@ class Session(object):
         GNUTLSException.check(retcode)
     credentials = property(_get_credentials, _set_credentials)
     del _get_credentials, _set_credentials
-    
+
     @property
     def key_exchange_algorithm(self):
         kx = gnutls_kx_algorithm_t()
@@ -124,7 +128,7 @@ class Session(object):
         # const char * gnutls_kx_get_name (gnutls_kx_algorithm_t algorithm)
         name = gnutls_kx_get_name(kx)
         return name
-    
+
     @property
     def protocol(self):
         version = gnutls_protocol_t()
@@ -144,7 +148,7 @@ class Session(object):
         # const char * gnutls_compression_get_name (gnutls_compression_method_t algorithm)
         name = gnutls_compression_get_name(method)
         return name
-    
+
     @property
     def cipher(self):
         algorithm = gnutls_cipher_algorithm_t()
@@ -164,7 +168,7 @@ class Session(object):
         # const char * gnutls_mac_get_name (gnutls_mac_algorithm_t algorithm)
         name = gnutls_mac_get_name(algorithm)
         return name
-    
+
     @property
     def peer_certificate(self):
         # gnutls_certificate_type_t gnutls_certificate_type_get (gnutls_session_t session)
@@ -178,13 +182,13 @@ class Session(object):
             return None
         raw_cert = cert_list[0] # we should get the address of the first element in the list
         return X509Certificate(raw_cert, X509_FMT_DER)
-    
+
     def bye(self, how=GNUTLS_SHUT_RDWR):
         if how not in (GNUTLS_SHUT_RDWR, GNUTLS_SHUT_WR):
             raise ValueError("Invalid argument: " + how)
         retcode = gnutls_bye(self._session, how)
         GNUTLSException.check(retcode)
-    
+
     def verify_peer(self):
         # int gnutls_certificate_verify_peers2 (gnutls_session_t session, unsigned int * status)
         status = c_uint()
@@ -212,14 +216,10 @@ class Session(object):
             raise CertificateError("certificate has expired")
         for crl in self.cred.crl_list:
             crl.check_revocation(peer_cert)
-    
-    def __getattr__(self, name):
-        # called for: fileno, getpeername, getsockname, getsockopt, sesockopt, setblocking, shutdown, close underlying socket methods
-        return getattr(self.sock, name)
 
 
 class ClientSession(Session):
-    
+
     def __init__(self, sock, cred):
         self.__deinit = gnutls_deinit
         self._session = gnutls_session_t()
@@ -237,7 +237,10 @@ class ClientSession(Session):
         gnutls_transport_set_ptr(self._session, sock.fileno())
         self.sock = sock
         self.cred = cred
-        
+
+    def __del__(self):
+        self.__deinit(self._session)
+
     def handshake(self):
         # int gnutls_handshake (gnutls_session_t session)
         retcode = gnutls_handshake(self._session)
@@ -257,13 +260,10 @@ class ClientSession(Session):
         retcode = gnutls_record_recv(self._session, buffer, size.value)
         GNUTLSException.check(retcode)
         return buffer.value
-    
-    def __del__(self):
-        self.__deinit(self._session)
 
 
 class ServerSession(Session):
-    
+
     def __init__(self, sock, cred):
         self.__deinit = gnutls_deinit
         self._session = gnutls_session_t()
@@ -283,7 +283,10 @@ class ServerSession(Session):
         gnutls_transport_set_ptr(self._session, sock.fileno())
         self.sock = sock
         self.cred = cred
-        
+
+    def __del__(self):
+        self.__deinit(self._session)
+
     def handshake(self):
         # int gnutls_handshake (gnutls_session_t session)
         retcode = gnutls_handshake(self._session)
@@ -303,9 +306,6 @@ class ServerSession(Session):
         retcode = gnutls_record_recv(self._session, buffer, size.value)
         GNUTLSException.check(retcode)
         return buffer.value
-    
-    def __del__(self):
-        self.__deinit(self._session)
 
 
 class ServerSessionFactory(object):
@@ -329,9 +329,12 @@ class ServerSessionFactory(object):
         #    gnutls_dh_params_generate2(self._dh_params, self.DH_BITS)
         #gnutls_certificate_set_dh_params(cred._cred, self._dh_params)
 
+    def __getattr__(self, name):
+        return getattr(self.sock, name)
+
     def bind(self, address):
         self.sock.bind(address)
-    
+
     def listen(self, backlog):
         self.sock.listen(backlog)
 
@@ -339,15 +342,10 @@ class ServerSessionFactory(object):
         new_sock, address = self.sock.accept()
         session = self.session_cls(new_sock, self.cred)
         return (session, address)
-    
-    def __getattr__(self, name):
-        return getattr(self.sock, name)
 
     # Callback functions
-    
     def __get_params(self, session, type, st):
-        '''The callback function to be used when a session requests DH
-           or RSA parameters.'''
+        """Callback function that is used when a session requests DH or RSA parameters"""
         # static int get_params( gnutls_session_t session, gnutls_params_type_t type, gnutls_params_st *st)
         # see example http://www.gnu.org/software/gnutls/manual/gnutls.html#Parameters-stored-in-credentials -Mircea
         print "get_params called with:", self, session, type, st
