@@ -330,12 +330,12 @@ class ServerSessionFactory(object):
     dh_params  = None
     rsa_params = None
 
-    def __init__(self, sock, cred, session_cls=ServerSession):
-        if not issubclass(session_cls, ServerSession):
-            raise TypeError, "session_cls must be a subclass of ServerSession"
+    def __init__(self, sock, cred, session_class=ServerSession):
+        if not issubclass(session_class, ServerSession):
+            raise TypeError, "session_class must be a subclass of ServerSession"
         self.sock = sock
         self.cred = cred
-        self.session_cls = session_cls
+        self.session_class = session_class
         self.cred.set_params_callback(self.__get_params)
         self.generate_dh_params()
 
@@ -350,7 +350,7 @@ class ServerSessionFactory(object):
 
     def accept(self):
         new_sock, address = self.sock.accept()
-        session = self.session_cls(new_sock, self.cred)
+        session = self.session_class(new_sock, self.cred)
         return (session, address)
 
     def generate_dh_params(self, bits=DH_BITS):
