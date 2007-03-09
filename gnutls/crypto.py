@@ -5,7 +5,7 @@
 
 # TODO: better error handling and check the error hierarchy
 
-__all__ = ['X509_FMT_DER', 'X509_FMT_PEM', 'X509Certificate', 'X509CRL', 'X509PrivateKey']
+__all__ = ['X509_FMT_DER', 'X509_FMT_PEM', 'X509Certificate', 'X509CRL', 'X509PrivateKey', 'DHParams', 'RSAParams']
 
 import re
 from ctypes import *
@@ -253,4 +253,38 @@ class X509CRL(object):
 
     def __del__(self):
         self.__deinit(self._crl)
+
+
+class DHParams(object):
+    def __init__(self, bits=1024):
+        self.__deinit = gnutls_dh_params_deinit
+        self._params = gnutls_dh_params_t()
+        gnutls_dh_params_init(byref(self._params))
+        gnutls_dh_params_generate2(self._params, bits)
+
+    def __get__(self, obj, type_=None):
+        return self._params
+
+    def __set__(self, obj, value):
+        raise AttributeError("Read-only attribute")
+
+    def __del__(self):
+        self.__deinit(self._params)
+
+
+class RSAParams(object):
+    def __init__(self, bits=1024):
+        self.__deinit = gnutls_rsa_params_deinit
+        self._params = gnutls_rsa_params_t()
+        gnutls_rsa_params_init(byref(self._params))
+        gnutls_rsa_params_generate2(self._params, bits)
+
+    def __get__(self, obj, type_=None):
+        return self._params
+
+    def __set__(self, obj, value):
+        raise AttributeError("Read-only attribute")
+
+    def __del__(self):
+        self.__deinit(self._params)
 
