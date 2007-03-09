@@ -84,6 +84,9 @@ class X509Certificate(object):
         retcode = gnutls_x509_crt_import(self._cert, byref(data), format)
         GNUTLSException.check(retcode)
 
+    def __del__(self):
+        self.__deinit(self._cert)
+
     @property
     def subject(self):
         size = c_size_t(256)
@@ -175,9 +178,6 @@ class X509Certificate(object):
         retcode = gnutls_x509_crt_check_hostname(self._cert, hostname)
         GNUTLSException.check(retcode)
         return bool(retcode)
-    
-    def __del__(self):
-        self.__deinit(self._cert)
 
 
 class X509PrivateKey(object):
@@ -211,6 +211,9 @@ class X509CRL(object):
         # int gnutls_x509_crl_import (gnutls_x509_crl_t crl, const gnutls_datum_t * data, gnutls_x509_crt_fmt_t format)
         retcode = gnutls_x509_crl_import(self._crl, byref(data), format)
         GNUTLSException.check(retcode)
+
+    def __del__(self):
+        self.__deinit(self._crl)
 
     @property
     def count(self):
@@ -249,9 +252,6 @@ class X509CRL(object):
         GNUTLSException.check(retcode)
         if retcode != 0:
             raise CertificateError("certificate was revoked")
-
-    def __del__(self):
-        self.__deinit(self._crl)
 
 
 class DHParams(object):
