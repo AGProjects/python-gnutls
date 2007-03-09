@@ -1,4 +1,5 @@
 from ctypes import *
+
 from gnutls.library.constants import gnutls_cipher_algorithm_t
 from gnutls.library.constants import gnutls_params_type_t
 STRING = c_char_p
@@ -59,14 +60,14 @@ gnutls_certificate_server_credentials = gnutls_certificate_credentials_t
 gnutls_certificate_client_credentials = gnutls_certificate_credentials_t
 class gnutls_anon_server_credentials_st(Structure):
     pass
-gnutls_anon_server_credentials_t = POINTER(gnutls_anon_server_credentials_st)
 gnutls_anon_server_credentials_st._fields_ = [
 ]
+gnutls_anon_server_credentials_t = POINTER(gnutls_anon_server_credentials_st)
 class gnutls_anon_client_credentials_st(Structure):
     pass
+gnutls_anon_client_credentials_t = POINTER(gnutls_anon_client_credentials_st)
 gnutls_anon_client_credentials_st._fields_ = [
 ]
-gnutls_anon_client_credentials_t = POINTER(gnutls_anon_client_credentials_st)
 gnutls_x509_privkey_t = POINTER(gnutls_x509_privkey_int)
 class gnutls_x509_crl_int(Structure):
     pass
@@ -95,9 +96,9 @@ gnutls_srp_server_credentials_st._fields_ = [
 ]
 class gnutls_srp_client_credentials_st(Structure):
     pass
-gnutls_srp_client_credentials_t = POINTER(gnutls_srp_client_credentials_st)
 gnutls_srp_client_credentials_st._fields_ = [
 ]
+gnutls_srp_client_credentials_t = POINTER(gnutls_srp_client_credentials_st)
 gnutls_srp_server_credentials_function = CFUNCTYPE(c_int, POINTER(gnutls_session_int), STRING, POINTER(gnutls_datum_t), POINTER(gnutls_datum_t), POINTER(gnutls_datum_t), POINTER(gnutls_datum_t))
 gnutls_srp_client_credentials_function = CFUNCTYPE(c_int, POINTER(gnutls_session_int), c_uint, POINTER(STRING), POINTER(STRING))
 class gnutls_psk_server_credentials_st(Structure):
