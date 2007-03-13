@@ -3,7 +3,7 @@
 
 """GNUTLS Twisted interface"""
 
-__all__ = ['AsyncClientSession', 'AsyncServerSession', 'TLSMixin', 'TLSClient',
+__all__ = ['Credentials', 'AsyncClientSession', 'AsyncServerSession', 'TLSMixin', 'TLSClient',
            'TLSServer', 'TLSConnector', 'TLSPort', 'connectTLS', 'listenTLS']
 
 import socket
@@ -21,6 +21,21 @@ from twisted.internet.protocol import BaseProtocol
 from gnutls.connection import *
 from gnutls.errors import *
 
+class CertificateOK: pass
+
+class Credentials(X509Credentials):
+    
+    def __init__(self, cert, key, trusted=[], crl_list=[], verify_period=None):
+        X509Credentials.__init__(self, cert, key, trusted, crl_list)
+        self.verify_period = verify_period
+    
+    def verify_callback(self, peer_cert, preverify_status=None):
+        # here you can take the decision not to drop the connection even
+        # if the initial verify failed, by not raising the exception
+        if isinstance(preverify_status, Exception):
+            raise preverify_status
+        self.check_certificate(peer_cert)
+        
 
 class AsyncClientSession(ClientSession):
 
@@ -96,7 +111,21 @@ class TLSClient(TLSMixin, tcp.Client):
     
     def __init__(self, host, port, bindAddress, credentials, connector, reactor=None):
         self.credentials = credentials
+        self.__verify_callid = None
         tcp.Client.__init__(self, host, port, bindAddress, connector, reactor)
+
+    def _verifyPeer(self, preverify_status=None):
+        if not self.connected or self.disconecting:
+            self.__verify_callid = None
+            return
+        cert = self.socket.peer_certificate
+        try:
+            self.socket.cred.verify_callback(cert, preverify_status)
+        except Exception, e:
+            self.failIfNotConnected(err = error.getConnectError(str(e)))
+            return
+        from twisted.internet import reactor
+        self.__verify_callid = reactor.callLater(self.socket.cred.verify_period, self._verifyPeer)
 
     def createInternetSocket(self): # overrides BaseClient.createInternetSocket
         """(internal) Create a non-blocking socket using
@@ -120,11 +149,25 @@ class TLSClient(TLSMixin, tcp.Client):
             return
 
         # verify peer after the handshake was completed
+        sock = self.socket
+        
         try:
-            self.socket.verify_peer()
-        except CertificateError, e:
+            sock.verify_peer()
+        except Exception, e:
+            preverify_status = e
+        else:
+            preverify_status = CertificateOK
+            
+        try:
+            sock.cred.verify_callback(sock.peer_certificate, preverify_status)
+        except Exception, e:
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
+
+        verify_period = getattr(self.socket.cred, 'verify_period', None)
+        if verify_period and verify_period > 0:
+            from twisted.internet import reactor
+            self.__verify_callid = reactor.callLater(verify_period, self._verifyPeer)
 
         # If I have reached this point without raising or returning, that means
         # that the handshake has finished succesfully.
@@ -145,6 +188,11 @@ class TLSClient(TLSMixin, tcp.Client):
         self._close_reason = reason
         tcp.Client.loseConnection(self, failure.Failure(reason))
 
+    def connectionLost(self, reason):
+        if self.__verify_callid is not None:
+            self.__verify_callid.cancel()
+            self.__verify_callid = None
+        tcp.Client.connectionLost(self, reason)
 
 class TLSConnector(base.BaseConnector):
     def __init__(self, host, port, factory, credentials, timeout, bindAddress, reactor=None):
@@ -164,6 +212,23 @@ class TLSServer(TLSMixin, tcp.Server):
     I am a serverside network connection transport; a socket which came from an
     accept() on a server.
     """
+    
+    def __init__(self, sock, protocol, client, server, sessionno):
+        self.__verify_callid = None
+        tcp.Server.__init__(self, sock, protocol, client, server, sessionno)
+    
+    def _verifyPeer(self):
+        if not self.connected or self.disconecting:
+            self.__verify_callid = None
+            return
+        cert = self.socket.peer_certificate
+        try:
+            self.socket.cred.verify_callback(cert)
+        except Exception, e:
+            self.loseConnection(e)
+            return
+        from twisted.internet import reactor
+        self.__verify_callid = reactor.callLater(self.socket.cred.verify_period, self._verifyPeer)
 
     def doHandshake(self):
         try:
@@ -172,14 +237,27 @@ class TLSServer(TLSMixin, tcp.Server):
             return
         except GNUTLSError, e:
             return e
-        
+
         # verify peer after the handshake was completed
+        sock = self.socket
         try:
-            self.socket.verify_peer()
-        except (GNUTLSError, CertificateError), e:
+            sock.verify_peer()
+        except Exception, e:
+            preverify_status = e
+        else:
+            preverify_status = CertificateOK
+
+        try:
+            sock.cred.verify_callback(sock.peer_certificate, preverify_status)
+        except Exception, e:
             self.loseConnection(e)
             return
-        
+
+        verify_period = getattr(self.socket.cred, 'verify_period', None)
+        if verify_period and verify_period > 0:
+            from twisted.internet import reactor
+            self.__verify_callid = reactor.callLater(verify_period, self._verifyPeer)
+
         # If I have reached this point without raising or returning, that means
         # that the handshake has finished succesfully.
         del self.doRead
@@ -196,6 +274,12 @@ class TLSServer(TLSMixin, tcp.Server):
     def loseConnection(self, reason=main.CONNECTION_DONE):
         self._close_reason = reason
         tcp.Server.loseConnection(self, failure.Failure(reason))
+
+    def connectionLost(self, reason):
+        if self.__verify_callid is not None:
+            self.__verify_callid.cancel()
+            self.__verify_callid = None
+        tcp.Server.connectionLost(self, reason)
 
 
 class TLSPort(tcp.Port):
