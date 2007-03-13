@@ -122,7 +122,7 @@ class TLSClient(TLSMixin, tcp.Client):
         try:
             self.socket.cred.verify_callback(cert, preverify_status)
         except Exception, e:
-            self.failIfNotConnected(err = error.getConnectError(str(e)))
+            self.loseConnection(e)
             return
         from twisted.internet import reactor
         self.__verify_callid = reactor.callLater(self.socket.cred.verify_period, self._verifyPeer)
