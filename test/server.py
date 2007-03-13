@@ -38,7 +38,7 @@ while True:
         print 'Cipher: ', session.cipher
         print 'MAC algorithm: ', session.mac_algorithm
         session.verify_peer()
-        cred.verify_cert(peer_cert)
+        cred.check_certificate(peer_cert)
     except Exception, e:
         session.close()
         print 'Handshake failed: ', e

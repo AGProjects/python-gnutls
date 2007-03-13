@@ -106,7 +106,7 @@ class X509Credentials(object):
     max_verify_bits = property(_get_max_verify_bits, _set_max_verify_bits)
     del _get_max_verify_bits, _set_max_verify_bits
 
-    def verify_cert(self, cert):
+    def check_certificate(self, cert):
         '''Override this method to make additional checks on the certificate.'''
         now = time.time()
         if cert.activation_time > now:
