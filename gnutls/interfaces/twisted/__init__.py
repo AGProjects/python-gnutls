@@ -118,7 +118,7 @@ class TLSClient(TLSMixin, tcp.Client):
         except GNUTLSError, e:
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
-        
+
         # verify peer after the handshake was completed
         try:
             self.socket.verify_peer()

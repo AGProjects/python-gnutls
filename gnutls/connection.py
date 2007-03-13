@@ -22,6 +22,11 @@ from gnutls.library.functions import *
 
 
 class X509Credentials(object):
+    DH_BITS  = 1024
+    RSA_BITS = 1024
+
+    dh_params  = None
+    rsa_params = None
 
     def __init__(self, cert, key, trusted=[], crl_list=[]):
         '''Credentials object containing an X509 certificate, a private key and 
@@ -33,6 +38,7 @@ class X509Credentials(object):
         # int gnutls_certificate_set_x509_key (gnutls_certificate_credentials_t res, gnutls_x509_crt_t * cert_list, int cert_list_size, gnutls_x509_privkey_t key)
         retcode = gnutls_certificate_set_x509_key(self._cred, byref(cert._cert), 1, key._key)
         GNUTLSException.check(retcode)
+        gnutls_certificate_set_params_function(self._cred, gnutls_params_function(self.__get_params))
         self.trusted  = trusted
         self.crl_list = crl_list
         self._max_depth = 5
@@ -42,20 +48,22 @@ class X509Credentials(object):
     def __del__(self):
         self.__deinit(self._cred)
 
-    def set_params_callback(self, callback):
-        # void gnutls_certificate_set_params_function (gnutls_certificate_credentials_t res, gnutls_params_function * func)
-        callback = gnutls_params_function(callback)
-        gnutls_certificate_set_params_function(self._cred, callback)
+    def generate_dh_params(self, bits=DH_BITS):
+        reference = self.dh_params ## keep a reference to preserve it until replaced
+        X509Credentials.dh_params  = DHParams(bits)
+        del reference
 
-    def set_dh_params(self, params):
-        if type(params) is not DHParams:
-            raise TypeError("params must be of type DHParams")
-        gnutls_certificate_set_dh_params(self._cred, params._params)
+    def generate_rsa_params(self, bits=RSA_BITS):
+        reference = self.rsa_params ## keep a reference to preserve it until replaced
+        X509Credentials.rsa_params = RSAParams(bits)
+        del reference
 
-    def set_rsa_params(self, params):
-        if type(params) is not RSAParams:
-            raise TypeError("params must be of type RSAParams")
-        gnutls_certificate_set_rsa_export_params(self._cred, params._params)
+    def __get_params(self, session, type, st):
+        """Callback function that is used when a session requests DH or RSA parameters"""
+        # static int get_params( gnutls_session_t session, gnutls_params_type_t type, gnutls_params_st *st)
+        # see example http://www.gnu.org/software/gnutls/manual/gnutls.html#Parameters-stored-in-credentials -Mircea
+        print "get_params callback:", session, type, st
+        return 0
 
     # Properties
 
@@ -314,11 +322,6 @@ class ServerSession(Session):
 
 
 class ServerSessionFactory(object):
-    DH_BITS  = 1024
-    RSA_BITS = 1024
-
-    dh_params  = None
-    rsa_params = None
 
     def __init__(self, sock, cred, session_class=ServerSession):
         if not issubclass(session_class, ServerSession):
@@ -326,8 +329,7 @@ class ServerSessionFactory(object):
         self.sock = sock
         self.cred = cred
         self.session_class = session_class
-        self.cred.set_params_callback(self.__get_params)
-        self.generate_dh_params()
+        #self.cred.generate_dh_params()
 
     def __getattr__(self, name):
         return getattr(self.sock, name)
@@ -342,22 +344,3 @@ class ServerSessionFactory(object):
         new_sock, address = self.sock.accept()
         session = self.session_class(new_sock, self.cred)
         return (session, address)
-
-    def generate_dh_params(self, bits=DH_BITS):
-        reference = self.dh_params ## keep a reference to preserve it until replaced
-        ServerSessionFactory.dh_params  = DHParams(bits)
-        del reference
-
-    def generate_rsa_params(self, bits=RSA_BITS):
-        reference = self.rsa_params ## keep a reference to preserve it until replaced
-        ServerSessionFactory.rsa_params = RSAParams(bits)
-        del reference
-
-    # Callback functions
-    def __get_params(self, session, type, st):
-        """Callback function that is used when a session requests DH or RSA parameters"""
-        # static int get_params( gnutls_session_t session, gnutls_params_type_t type, gnutls_params_st *st)
-        # see example http://www.gnu.org/software/gnutls/manual/gnutls.html#Parameters-stored-in-credentials -Mircea
-        print "get_params callback:", session, type, st
-        return 0
-
