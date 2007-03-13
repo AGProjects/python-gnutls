@@ -115,8 +115,8 @@ class TLSClient(TLSMixin, tcp.Client):
         tcp.Client.__init__(self, host, port, bindAddress, connector, reactor)
 
     def _verifyPeer(self, preverify_status=None):
+        self.__verify_callid = None
         if not self.connected or self.disconecting:
-            self.__verify_callid = None
             return
         cert = self.socket.peer_certificate
         try:
@@ -218,8 +218,8 @@ class TLSServer(TLSMixin, tcp.Server):
         tcp.Server.__init__(self, sock, protocol, client, server, sessionno)
     
     def _verifyPeer(self):
+        self.__verify_callid = None
         if not self.connected or self.disconecting:
-            self.__verify_callid = None
             return
         cert = self.socket.peer_certificate
         try:
