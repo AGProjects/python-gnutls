@@ -98,6 +98,16 @@ class X509Credentials(object):
     max_verify_bits = property(_get_max_verify_bits, _set_max_verify_bits)
     del _get_max_verify_bits, _set_max_verify_bits
 
+    def verify_cert(self, cert):
+        '''Override this method to make additional checks on the certificate.'''
+        now = time.time()
+        if cert.activation_time > now:
+            raise CertificateError("certificate is not yet activated")        
+        if cert.expiration_time < now:
+            raise CertificateError("certificate has expired")
+        for crl in self.crl_list:
+            crl.check_revocation(cert)
+
 
 class Session(object):
     '''Abstract class representing a TLS session created from a TCP socket
@@ -211,17 +221,6 @@ class Session(object):
             raise CertificateError("certificate signer is not a CA")
         elif status & GNUTLS_CERT_INSECURE_ALGORITHM:
             raise CertificateError("insecure algorithm")
-        self.verify_cert(self.peer_certificate)
-
-    def verify_cert(self, peer_cert):
-        '''Override this method to make additional checks on the peer certificate.'''
-        now = time.time()
-        if peer_cert.activation_time > now:
-            raise CertificateError("certificate is not yet activated")        
-        if peer_cert.expiration_time < now:
-            raise CertificateError("certificate has expired")
-        for crl in self.cred.crl_list:
-            crl.check_revocation(peer_cert)
 
 
 class ClientSession(Session):

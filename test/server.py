@@ -29,14 +29,16 @@ while True:
     session, address = ssf.accept()
     try:
         session.handshake()
+        peer_cert = session.peer_certificate
         print '\nNew connection!'
-        print 'Peer cert:', session.peer_certificate.subject
+        print 'Peer cert:', peer_cert.subject
         print 'Algorithm: ', session.key_exchange_algorithm
         print 'Protocol: ', session.protocol
         print 'Compression: ', session.compression
         print 'Cipher: ', session.cipher
         print 'MAC algorithm: ', session.mac_algorithm
         session.verify_peer()
+        cred.verify_cert(peer_cert)
     except Exception, e:
         session.close()
         print 'Handshake failed: ', e
