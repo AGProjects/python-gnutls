@@ -38,7 +38,7 @@ class X509Credentials(object):
         # int gnutls_certificate_set_x509_key (gnutls_certificate_credentials_t res, gnutls_x509_crt_t * cert_list, int cert_list_size, gnutls_x509_privkey_t key)
         retcode = gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         GNUTLSException.check(retcode)
-        gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
+        # this generates core dumping - gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
         self._trusted = ()
         self.cert = cert
         self.key = key
