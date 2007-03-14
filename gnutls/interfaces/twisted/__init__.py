@@ -21,6 +21,43 @@ from twisted.internet.protocol import BaseProtocol
 from gnutls.connection import *
 from gnutls.errors import *
 
+
+class KeepRunning:
+    """Return this class from a recurent function to indicate that it should keep running"""
+    pass
+
+class RecurentCall(object):
+    """Execute a function repeatedly at the given interval, until signaled to stop"""
+    def __init__(self, period, func, *args, **kwargs):
+        from twisted.internet import reactor
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+        self.period = period
+        self.now = None
+        self.next = None
+        self.callid = reactor.callLater(period, self)
+    def __call__(self):
+        from twisted.internet import reactor
+        self.callid = None
+        if self.now is None:
+            self.now = time()
+            self.next = self.now + self.period
+        else:
+            self.now, self.next = self.next, self.next + self.period
+        result = self.func(*self.args, **self.kwargs)
+        if result is KeepRunning:
+            delay = max(self.next-time(), 0)
+            self.callid = reactor.callLater(delay, self)
+    def cancel(self):
+        if self.callid is not None:
+            try:
+                self.callid.cancel()
+            except ValueError:
+                pass
+            self.callid = None
+
+
 class CertificateOK: pass
 
 class Credentials(X509Credentials):
@@ -111,21 +148,18 @@ class TLSClient(TLSMixin, tcp.Client):
     
     def __init__(self, host, port, bindAddress, credentials, connector, reactor=None):
         self.credentials = credentials
-        self.__verify_callid = None
+        self.__watchdog = None
         tcp.Client.__init__(self, host, port, bindAddress, connector, reactor)
 
-    def _verifyPeer(self, preverify_status=None):
-        self.__verify_callid = None
+    def _verifyPeer(self):
         if not self.connected or self.disconnecting:
             return
-        cert = self.socket.peer_certificate
         try:
-            self.socket.cred.verify_callback(cert, preverify_status)
+            self.socket.cred.verify_callback(self.socket.peer_certificate)
         except Exception, e:
             self.loseConnection(e)
             return
-        from twisted.internet import reactor
-        self.__verify_callid = reactor.callLater(self.socket.cred.verify_period, self._verifyPeer)
+        return KeepRunning
 
     def createInternetSocket(self): # overrides BaseClient.createInternetSocket
         """(internal) Create a non-blocking socket using
@@ -148,26 +182,25 @@ class TLSClient(TLSMixin, tcp.Client):
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
 
-        # verify peer after the handshake was completed
-        sock = self.socket
-        
+        # verify peer after the handshake completion
+        session = self.socket
+        credentials = session.cred
         try:
-            sock.verify_peer()
+            session.verify_peer()
         except Exception, e:
             preverify_status = e
         else:
             preverify_status = CertificateOK
             
         try:
-            sock.cred.verify_callback(sock.peer_certificate, preverify_status)
+            credentials.verify_callback(session.peer_certificate, preverify_status)
         except Exception, e:
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
 
-        verify_period = getattr(self.socket.cred, 'verify_period', None)
+        verify_period = getattr(credentials, 'verify_period', None)
         if verify_period and verify_period > 0:
-            from twisted.internet import reactor
-            self.__verify_callid = reactor.callLater(verify_period, self._verifyPeer)
+            self.__watchdog = RecurentCall(verify_period, self._verifyPeer)
 
         # If I have reached this point without raising or returning, that means
         # that the handshake has finished succesfully.
@@ -189,10 +222,11 @@ class TLSClient(TLSMixin, tcp.Client):
         tcp.Client.loseConnection(self, failure.Failure(reason))
 
     def connectionLost(self, reason):
-        if self.__verify_callid is not None:
-            self.__verify_callid.cancel()
-            self.__verify_callid = None
+        if self.__watchdog is not None:
+            self.__watchdog.cancel()
+            self.__watchdog = None
         tcp.Client.connectionLost(self, reason)
+
 
 class TLSConnector(base.BaseConnector):
     def __init__(self, host, port, factory, credentials, timeout, bindAddress, reactor=None):
@@ -214,21 +248,18 @@ class TLSServer(TLSMixin, tcp.Server):
     """
     
     def __init__(self, sock, protocol, client, server, sessionno):
-        self.__verify_callid = None
+        self.__watchdog = None
         tcp.Server.__init__(self, sock, protocol, client, server, sessionno)
-    
+
     def _verifyPeer(self):
-        self.__verify_callid = None
         if not self.connected or self.disconnecting:
             return
-        cert = self.socket.peer_certificate
         try:
-            self.socket.cred.verify_callback(cert)
+            self.socket.cred.verify_callback(self.socket.peer_certificate)
         except Exception, e:
             self.loseConnection(e)
             return
-        from twisted.internet import reactor
-        self.__verify_callid = reactor.callLater(self.socket.cred.verify_period, self._verifyPeer)
+        return KeepRunning
 
     def doHandshake(self):
         try:
@@ -238,25 +269,25 @@ class TLSServer(TLSMixin, tcp.Server):
         except GNUTLSError, e:
             return e
 
-        # verify peer after the handshake was completed
-        sock = self.socket
+        # verify peer after the handshake completion
+        session = self.socket
+        credentials = session.cred
         try:
-            sock.verify_peer()
+            session.verify_peer()
         except Exception, e:
             preverify_status = e
         else:
             preverify_status = CertificateOK
 
         try:
-            sock.cred.verify_callback(sock.peer_certificate, preverify_status)
+            credentials.verify_callback(session.peer_certificate, preverify_status)
         except Exception, e:
             self.loseConnection(e)
             return
 
-        verify_period = getattr(self.socket.cred, 'verify_period', None)
+        verify_period = getattr(credentials, 'verify_period', None)
         if verify_period and verify_period > 0:
-            from twisted.internet import reactor
-            self.__verify_callid = reactor.callLater(verify_period, self._verifyPeer)
+            self.__watchdog = RecurentCall(verify_period, self._verifyPeer)
 
         # If I have reached this point without raising or returning, that means
         # that the handshake has finished succesfully.
@@ -276,9 +307,9 @@ class TLSServer(TLSMixin, tcp.Server):
         tcp.Server.loseConnection(self, failure.Failure(reason))
 
     def connectionLost(self, reason):
-        if self.__verify_callid is not None:
-            self.__verify_callid.cancel()
-            self.__verify_callid = None
+        if self.__watchdog is not None:
+            self.__watchdog.cancel()
+            self.__watchdog = None
         tcp.Server.connectionLost(self, reason)
 
 
