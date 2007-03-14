@@ -161,7 +161,7 @@ class X509Certificate(object):
         GNUTLSException.check(retcode)
         return retcode
 
-    def check_issuer(self, issuer):
+    def has_issuer(self, issuer):
         '''Return True if the certificate was issued by the given issuer, False otherwise.'''
         if not isinstance(issuer, X509Certificate):
             raise TypeError("issuer must be a X509Certificate object")
@@ -170,7 +170,7 @@ class X509Certificate(object):
         GNUTLSException.check(retcode)
         return bool(retcode)
 
-    def check_hostname(self, hostname):
+    def has_hostname(self, hostname):
         '''Return True if the hostname matches the DNSName/IPAddress subject alternative name extension
            of this certificate, False otherwise.'''
         # see http://www.ietf.org/rfc/rfc2459.txt, section 4.2.1.7 Subject Alternative Name
@@ -178,6 +178,17 @@ class X509Certificate(object):
         retcode = gnutls_x509_crt_check_hostname(self._c_object, hostname)
         GNUTLSException.check(retcode)
         return bool(retcode)
+
+    def check_issuer(self, issuer):
+        '''Raise CertificateError if certificate was not issued by the given issuer'''
+        if not self.has_issuer(issuer):
+            raise CertificateError("certificate issuer doesn't match")
+
+    def check_hostname(self, hostname):
+        '''Raise CertificateError if the certificate DNSName/IPAddress subject alternative name extension
+           doesn't match the given hostname'''
+        if not self.has_hostname(hostname):
+            raise CertificateError("certificate doesn't match hostname")
 
 
 class X509PrivateKey(object):
@@ -243,14 +254,18 @@ class X509CRL(object):
         GNUTLSException.check(retcode)
         return X509Name(dname.value)
 
-    def check_revocation(self, cert):
-        """Raise CertificateError if the given certificate is revoked"""
+    def is_revoked(self, cert):
+        """Return True if certificate is revoked, False otherwise"""
         if not isinstance(cert, X509Certificate):
             raise TypeError("cert must be a X509Certificate object")
         # int gnutls_x509_crt_check_revocation (gnutls_x509_crt_t cert, const gnutls_x509_crl_t * crl_list, int crl_list_length)
         retcode = gnutls_x509_crt_check_revocation(cert._c_object, byref(self._c_object), 1)
         GNUTLSException.check(retcode)
-        if retcode != 0:
+        return bool(retcode)
+
+    def check_revocation(self, cert):
+        """Raise CertificateError if the given certificate is revoked"""
+        if self.is_revoked(cert):
             raise CertificateError("certificate was revoked")
 
 
