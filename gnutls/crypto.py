@@ -162,7 +162,7 @@ class X509Certificate(object):
         return retcode
 
     def has_issuer(self, issuer):
-        '''Return True if the certificate was issued by the given issuer, False otherwise.'''
+        """Return True if the certificate was issued by the given issuer, False otherwise."""
         if not isinstance(issuer, X509Certificate):
             raise TypeError("issuer must be a X509Certificate object")
         # int gnutls_x509_crt_check_issuer (gnutls_x509_crt_t cert, gnutls_x509_crt_t issuer)
@@ -171,8 +171,8 @@ class X509Certificate(object):
         return bool(retcode)
 
     def has_hostname(self, hostname):
-        '''Return True if the hostname matches the DNSName/IPAddress subject alternative name extension
-           of this certificate, False otherwise.'''
+        """Return True if the hostname matches the DNSName/IPAddress subject alternative name extension
+           of this certificate, False otherwise."""
         # see http://www.ietf.org/rfc/rfc2459.txt, section 4.2.1.7 Subject Alternative Name
         # int gnutls_x509_crt_check_hostname (gnutls_x509_crt_t cert, const char * hostname)
         retcode = gnutls_x509_crt_check_hostname(self._c_object, hostname)
@@ -180,13 +180,13 @@ class X509Certificate(object):
         return bool(retcode)
 
     def check_issuer(self, issuer):
-        '''Raise CertificateError if certificate was not issued by the given issuer'''
+        """Raise CertificateError if certificate was not issued by the given issuer"""
         if not self.has_issuer(issuer):
             raise CertificateError("certificate issuer doesn't match")
 
     def check_hostname(self, hostname):
-        '''Raise CertificateError if the certificate DNSName/IPAddress subject alternative name extension
-           doesn't match the given hostname'''
+        """Raise CertificateError if the certificate DNSName/IPAddress subject alternative name extension
+           doesn't match the given hostname"""
         if not self.has_hostname(hostname):
             raise CertificateError("certificate doesn't match hostname")
 

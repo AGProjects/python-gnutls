@@ -29,8 +29,8 @@ class X509Credentials(object):
     rsa_params = None
 
     def __init__(self, cert, key, trusted=[], crl_list=[]):
-        '''Credentials object containing an X509 certificate, a private key and 
-           optionally a list of trusted CAs and a list of CRLs.'''
+        """Credentials object containing an X509 certificate, a private key and 
+           optionally a list of trusted CAs and a list of CRLs."""
         self.__deinit = gnutls_certificate_free_credentials
         self._c_object = gnutls_certificate_credentials_t()
         retcode = gnutls_certificate_allocate_credentials(byref(self._c_object))
@@ -111,7 +111,7 @@ class X509Credentials(object):
     del _get_max_verify_bits, _set_max_verify_bits
 
     def check_certificate(self, cert):
-        '''Override this method to make additional checks on the certificate.'''
+        """Override this method to make additional checks on the certificate."""
         now = time.time()
         if cert.activation_time > now:
             raise CertificateError("certificate is not yet activated")        
@@ -122,8 +122,8 @@ class X509Credentials(object):
 
 
 class Session(object):
-    '''Abstract class representing a TLS session created from a TCP socket
-       and a Credentials object.'''
+    """Abstract class representing a TLS session created from a TCP socket
+       and a Credentials object."""
 
     session_type = None ## placeholder for GNUTLS_SERVER or GNUTLS_CLIENT as defined by subclass
 
