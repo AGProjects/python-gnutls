@@ -39,9 +39,10 @@ class X509Credentials(object):
         retcode = gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         GNUTLSException.check(retcode)
         gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
+        self._trusted = ()
         self.cert = cert
         self.key = key
-        self.trusted  = trusted
+        self.add_trusted(trusted)
         self.crl_list = crl_list
         self._max_depth = 5
         self._max_bits  = 8200
@@ -49,6 +50,17 @@ class X509Credentials(object):
 
     def __del__(self):
         self.__deinit(self._c_object)
+
+    def add_trusted(self, trusted):
+        # int gnutls_certificate_set_x509_trust (gnutls_certificate_credentials_t res, gnutls_x509_crt_t * ca_list, int ca_list_size)
+        size = len(trusted)
+        if size > 0:
+            block = (gnutls_x509_crt_t * size)() ## declare the array of gnutls_x509_crt_t elements
+            for i in range(size):
+                block[i] = trusted[i]._c_object
+            retcode = gnutls_certificate_set_x509_trust(self._c_object, cast(byref(block), POINTER(gnutls_x509_crt_t)), size)
+            GNUTLSException.check(retcode)
+            self._trusted = self._trusted + tuple(trusted)
 
     def generate_dh_params(self, bits=DH_BITS):
         reference = self.dh_params ## keep a reference to preserve it until replaced
@@ -69,19 +81,9 @@ class X509Credentials(object):
 
     # Properties
 
-    def _get_trusted(self):
+    @property
+    def trusted(self):
         return self._trusted
-    def _set_trusted(self, trusted):
-        # int gnutls_certificate_set_x509_trust (gnutls_certificate_credentials_t res, gnutls_x509_crt_t * ca_list, int ca_list_size)
-        size = len(trusted)
-        block = (gnutls_x509_crt_t * size)() ## declare the array of gnutls_x509_crt_t elements
-        for i in range(size):
-            block[i] = trusted[i]._c_object
-        retcode = gnutls_certificate_set_x509_trust(self._c_object, cast(byref(block), POINTER(gnutls_x509_crt_t)), size)
-        GNUTLSException.check(retcode)
-        self._trusted = tuple(trusted)
-    trusted = property(_get_trusted, _set_trusted)
-    del _get_trusted, _set_trusted
 
     def _get_crl_list(self):
         return self._crl_list
