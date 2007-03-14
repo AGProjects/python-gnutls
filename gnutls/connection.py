@@ -125,10 +125,28 @@ class Session(object):
     '''Abstract class representing a TLS session created from a TCP socket
        and a Credentials object.'''
 
+    session_type = None ## placeholder for GNUTLS_SERVER or GNUTLS_CLIENT as defined by subclass
+
     def __init__(self, socket, credentials):
-        '''Must create a self._c_object gnutls_session_t structure using the given credentials.
-           Also the socket and credentials objects must be attached to the Session object.'''
-        raise NotImplementedError
+        self.__deinit = gnutls_deinit
+        self._c_object = gnutls_session_t()
+        if self.__class__ is Session:
+            raise RuntimeError("Session cannot be instantiated directly")
+        # int gnutls_init (gnutls_session_t * session, gnutls_connection_end_t con_end)
+        retcode = gnutls_init(byref(self._c_object), self.session_type)
+        GNUTLSException.check(retcode)
+        # int gnutls_set_default_priority (gnutls_session_t session)
+        retcode = gnutls_set_default_priority(self._c_object)
+        GNUTLSException.check(retcode)
+        # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
+        # gnutls_dh_set_prime_bits(session, DH_BITS)?
+        # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
+        gnutls_transport_set_ptr(self._c_object, socket.fileno())
+        self.socket = socket
+        self.credentials = credentials
+
+    def __del__(self):
+        self.__deinit(self._c_object)
 
     def __getattr__(self, name):
         # called for: fileno, getpeername, getsockname, getsockopt, sesockopt, setblocking, shutdown, close underlying socket methods
@@ -212,6 +230,28 @@ class Session(object):
         raw_cert = cert_list[0] # we should get the address of the first element in the list
         return X509Certificate(raw_cert, X509_FMT_DER)
 
+    # Session methods
+
+    def handshake(self):
+        # int gnutls_handshake (gnutls_session_t session)
+        retcode = gnutls_handshake(self._c_object)
+        GNUTLSException.check(retcode)
+
+    def send(self, buffer):
+        # ssize_t gnutls_record_send (gnutls_session_t session, const void * data, size_t sizeofdata)
+        size = c_size_t(len(buffer))
+        retcode = gnutls_record_send(self._c_object, buffer, size.value)
+        GNUTLSException.check(retcode)
+        return retcode
+
+    def recv(self, bufsize):
+        # ssize_t gnutls_record_recv (gnutls_session_t session, void * data, size_t sizeofdata)
+        size = c_size_t(bufsize)
+        buffer = create_string_buffer(bufsize)
+        retcode = gnutls_record_recv(self._c_object, buffer, size.value)
+        GNUTLSException.check(retcode)
+        return buffer.value
+
     def bye(self, how=GNUTLS_SHUT_RDWR):
         if how not in (GNUTLS_SHUT_RDWR, GNUTLS_SHUT_WR):
             raise ValueError("Invalid argument: %s" % how)
@@ -237,87 +277,16 @@ class Session(object):
 
 
 class ClientSession(Session):
-
-    def __init__(self, socket, credentials):
-        self.__deinit = gnutls_deinit
-        self._c_object = gnutls_session_t()
-        # int gnutls_init (gnutls_session_t * session, gnutls_connection_end_t con_end)
-        retcode = gnutls_init(byref(self._c_object), GNUTLS_CLIENT)
-        GNUTLSException.check(retcode)
-        # int gnutls_set_default_priority (gnutls_session_t session)
-        retcode = gnutls_set_default_priority(self._c_object)
-        GNUTLSException.check(retcode)
-        # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
-        # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
-        gnutls_transport_set_ptr(self._c_object, socket.fileno())
-        self.socket = socket
-        self.credentials = credentials
-
-    def __del__(self):
-        self.__deinit(self._c_object)
-
-    def handshake(self):
-        # int gnutls_handshake (gnutls_session_t session)
-        retcode = gnutls_handshake(self._c_object)
-        GNUTLSException.check(retcode)
-
-    def send(self, buffer):
-        # ssize_t gnutls_record_send (gnutls_session_t session, const void * data, size_t sizeofdata)
-        size = c_size_t(len(buffer))
-        retcode = gnutls_record_send(self._c_object, buffer, size.value)
-        GNUTLSException.check(retcode)
-        return retcode
-
-    def recv(self, bufsize):
-        # ssize_t gnutls_record_recv (gnutls_session_t session, void * data, size_t sizeofdata)
-        size = c_size_t(bufsize)
-        buffer = create_string_buffer(bufsize)
-        retcode = gnutls_record_recv(self._c_object, buffer, size.value)
-        GNUTLSException.check(retcode)
-        return buffer.value
+    session_type = GNUTLS_CLIENT
 
 
 class ServerSession(Session):
+    session_type = GNUTLS_SERVER
 
     def __init__(self, socket, credentials):
-        self.__deinit = gnutls_deinit
-        self._c_object = gnutls_session_t()
-        # int gnutls_init (gnutls_session_t * session, gnutls_connection_end_t con_end)
-        retcode = gnutls_init(byref(self._c_object), GNUTLS_SERVER)
-        GNUTLSException.check(retcode)
-        # int gnutls_set_default_priority (gnutls_session_t session)
-        retcode = gnutls_set_default_priority(self._c_object)
-        GNUTLSException.check(retcode)
-        # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
+        Session.__init__(self, socket, credentials)
         gnutls_certificate_server_set_request(self._c_object, GNUTLS_CERT_REQUEST)
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
-        # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
-        gnutls_transport_set_ptr(self._c_object, socket.fileno())
-        self.socket = socket
-        self.credentials = credentials
-
-    def __del__(self):
-        self.__deinit(self._c_object)
-
-    def handshake(self):
-        # int gnutls_handshake (gnutls_session_t session)
-        retcode = gnutls_handshake(self._c_object)
-        GNUTLSException.check(retcode)
-
-    def send(self, buffer):
-        # ssize_t gnutls_record_send (gnutls_session_t session, const void * data, size_t sizeofdata)
-        size = c_size_t(len(buffer))
-        retcode = gnutls_record_send(self._c_object, buffer, size.value)
-        GNUTLSException.check(retcode)
-        return retcode
-
-    def recv(self, bufsize):
-        # ssize_t gnutls_record_recv (gnutls_session_t session, void * data, size_t sizeofdata)
-        size = c_size_t(bufsize)
-        buffer = create_string_buffer(bufsize)
-        retcode = gnutls_record_recv(self._c_object, buffer, size.value)
-        GNUTLSException.check(retcode)
-        return buffer.value
 
 
 class ServerSessionFactory(object):
