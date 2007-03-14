@@ -39,6 +39,8 @@ class X509Credentials(object):
         retcode = gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         GNUTLSException.check(retcode)
         gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
+        self.cert = cert
+        self.key = key
         self.trusted  = trusted
         self.crl_list = crl_list
         self._max_depth = 5
