@@ -31,7 +31,7 @@ while True:
         session.handshake()
         peer_cert = session.peer_certificate
         print '\nNew connection!'
-        print 'Peer cert:', peer_cert.subject
+        print 'Peer cert:', getattr(peer_cert, 'subject', None)
         print 'Algorithm: ', session.key_exchange_algorithm
         print 'Protocol: ', session.protocol
         print 'Compression: ', session.compression
@@ -40,23 +40,24 @@ while True:
         session.verify_peer()
         cred.check_certificate(peer_cert)
     except Exception, e:
-        session.close()
         print 'Handshake failed: ', e
-    while True:
-        try:
-            buf = session.recv(1024)
-            if buf == 0 or buf == '':
-                print "Peer has closed the session"
-                break
-            else:
-                if buf.strip().lower() == 'quit':
-                    print "Got quit command, closing connection"
-                    session.bye()
+        session.bye()
+    else:
+        while True:
+            try:
+                buf = session.recv(1024)
+                if buf == 0 or buf == '':
+                    print "Peer has closed the session"
                     break
-            buf = buf.rstrip() + " ACK!\n"
-            session.send(buf)
-        except Exception, e:
-            print "Error in reception: ", e
-            break
+                else:
+                    if buf.strip().lower() == 'quit':
+                        print "Got quit command, closing connection"
+                        session.bye()
+                        break
+                buf = buf.rstrip() + " ACK!\n"
+                session.send(buf)
+            except Exception, e:
+                print "Error in reception: ", e
+                break
     session.shutdown(2)
     session.close()
