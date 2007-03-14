@@ -70,32 +70,32 @@ class X509Name(str):
 class X509Certificate(object):
     def __init__(self, buffer, format=X509_FMT_PEM):
         self.__deinit = gnutls_x509_crt_deinit
-        self._cert = gnutls_x509_crt_t()
+        self._c_object = gnutls_x509_crt_t()
         if format not in (X509_FMT_PEM, X509_FMT_DER):
             raise ValueError("Incorrect format: " + format)
         # int gnutls_x509_crt_init (gnutls_x509_crt_t * cert)
-        retcode = gnutls_x509_crt_init(byref(self._cert))
+        retcode = gnutls_x509_crt_init(byref(self._c_object))
         GNUTLSException.check(retcode)
         if isinstance(buffer, gnutls_datum_t): ## accept raw certificate data in GNUTLS' datum_t format
             data = buffer
         else:
             data = gnutls_datum_t(cast(c_char_p(buffer), POINTER(c_ubyte)), c_uint(len(buffer)))
         # int gnutls_x509_crt_import (gnutls_x509_crt_t cert, const gnutls_datum_t * data, gnutls_x509_crt_fmt_t format
-        retcode = gnutls_x509_crt_import(self._cert, byref(data), format)
+        retcode = gnutls_x509_crt_import(self._c_object, byref(data), format)
         GNUTLSException.check(retcode)
 
     def __del__(self):
-        self.__deinit(self._cert)
+        self.__deinit(self._c_object)
 
     @property
     def subject(self):
         size = c_size_t(256)
         dname = create_string_buffer(size.value)
         # int gnutls_x509_crt_get_dn (gnutls_x509_crt_t cert, char * buf, size_t * sizeof_buf)
-        retcode = gnutls_x509_crt_get_dn(self._cert, dname, byref(size))
+        retcode = gnutls_x509_crt_get_dn(self._c_object, dname, byref(size))
         if retcode == GNUTLS_E_SHORT_MEMORY_BUFFER:
             dname = create_string_buffer(size.value)
-            retcode = gnutls_x509_crt_get_dn(self._cert, dname, byref(size))
+            retcode = gnutls_x509_crt_get_dn(self._c_object, dname, byref(size))
         GNUTLSException.check(retcode)
         return X509Name(dname.value)
 
@@ -104,10 +104,10 @@ class X509Certificate(object):
         size = c_size_t(256)
         dname = create_string_buffer(size.value)
         # int gnutls_x509_crt_get_issuer_dn (gnutls_x509_crt_t cert, char * buf, size_t * sizeof_buf)
-        retcode = gnutls_x509_crt_get_issuer_dn(self._cert, dname, byref(size))
+        retcode = gnutls_x509_crt_get_issuer_dn(self._c_object, dname, byref(size))
         if retcode == GNUTLS_E_SHORT_MEMORY_BUFFER:
             dname = create_string_buffer(size.value)
-            retcode = gnutls_x509_crt_get_issuer_dn(self._cert, dname, byref(size))
+            retcode = gnutls_x509_crt_get_issuer_dn(self._c_object, dname, byref(size))
         GNUTLSException.check(retcode)
         return X509Name(dname.value)
 
@@ -116,11 +116,11 @@ class X509Certificate(object):
         size = c_size_t(1)
         serial = c_ulong()
         # int gnutls_x509_crt_get_serial (gnutls_x509_crt_t cert, void * result, size_t * result_size)
-        retcode = gnutls_x509_crt_get_serial(self._cert, cast(byref(serial), c_void_p), byref(size))
+        retcode = gnutls_x509_crt_get_serial(self._c_object, cast(byref(serial), c_void_p), byref(size))
         if retcode == GNUTLS_E_SHORT_MEMORY_BUFFER:
             import struct, sys
             serial = create_string_buffer(size.value * sizeof(c_void_p))
-            retcode = gnutls_x509_crt_get_serial(self._cert, cast(serial, c_void_p), byref(size))
+            retcode = gnutls_x509_crt_get_serial(self._c_object, cast(serial, c_void_p), byref(size))
             GNUTLSException.check(retcode)
             pad = size.value * sizeof(c_void_p) - len(serial.value)
             format = '@%dL' % size.value
@@ -139,7 +139,7 @@ class X509Certificate(object):
     @property
     def activation_time(self):
         # time_t gnutls_x509_crt_get_activation_time (gnutls_x509_crt_t cert)
-        retcode = gnutls_x509_crt_get_activation_time(self._cert)
+        retcode = gnutls_x509_crt_get_activation_time(self._c_object)
         if retcode == -1:
             raise GNUTLSError("cannot retrieve activation time")
         GNUTLSException.check(retcode)
@@ -148,7 +148,7 @@ class X509Certificate(object):
     @property
     def expiration_time(self):
         # time_t gnutls_x509_crt_get_expiration_time (gnutls_x509_crt_t cert)
-        retcode = gnutls_x509_crt_get_expiration_time(self._cert)
+        retcode = gnutls_x509_crt_get_expiration_time(self._c_object)
         if retcode == -1:
             raise GNUTLSError("cannot retrieve expiration time")
         GNUTLSException.check(retcode)
@@ -157,7 +157,7 @@ class X509Certificate(object):
     @property
     def version(self):
         # int gnutls_x509_crt_get_version (gnutls_x509_crt_t cert)
-        retcode = gnutls_x509_crt_get_version(self._cert)
+        retcode = gnutls_x509_crt_get_version(self._c_object)
         GNUTLSException.check(retcode)
         return retcode
 
@@ -166,7 +166,7 @@ class X509Certificate(object):
         if not isinstance(issuer, X509Certificate):
             raise TypeError("issuer must be a X509Certificate object")
         # int gnutls_x509_crt_check_issuer (gnutls_x509_crt_t cert, gnutls_x509_crt_t issuer)
-        retcode = gnutls_x509_crt_check_issuer(self._cert, issuer._cert)
+        retcode = gnutls_x509_crt_check_issuer(self._c_object, issuer._c_object)
         GNUTLSException.check(retcode)
         return bool(retcode)
 
@@ -175,7 +175,7 @@ class X509Certificate(object):
            of this certificate, False otherwise.'''
         # see http://www.ietf.org/rfc/rfc2459.txt, section 4.2.1.7 Subject Alternative Name
         # int gnutls_x509_crt_check_hostname (gnutls_x509_crt_t cert, const char * hostname)
-        retcode = gnutls_x509_crt_check_hostname(self._cert, hostname)
+        retcode = gnutls_x509_crt_check_hostname(self._c_object, hostname)
         GNUTLSException.check(retcode)
         return bool(retcode)
 
@@ -183,42 +183,42 @@ class X509Certificate(object):
 class X509PrivateKey(object):
     def __init__(self, buffer, format=X509_FMT_PEM):
         self.__deinit = gnutls_x509_privkey_deinit
-        self._key = gnutls_x509_privkey_t()
+        self._c_object = gnutls_x509_privkey_t()
         if format not in (X509_FMT_PEM, X509_FMT_DER):
             raise ValueError("Incorrect format: " + format)
         # int gnutls_x509_privkey_init (gnutls_x509_privkey_t * key)
-        retcode = gnutls_x509_privkey_init(byref(self._key))
+        retcode = gnutls_x509_privkey_init(byref(self._c_object))
         GNUTLSException.check(retcode)
         data = gnutls_datum_t(cast(c_char_p(buffer), POINTER(c_ubyte)), c_uint(len(buffer)))
         # int gnutls_x509_privkey_import (gnutls_x509_privkey_t key, const gnutls_datum_t * data, gnutls_x509_crt_fmt_t format)        
-        retcode = gnutls_x509_privkey_import(self._key, byref(data), format)
+        retcode = gnutls_x509_privkey_import(self._c_object, byref(data), format)
         GNUTLSException.check(retcode)
 
     def __del__(self):
-        self.__deinit(self._key)
+        self.__deinit(self._c_object)
 
 
 class X509CRL(object):
     def __init__(self, buffer, format=X509_FMT_PEM):
         self.__deinit = gnutls_x509_crl_deinit
-        self._crl = gnutls_x509_crl_t()
+        self._c_object = gnutls_x509_crl_t()
         if format not in (X509_FMT_PEM, X509_FMT_DER):
             raise ValueError("Incorrect format: " + format)
         # int gnutls_x509_crl_init (gnutls_x509_crl_t * crl)
-        retcode = gnutls_x509_crl_init(byref(self._crl))
+        retcode = gnutls_x509_crl_init(byref(self._c_object))
         GNUTLSException.check(retcode)
         data = gnutls_datum_t(cast(c_char_p(buffer), POINTER(c_ubyte)), c_uint(len(buffer)))
         # int gnutls_x509_crl_import (gnutls_x509_crl_t crl, const gnutls_datum_t * data, gnutls_x509_crt_fmt_t format)
-        retcode = gnutls_x509_crl_import(self._crl, byref(data), format)
+        retcode = gnutls_x509_crl_import(self._c_object, byref(data), format)
         GNUTLSException.check(retcode)
 
     def __del__(self):
-        self.__deinit(self._crl)
+        self.__deinit(self._c_object)
 
     @property
     def count(self):
         # int gnutls_x509_crl_get_crt_count (gnutls_x509_crl_t crl)
-        retcode = gnutls_x509_crl_get_crt_count(self._crl)
+        retcode = gnutls_x509_crl_get_crt_count(self._c_object)
         GNUTLSException.check(retcode)
         return retcode
 
@@ -227,7 +227,7 @@ class X509CRL(object):
     @property
     def version(self):
         # int gnutls_x509_crl_get_version (gnutls_x509_crl_t crl)
-        retcode = gnutls_x509_crl_get_version(self._crl)
+        retcode = gnutls_x509_crl_get_version(self._c_object)
         GNUTLSException.check(retcode)
         return retcode
 
@@ -236,10 +236,10 @@ class X509CRL(object):
         size = c_size_t(256)
         dname = create_string_buffer(size.value)
         # int gnutls_x509_crl_get_issuer_dn (gnutls_x509_crl_t crl, char * buf, size_t * sizeof_buf)
-        retcode = gnutls_x509_crl_get_issuer_dn(self._crl, dname, byref(size))
+        retcode = gnutls_x509_crl_get_issuer_dn(self._c_object, dname, byref(size))
         if retcode == GNUTLS_E_SHORT_MEMORY_BUFFER:
             dname = create_string_buffer(size.value)
-            retcode = gnutls_x509_crl_get_issuer_dn(self._crl, dname, byref(size))
+            retcode = gnutls_x509_crl_get_issuer_dn(self._c_object, dname, byref(size))
         GNUTLSException.check(retcode)
         return X509Name(dname.value)
 
@@ -248,7 +248,7 @@ class X509CRL(object):
         if not isinstance(cert, X509Certificate):
             raise TypeError("cert must be a X509Certificate object")
         # int gnutls_x509_crt_check_revocation (gnutls_x509_crt_t cert, const gnutls_x509_crl_t * crl_list, int crl_list_length)
-        retcode = gnutls_x509_crt_check_revocation(cert._cert, byref(self._crl), 1)
+        retcode = gnutls_x509_crt_check_revocation(cert._c_object, byref(self._c_object), 1)
         GNUTLSException.check(retcode)
         if retcode != 0:
             raise CertificateError("certificate was revoked")
@@ -257,33 +257,33 @@ class X509CRL(object):
 class DHParams(object):
     def __init__(self, bits=1024):
         self.__deinit = gnutls_dh_params_deinit
-        self._params = gnutls_dh_params_t()
-        gnutls_dh_params_init(byref(self._params))
-        gnutls_dh_params_generate2(self._params, bits)
+        self._c_object = gnutls_dh_params_t()
+        gnutls_dh_params_init(byref(self._c_object))
+        gnutls_dh_params_generate2(self._c_object, bits)
 
     def __get__(self, obj, type_=None):
-        return self._params
+        return self._c_object
 
     def __set__(self, obj, value):
         raise AttributeError("Read-only attribute")
 
     def __del__(self):
-        self.__deinit(self._params)
+        self.__deinit(self._c_object)
 
 
 class RSAParams(object):
     def __init__(self, bits=1024):
         self.__deinit = gnutls_rsa_params_deinit
-        self._params = gnutls_rsa_params_t()
-        gnutls_rsa_params_init(byref(self._params))
-        gnutls_rsa_params_generate2(self._params, bits)
+        self._c_object = gnutls_rsa_params_t()
+        gnutls_rsa_params_init(byref(self._c_object))
+        gnutls_rsa_params_generate2(self._c_object, bits)
 
     def __get__(self, obj, type_=None):
-        return self._params
+        return self._c_object
 
     def __set__(self, obj, value):
         raise AttributeError("Read-only attribute")
 
     def __del__(self):
-        self.__deinit(self._params)
+        self.__deinit(self._c_object)
 
