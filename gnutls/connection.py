@@ -138,8 +138,9 @@ class Session(object):
         # void gnutls_credentials_clear (gnutls_session_t session)
         gnutls_credentials_clear(self._c_object) # do we need this ? -Mircea
         # int gnutls_credentials_set (gnutls_session_t session, gnutls_credentials_type_t type, void * cred)
-        retcode = gnutls_credentials_set(self._c_object, self._credentials._type, cast(self._credentials._c_object, c_void_p))
+        retcode = gnutls_credentials_set(self._c_object, credentials._type, cast(credentials._c_object, c_void_p))
         GNUTLSException.check(retcode)
+        self._credentials = credentials
     credentials = property(_get_credentials, _set_credentials)
     del _get_credentials, _set_credentials
 
@@ -243,13 +244,10 @@ class ClientSession(Session):
         retcode = gnutls_set_default_priority(self._c_object)
         GNUTLSException.check(retcode)
         # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
-        # int gnutls_credentials_set (gnutls_session_t session, gnutls_credentials_type_t type, void * cred)
-        retcode = gnutls_credentials_set(self._c_object, credentials._type, cast(credentials._c_object, c_void_p))
-        GNUTLSException.check(retcode)
         # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
         self.socket = socket
-        self._credentials = credentials
+        self.credentials = credentials
 
     def __del__(self):
         self.__deinit(self._c_object)
@@ -287,15 +285,12 @@ class ServerSession(Session):
         retcode = gnutls_set_default_priority(self._c_object)
         GNUTLSException.check(retcode)
         # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
-        # int gnutls_credentials_set (gnutls_session_t session, gnutls_credentials_type_t type, void * cred)
-        retcode = gnutls_credentials_set(self._c_object, credentials._type, cast(credentials._c_object, c_void_p))
-        GNUTLSException.check(retcode)
         gnutls_certificate_server_set_request(self._c_object, GNUTLS_CERT_REQUEST)
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
         # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
         self.socket = socket
-        self._credentials = credentials
+        self.credentials = credentials
 
     def __del__(self):
         self.__deinit(self._c_object)
