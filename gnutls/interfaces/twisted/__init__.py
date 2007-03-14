@@ -147,7 +147,11 @@ class TLSClient(TLSMixin, tcp.Client):
         self.__watchdog = None
         tcp.Client.__init__(self, host, port, bindAddress, connector, reactor)
 
-    def _verifyPeer(self):
+    def createInternetSocket(self):
+        sock = tcp.Client.createInternetSocket(self)
+        return AsyncClientSession(sock, self.credentials)
+
+    def _recurentVerify(self):
         if not self.connected or self.disconnecting:
             return
         try:
@@ -155,11 +159,26 @@ class TLSClient(TLSMixin, tcp.Client):
         except Exception, e:
             self.loseConnection(e)
             return
-        return KeepRunning
+        else:
+            return KeepRunning
 
-    def createInternetSocket(self):
-        sock = tcp.Client.createInternetSocket(self)
-        return AsyncClientSession(sock, self.credentials)
+    def _verifyPeer(self):
+        session = self.socket
+        credentials = session.cred
+        try:
+            session.verify_peer()
+        except Exception, e:
+            preverify_status = e
+        else:
+            preverify_status = CertificateOK
+            
+        credentials.verify_callback(session.peer_certificate, preverify_status)
+        
+        ## If we got here without raising an exception, the peer verification was
+        ## succesful and we can setup the recurent verification (if it was asked for)
+        verify_period = getattr(credentials, 'verify_period', None)
+        if verify_period and verify_period > 0:
+            self.__watchdog = RecurentCall(verify_period, self._recurentVerify)
 
     def doHandshake(self):
         try:
@@ -171,24 +190,11 @@ class TLSClient(TLSMixin, tcp.Client):
             return
 
         # verify peer after the handshake completion
-        session = self.socket
-        credentials = session.cred
         try:
-            session.verify_peer()
-        except Exception, e:
-            preverify_status = e
-        else:
-            preverify_status = CertificateOK
-            
-        try:
-            credentials.verify_callback(session.peer_certificate, preverify_status)
+            self._verifyPeer()
         except Exception, e:
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
-
-        verify_period = getattr(credentials, 'verify_period', None)
-        if verify_period and verify_period > 0:
-            self.__watchdog = RecurentCall(verify_period, self._verifyPeer)
 
         # If I have reached this point without raising or returning, that means
         # that the handshake has finished succesfully.
@@ -239,7 +245,7 @@ class TLSServer(TLSMixin, tcp.Server):
         self.__watchdog = None
         tcp.Server.__init__(self, sock, protocol, client, server, sessionno)
 
-    def _verifyPeer(self):
+    def _recurentVerify(self):
         if not self.connected or self.disconnecting:
             return
         try:
@@ -247,7 +253,26 @@ class TLSServer(TLSMixin, tcp.Server):
         except Exception, e:
             self.loseConnection(e)
             return
-        return KeepRunning
+        else:
+            return KeepRunning
+
+    def _verifyPeer(self):
+        session = self.socket
+        credentials = session.cred
+        try:
+            session.verify_peer()
+        except Exception, e:
+            preverify_status = e
+        else:
+            preverify_status = CertificateOK
+
+        credentials.verify_callback(session.peer_certificate, preverify_status)
+
+        ## If we got here without raising an exception, the peer verification was
+        ## succesful and we can setup the recurent verification (if it was asked for)
+        verify_period = getattr(credentials, 'verify_period', None)
+        if verify_period and verify_period > 0:
+            self.__watchdog = RecurentCall(verify_period, self._recurentVerify)
 
     def doHandshake(self):
         try:
@@ -258,24 +283,11 @@ class TLSServer(TLSMixin, tcp.Server):
             return e
 
         # verify peer after the handshake completion
-        session = self.socket
-        credentials = session.cred
         try:
-            session.verify_peer()
-        except Exception, e:
-            preverify_status = e
-        else:
-            preverify_status = CertificateOK
-
-        try:
-            credentials.verify_callback(session.peer_certificate, preverify_status)
+            self._verifyPeer()
         except Exception, e:
             self.loseConnection(e)
             return
-
-        verify_period = getattr(credentials, 'verify_period', None)
-        if verify_period and verify_period > 0:
-            self.__watchdog = RecurentCall(verify_period, self._verifyPeer)
 
         # If I have reached this point without raising or returning, that means
         # that the handshake has finished succesfully.
