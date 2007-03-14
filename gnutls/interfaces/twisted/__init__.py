@@ -7,10 +7,6 @@ __all__ = ['Credentials', 'AsyncClientSession', 'AsyncServerSession', 'TLSMixin'
            'TLSServer', 'TLSConnector', 'TLSPort', 'connectTLS', 'listenTLS']
 
 import socket
-try:
-    import fcntl
-except ImportError:
-    fcntl = None
 
 from errno import EWOULDBLOCK, EINTR
 
@@ -161,17 +157,9 @@ class TLSClient(TLSMixin, tcp.Client):
             return
         return KeepRunning
 
-    def createInternetSocket(self): # overrides BaseClient.createInternetSocket
-        """(internal) Create a non-blocking socket using
-        self.addressFamily, self.socketType.
-        """
-        s = socket.socket(self.addressFamily, self.socketType)
-        s.setblocking(0)
-        if fcntl and hasattr(fcntl, 'FD_CLOEXEC'):
-            old = fcntl.fcntl(s.fileno(), fcntl.F_GETFD)
-            fcntl.fcntl(s.fileno(), fcntl.F_SETFD, old | fcntl.FD_CLOEXEC)
-        sess = AsyncClientSession(s, self.credentials)
-        return sess
+    def createInternetSocket(self):
+        sock = tcp.Client.createInternetSocket(self)
+        return AsyncClientSession(sock, self.credentials)
 
     def doHandshake(self):
         try:
