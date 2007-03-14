@@ -121,24 +121,24 @@ class Session(object):
     '''Abstract class representing a TLS session created from a TCP socket
        and a Credentials object.'''
 
-    def __init__(self, sock, cred):
+    def __init__(self, socket, credentials):
         '''Must create a self._session GNUTLS structure using the given credentials.
-           Also the sock and cred objects must be attached to the Session object.'''
+           Also the socket and credentials objects must be attached to the Session object.'''
         raise NotImplementedError
 
     def __getattr__(self, name):
         # called for: fileno, getpeername, getsockname, getsockopt, sesockopt, setblocking, shutdown, close underlying socket methods
-        return getattr(self.sock, name)
+        return getattr(self.socket, name)
 
     # Session properties
 
     def _get_credentials(self):
-        return self.cred
+        return self._credentials
     def _set_credentials(self, credentials):
         # void gnutls_credentials_clear (gnutls_session_t session)
         gnutls_credentials_clear(self._session) # do we need this ? -Mircea
         # int gnutls_credentials_set (gnutls_session_t session, gnutls_credentials_type_t type, void * cred)
-        retcode = gnutls_credentials_set(self._session, self.cred._type, cast(self.cred._cred, c_void_p))
+        retcode = gnutls_credentials_set(self._session, self._credentials._type, cast(self._credentials._cred, c_void_p))
         GNUTLSException.check(retcode)
     credentials = property(_get_credentials, _set_credentials)
     del _get_credentials, _set_credentials
@@ -233,7 +233,7 @@ class Session(object):
 
 class ClientSession(Session):
 
-    def __init__(self, sock, cred):
+    def __init__(self, socket, credentials):
         self.__deinit = gnutls_deinit
         self._session = gnutls_session_t()
         # int gnutls_init (gnutls_session_t * session, gnutls_connection_end_t con_end)
@@ -244,12 +244,12 @@ class ClientSession(Session):
         GNUTLSException.check(retcode)
         # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
         # int gnutls_credentials_set (gnutls_session_t session, gnutls_credentials_type_t type, void * cred)
-        retcode = gnutls_credentials_set(self._session, cred._type, cast(cred._cred, c_void_p))
+        retcode = gnutls_credentials_set(self._session, credentials._type, cast(credentials._cred, c_void_p))
         GNUTLSException.check(retcode)
         # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
-        gnutls_transport_set_ptr(self._session, sock.fileno())
-        self.sock = sock
-        self.cred = cred
+        gnutls_transport_set_ptr(self._session, socket.fileno())
+        self.socket = socket
+        self._credentials = credentials
 
     def __del__(self):
         self.__deinit(self._session)
@@ -277,7 +277,7 @@ class ClientSession(Session):
 
 class ServerSession(Session):
 
-    def __init__(self, sock, cred):
+    def __init__(self, socket, credentials):
         self.__deinit = gnutls_deinit
         self._session = gnutls_session_t()
         # int gnutls_init (gnutls_session_t * session, gnutls_connection_end_t con_end)
@@ -288,14 +288,14 @@ class ServerSession(Session):
         GNUTLSException.check(retcode)
         # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
         # int gnutls_credentials_set (gnutls_session_t session, gnutls_credentials_type_t type, void * cred)
-        retcode = gnutls_credentials_set(self._session, cred._type, cast(cred._cred, c_void_p))
+        retcode = gnutls_credentials_set(self._session, credentials._type, cast(credentials._cred, c_void_p))
         GNUTLSException.check(retcode)
         gnutls_certificate_server_set_request(self._session, GNUTLS_CERT_REQUEST)
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
         # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
-        gnutls_transport_set_ptr(self._session, sock.fileno())
-        self.sock = sock
-        self.cred = cred
+        gnutls_transport_set_ptr(self._session, socket.fileno())
+        self.socket = socket
+        self._credentials = credentials
 
     def __del__(self):
         self.__deinit(self._session)
@@ -323,24 +323,24 @@ class ServerSession(Session):
 
 class ServerSessionFactory(object):
 
-    def __init__(self, sock, cred, session_class=ServerSession):
+    def __init__(self, socket, credentials, session_class=ServerSession):
         if not issubclass(session_class, ServerSession):
             raise TypeError, "session_class must be a subclass of ServerSession"
-        self.sock = sock
-        self.cred = cred
+        self.socket = socket
+        self.credentials = credentials
         self.session_class = session_class
-        #self.cred.generate_dh_params()
+        #self.credentials.generate_dh_params()
 
     def __getattr__(self, name):
-        return getattr(self.sock, name)
+        return getattr(self.socket, name)
 
     def bind(self, address):
-        self.sock.bind(address)
+        self.socket.bind(address)
 
     def listen(self, backlog):
-        self.sock.listen(backlog)
+        self.socket.listen(backlog)
 
     def accept(self):
-        new_sock, address = self.sock.accept()
-        session = self.session_class(new_sock, self.cred)
+        new_sock, address = self.socket.accept()
+        session = self.session_class(new_sock, self.credentials)
         return (session, address)
