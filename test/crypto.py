@@ -19,5 +19,5 @@ crl = X509CRL(open(certs_path + '/crl.pem').read())
 print 'Cert subject:   ', cert.subject
 print 'Cert issuer:    ', cert.issuer
 print 'Cert serial:    ', cert.serial_number
-print 'Check hostname: ', cert.check_hostname('proxy.sipthor.net')
-print 'Certificate was revoked: ', crl.check_revocation(revoked_cert)
+print 'Check hostname: ', cert.has_hostname('proxy.sipthor.net')
+print 'Certificate was revoked: ', crl.is_revoked(revoked_cert)
