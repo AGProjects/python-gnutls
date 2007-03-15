@@ -19,7 +19,13 @@ class EchoProtocol(LineOnlyReceiver):
     delimiter = '\n'
 
     def connectionMade(self):
-        print 'New connection from:', self.transport.getPeerCertificate().subject
+        session = self.transport.socket
+        print '\nNew connection from:', getattr(session.peer_certificate, 'subject', 'anonymous')
+        print 'Algorithm: ', session.key_exchange_algorithm
+        print 'Protocol: ', session.protocol
+        print 'Compression: ', session.compression
+        print 'Cipher: ', session.cipher
+        print 'MAC algorithm: ', session.mac_algorithm
 
     def lineReceived(self, line):
         if line == 'quit':
