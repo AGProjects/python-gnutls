@@ -58,7 +58,7 @@ class CertificateOK: pass
 
 class Credentials(X509Credentials):
     
-    def __init__(self, cert, key, trusted=[], crl_list=[], verify_period=None):
+    def __init__(self, cert=None, key=None, trusted=[], crl_list=[], verify_period=None):
         X509Credentials.__init__(self, cert, key, trusted, crl_list)
         self.verify_period = verify_period
     
