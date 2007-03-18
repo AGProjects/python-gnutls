@@ -5,14 +5,13 @@ script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
 gnutls_path = os.path.realpath(os.path.join(script_path, '..'))
 sys.path[0:0] = [gnutls_path]
 
-from gnutls.crypto import *
-from gnutls.connection import *
-from gnutls.errors import *
-from gnutls.interfaces.twisted import Credentials
-
 from twisted.internet.protocol import ClientFactory
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet import reactor
+
+from gnutls.crypto import *
+from gnutls.errors import *
+from gnutls.interfaces.twisted import Credentials
 
 class EchoProtocol(LineOnlyReceiver):
 
