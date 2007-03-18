@@ -28,6 +28,10 @@ class EchoProtocol(LineOnlyReceiver):
 class EchoFactory(ClientFactory):
     protocol = EchoProtocol
 
+    def clientConnectionFailed(self, connector, err):
+        print err.value
+        reactor.stop()
+
 certs_path = os.path.join(script_path, 'certs')
 
 cert = X509Certificate(open(certs_path + '/valid.crt').read())
