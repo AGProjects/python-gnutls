@@ -7,7 +7,7 @@ __all__ = ['Credentials', 'AsyncClientSession', 'AsyncServerSession', 'TLSMixin'
            'TLSServer', 'TLSConnector', 'TLSPort', 'connectTLS', 'listenTLS']
 
 import socket
-
+from time import time
 from errno import EWOULDBLOCK, EINTR
 
 from twisted.python import failure
