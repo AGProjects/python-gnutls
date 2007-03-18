@@ -93,7 +93,7 @@ while True:
             if buf.value.strip().lower() == 'quit':
                 print "Got quit command, closing connection"
                 break
-            buf.value = buf.value.rstrip() + " ACK!\n"
+            #buf.value = buf.value.rstrip() + " ACK!\r\n"
             gnutls_record_send(session, buf, len(buf.value))
     gnutls_bye(session, GNUTLS_SHUT_WR)
     new_sock.close()

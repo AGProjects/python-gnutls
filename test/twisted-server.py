@@ -16,7 +16,6 @@ from twisted.internet.error import CannotListenError, ConnectionDone
 from twisted.internet import reactor
 
 class EchoProtocol(LineOnlyReceiver):
-    delimiter = '\n'
 
     def connectionMade(self):
         session = self.transport.socket

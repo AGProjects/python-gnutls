@@ -15,7 +15,6 @@ from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet import reactor
 
 class EchoProtocol(LineOnlyReceiver):
-    delimiter = '\n'
 
     def connectionMade(self):
         self.sendLine('echo')

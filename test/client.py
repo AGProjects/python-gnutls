@@ -25,9 +25,9 @@ session = ClientSession(sock, cred)
 
 session.connect(('localhost', 10000))
 session.handshake()
-session.send("test\n")
+session.send("test\r\n")
 buf = session.recv(1024)
-print 'Received: ', buf
+print 'Received: ', buf.rstrip()
 session.bye()
 session.shutdown(2)
 session.close()

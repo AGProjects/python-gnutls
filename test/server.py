@@ -54,7 +54,7 @@ while True:
                         print "Got quit command, closing connection"
                         session.bye()
                         break
-                buf = buf.rstrip() + " ACK!\n"
+                #buf = buf.rstrip() + " ACK!\r\n"
                 session.send(buf)
             except Exception, e:
                 print "Error in reception: ", e
