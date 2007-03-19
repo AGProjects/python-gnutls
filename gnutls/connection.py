@@ -11,6 +11,7 @@
 __all__ = ['X509Credentials', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
 
 from time import time
+from socket import SHUT_RDWR
 
 from ctypes import *
 
@@ -152,7 +153,7 @@ class Session(object):
         self.__deinit(self._c_object)
 
     def __getattr__(self, name):
-        # called for: fileno, getpeername, getsockname, getsockopt, sesockopt, setblocking, shutdown, close underlying socket methods
+        ## Generic wrapper for the underlying socket methods and attributes.
         return getattr(self.socket, name)
 
     # Session properties
@@ -260,6 +261,9 @@ class Session(object):
             raise ValueError("Invalid argument: %s" % how)
         retcode = gnutls_bye(self._c_object, how)
         GNUTLSException.check(retcode)
+
+    def shutdown(self, how=SHUT_RDWR):
+        self.socket.shutdown(how)
 
     def verify_peer(self):
         # int gnutls_certificate_verify_peers2 (gnutls_session_t session, unsigned int * status)
