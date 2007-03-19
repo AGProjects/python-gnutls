@@ -30,7 +30,7 @@ CERT_INSECURE_ALGORITHM = GNUTLS_CERT_INSECURE_ALGORITHM
 class X509NameMeta(type):
     long_names = {'country': 'C',
                   'state': 'ST',
-                  'locatity': 'L',
+                  'locality': 'L',
                   'common_name': 'CN',
                   'organization': 'O',
                   'organization_unit': 'OU',
