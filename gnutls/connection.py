@@ -10,7 +10,7 @@
 
 __all__ = ['X509Credentials', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
 
-import time
+from time import time
 
 from ctypes import *
 
@@ -115,7 +115,7 @@ class X509Credentials(object):
 
     def check_certificate(self, cert):
         """Override this method to make additional checks on the certificate."""
-        now = time.time()
+        now = time()
         if cert.activation_time > now:
             raise CertificateError("certificate is not yet activated")        
         if cert.expiration_time < now:
