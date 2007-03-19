@@ -49,7 +49,7 @@ gnutls_certificate_set_dh_params(x509_cred, dh_params)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind(('0.0.0.0', PORT))
-sock.listen(10)
+sock.listen(100)
 
 print "Server started"
 

@@ -23,7 +23,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 ssf = ServerSessionFactory(sock, cred)
 ssf.bind(('0.0.0.0', 10000))
-ssf.listen(10)
+ssf.listen(100)
 
 while True:
     session, address = ssf.accept()
