@@ -1,0 +1,4 @@
+#!/bin/sh
+
+exec openssl s_server -cert certs/valid.crt -key certs/valid.key -CAfile certs/ca.pem -quiet -accept 10000 -www
+
