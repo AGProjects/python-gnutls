@@ -307,13 +307,8 @@ class ServerSessionFactory(object):
         #self.credentials.generate_dh_params()
 
     def __getattr__(self, name):
+        ## Generic wrapper for the underlying socket methods and attributes
         return getattr(self.socket, name)
-
-    def bind(self, address):
-        self.socket.bind(address)
-
-    def listen(self, backlog):
-        self.socket.listen(backlog)
 
     def accept(self):
         new_sock, address = self.socket.accept()
