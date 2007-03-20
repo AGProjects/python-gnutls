@@ -243,6 +243,7 @@ class Session(object):
 
     def send(self, data):
         # ssize_t gnutls_record_send (gnutls_session_t session, const void * data, size_t sizeofdata)
+        data = str(data)
         size = c_size_t(len(data))
         retcode = gnutls_record_send(self._c_object, data, size.value)
         GNUTLSException.check(retcode)
