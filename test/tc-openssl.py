@@ -1,8 +1,5 @@
 #!/usr/bin/python
 
-# Copyright 2005 Divmod, Inc.  See LICENSE file for details
-
-
 count = 100
 host, port = 'localhost', 10000
 
