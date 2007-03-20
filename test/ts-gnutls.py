@@ -17,7 +17,7 @@ from twisted.internet import reactor
 
 from gnutls.crypto import *
 from gnutls.errors import *
-from gnutls.interfaces.twisted import Credentials
+from gnutls.interfaces.twisted import X509Credentials
 
 class EchoProtocol(LineOnlyReceiver):
 
@@ -34,7 +34,7 @@ class EchoFactory(Factory):
     protocol = EchoProtocol
     noisy = False
 
-class DontVerifyCredentials(Credentials):
+class DontVerifyCredentials(X509Credentials):
     def verify_callback(self, peer_cert, preverify_status=None):
         pass
 

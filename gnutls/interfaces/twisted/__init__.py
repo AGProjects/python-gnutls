@@ -3,7 +3,7 @@
 
 """GNUTLS Twisted interface"""
 
-__all__ = ['Credentials', 'AsyncClientSession', 'AsyncServerSession', 'TLSMixin', 'TLSClient',
+__all__ = ['X509Credentials', 'AsyncClientSession', 'AsyncServerSession', 'TLSMixin', 'TLSClient',
            'TLSServer', 'TLSConnector', 'TLSPort', 'connectTLS', 'listenTLS']
 
 import socket
@@ -14,7 +14,8 @@ from twisted.python import failure
 from twisted.internet import main, base, address, tcp, error
 from twisted.internet.protocol import BaseProtocol
 
-from gnutls.connection import *
+from gnutls.connection import ClientSession, ServerSession, ServerSessionFactory
+from gnutls.connection import X509Credentials as _X509Credentials
 from gnutls.errors import *
 
 
@@ -56,12 +57,10 @@ class RecurentCall(object):
 
 class CertificateOK: pass
 
-class Credentials(X509Credentials):
-    
-    def __init__(self, cert=None, key=None, trusted=[], crl_list=[], verify_period=None):
-        X509Credentials.__init__(self, cert, key, trusted, crl_list)
-        self.verify_period = verify_period
-    
+class X509Credentials(_X509Credentials):
+    verify_peer = False
+    verify_period = None
+
     def verify_callback(self, peer_cert, preverify_status=None):
         # here you can take the decision not to drop the connection even
         # if the initial verify failed, by not raising the exception

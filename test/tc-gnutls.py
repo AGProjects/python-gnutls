@@ -18,13 +18,13 @@ from twisted.internet import reactor
 from gnutls.crypto import *
 from gnutls.connection import *
 from gnutls.errors import *
-from gnutls.interfaces.twisted import Credentials
+from gnutls.interfaces.twisted import X509Credentials
 
 active = count
 succesful = 0
 failed = 0
 
-class DontVerifyCredentials(Credentials):
+class DontVerifyCredentials(X509Credentials):
     def verify_callback(self, peer_cert, preverify_status=None):
         pass
 
