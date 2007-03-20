@@ -241,20 +241,20 @@ class Session(object):
         retcode = gnutls_handshake(self._c_object)
         GNUTLSException.check(retcode)
 
-    def send(self, buffer):
+    def send(self, data):
         # ssize_t gnutls_record_send (gnutls_session_t session, const void * data, size_t sizeofdata)
-        size = c_size_t(len(buffer))
-        retcode = gnutls_record_send(self._c_object, buffer, size.value)
+        size = c_size_t(len(data))
+        retcode = gnutls_record_send(self._c_object, data, size.value)
         GNUTLSException.check(retcode)
         return retcode
 
-    def recv(self, bufsize):
+    def recv(self, limit):
         # ssize_t gnutls_record_recv (gnutls_session_t session, void * data, size_t sizeofdata)
-        size = c_size_t(bufsize)
-        buffer = create_string_buffer(bufsize)
-        retcode = gnutls_record_recv(self._c_object, buffer, size.value)
+        size = c_size_t(limit)
+        data = create_string_buffer(limit)
+        retcode = gnutls_record_recv(self._c_object, data, size.value)
         GNUTLSException.check(retcode)
-        return buffer.value
+        return data.value
 
     def bye(self, how=GNUTLS_SHUT_RDWR):
         if how not in (GNUTLS_SHUT_RDWR, GNUTLS_SHUT_WR):
