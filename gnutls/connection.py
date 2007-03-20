@@ -265,6 +265,9 @@ class Session(object):
     def shutdown(self, how=SHUT_RDWR):
         self.socket.shutdown(how)
 
+    def close(self):
+        self.socket.close()
+
     def verify_peer(self):
         # int gnutls_certificate_verify_peers2 (gnutls_session_t session, unsigned int * status)
         status = c_uint()
@@ -310,7 +313,20 @@ class ServerSessionFactory(object):
         ## Generic wrapper for the underlying socket methods and attributes
         return getattr(self.socket, name)
 
+    def bind(self, address):
+        self.socket.bind(address)
+
+    def listen(self, backlog):
+        self.socket.listen(backlog)
+
     def accept(self):
         new_sock, address = self.socket.accept()
         session = self.session_class(new_sock, self.credentials)
         return (session, address)
+
+    def shutdown(self, how=SHUT_RDWR):
+        self.socket.shutdown(how)
+
+    def close(self):
+        self.socket.close()
+
