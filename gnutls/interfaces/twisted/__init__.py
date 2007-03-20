@@ -3,8 +3,8 @@
 
 """GNUTLS Twisted interface"""
 
-__all__ = ['X509Credentials', 'AsyncClientSession', 'AsyncServerSession', 'TLSMixin', 'TLSClient',
-           'TLSServer', 'TLSConnector', 'TLSPort', 'connectTLS', 'listenTLS']
+__all__ = ['X509Credentials', 'TLSMixin', 'TLSClient', 'TLSServer',
+           'TLSConnector', 'TLSPort', 'connectTLS', 'listenTLS']
 
 import socket
 from time import time
@@ -69,57 +69,30 @@ class X509Credentials(_X509Credentials):
         self.check_certificate(peer_cert)
         
 
-class AsyncClientSession(ClientSession):
-
-    def recv(self, bufsize):
-        try:
-            return ClientSession.recv(self, bufsize)
-        except OperationWouldBlock, e:
-            raise socket.error(EWOULDBLOCK)
-        except OperationInterrupted, e:
-            raise socket.error(EINTR)
-        except GNUTLSError:
-            return ''
-
-    def send(self, buffer):
-        try:
-            return ClientSession.send(self, str(buffer))
-        except OperationWouldBlock, e:
-            raise socket.error(EWOULDBLOCK)
-        except OperationInterrupted, e:
-            raise socket.error(EINTR)
-        except GNUTLSError:
-            return -1
-
-
-class AsyncServerSession(ServerSession):
-
-    def recv(self, bufsize):
-        try:
-            return ServerSession.recv(self, bufsize)
-        except OperationWouldBlock, e:
-            raise socket.error(EWOULDBLOCK)
-        except OperationInterrupted, e:
-            raise socket.error(EINTR)
-        except GNUTLSError:
-            return ''
-
-    def send(self, buffer):
-        try:
-            return ServerSession.send(self, str(buffer))
-        except OperationWouldBlock, e:
-            raise socket.error(EWOULDBLOCK)
-        except OperationInterrupted, e:
-            raise socket.error(EINTR)
-        except GNUTLSError:
-            return -1
-
 
 class TLSMixin:
     """TLS specific functionality common to both clients and servers"""
 
     def getPeerCertificate(self):
         return self.socket.peer_certificate
+
+    def doRead(self):
+        try:
+            return tcp.Connection.doRead(self)
+        except (OperationWouldBlock, OperationInterrupted):
+            return
+        except GNUTLSError, e:
+            return e
+
+    def writeSomeData(self, data):
+        try:
+            return tcp.Connection.writeSomeData(self, data)
+        except OperationInterrupted:
+            return self.writeSomeData(data)
+        except OperationWouldBlock:
+            return 0
+        except GNUTLSError, e:
+            return e
 
     def _postLoseConnection(self):
         self.doRead = self._sendBye
@@ -148,7 +121,7 @@ class TLSClient(TLSMixin, tcp.Client):
 
     def createInternetSocket(self):
         sock = tcp.Client.createInternetSocket(self)
-        return AsyncClientSession(sock, self.credentials)
+        return ClientSession(sock, self.credentials)
 
     def _recurentVerify(self):
         if not self.connected or self.disconnecting:
@@ -325,7 +298,7 @@ class TLSPort(tcp.Port):
         """(internal) create an SSL socket
         """
         sock = tcp.Port.createInternetSocket(self)
-        return ServerSessionFactory(sock, self.credentials, AsyncServerSession)
+        return ServerSessionFactory(sock, self.credentials, ServerSession)
 
     def _preMakeConnection(self, transport):
         transport.protocol.makeConnection = lambda *args: None
