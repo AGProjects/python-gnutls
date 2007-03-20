@@ -137,6 +137,8 @@ class TLSClient(TLSMixin, tcp.Client):
     def _verifyPeer(self):
         session = self.socket
         credentials = session.credentials
+        if not credentials.verify_peer:
+            return
         try:
             session.verify_peer()
         except Exception, e:
@@ -148,9 +150,8 @@ class TLSClient(TLSMixin, tcp.Client):
         
         ## If we got here without raising an exception, the peer verification was
         ## succesful and we can setup the recurent verification (if it was asked for)
-        verify_period = getattr(credentials, 'verify_period', None)
-        if verify_period and verify_period > 0:
-            self.__watchdog = RecurentCall(verify_period, self._recurentVerify)
+        if credentials.verify_period > 0:
+            self.__watchdog = RecurentCall(credentials.verify_period, self._recurentVerify)
 
     def doHandshake(self):
         try:
@@ -231,6 +232,8 @@ class TLSServer(TLSMixin, tcp.Server):
     def _verifyPeer(self):
         session = self.socket
         credentials = session.credentials
+        if not credentials.verify_peer:
+            return
         try:
             session.verify_peer()
         except Exception, e:
@@ -242,9 +245,8 @@ class TLSServer(TLSMixin, tcp.Server):
 
         ## If we got here without raising an exception, the peer verification was
         ## succesful and we can setup the recurent verification (if it was asked for)
-        verify_period = getattr(credentials, 'verify_period', None)
-        if verify_period and verify_period > 0:
-            self.__watchdog = RecurentCall(verify_period, self._recurentVerify)
+        if credentials.verify_period > 0:
+            self.__watchdog = RecurentCall(credentials.verify_period, self._recurentVerify)
 
     def doHandshake(self):
         try:

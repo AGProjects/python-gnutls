@@ -24,10 +24,6 @@ active = count
 succesful = 0
 failed = 0
 
-class DontVerifyCredentials(X509Credentials):
-    def verify_callback(self, peer_cert, preverify_status=None):
-        pass
-
 class EchoProtocol(LineOnlyReceiver):
 
     def connectionMade(self):
@@ -60,7 +56,7 @@ cert = X509Certificate(open(certs_path + '/valid.crt').read())
 key = X509PrivateKey(open(certs_path + '/valid.key').read())
 ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
-cred = DontVerifyCredentials(cert, key, [ca])
+cred = X509Credentials(cert, key, [ca])
 
 echo_factory = EchoFactory()
 

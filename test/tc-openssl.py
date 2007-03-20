@@ -205,7 +205,7 @@ certs_path = os.path.join(script_path, 'certs')
 cert = Certificate(certs_path + '/valid.crt')
 key = PrivateKey(certs_path + '/valid.key')
 ca = Certificate(certs_path + '/ca.pem')
-ctx_factory = OpenSSLContextFactory(key, cert, verify=True, caCerts=[ca])
+ctx_factory = OpenSSLContextFactory(key, cert, verify=False, caCerts=[ca])
 
 echo_factory = EchoFactory()
 
