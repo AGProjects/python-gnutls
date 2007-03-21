@@ -31,9 +31,9 @@ static int failed = 0;
 
 static Bool verify_peer = False;
 
-static int verbose = False;
+static int verbose = 0;
 
-static struct timeval start={0,0}, end={0, 0};
+static struct timeval start={0, 0}, end={0, 0};
 
 typedef struct TLSSession {
    gnutls_session_t session;     /* the TLS session */
@@ -65,6 +65,7 @@ my_exit(void)
     if (failed) {
         printf("%d out of %d connection have failed\n", failed, TRIES);
     }
+    
     exit(0);
 }
 
