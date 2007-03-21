@@ -13,5 +13,17 @@ proj.file-list = [loc('gnutls/connection.py'),
                   loc('gnutls/library/functions.py'),
                   loc('gnutls/library/types.py'),
                   loc('gnutls/library/__init__.py'),
-                  loc('gnutls/__init__.py')]
+                  loc('gnutls/__init__.py'),
+                  loc('test/client.py'),
+                  loc('test/crypto.py'),
+                  loc('test/gnutls-server'),
+                  loc('test/openssl-server'),
+                  loc('test/server-low-level-example.py'),
+                  loc('test/server.py'),
+                  loc('test/tc-gnutls.py'),
+                  loc('test/tc-openssl.py'),
+                  loc('test/ts-gnutls.py'),
+                  loc('test/ts-openssl.py'),
+                  loc('test/twisted-client.py'),
+                  loc('test/twisted-server.py')]
 proj.file-type = 'shared'
