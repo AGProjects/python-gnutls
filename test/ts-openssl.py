@@ -5,6 +5,8 @@ script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
 gnutls_path = os.path.realpath(os.path.join(script_path, '..'))
 sys.path[0:0] = [gnutls_path]
 
+from optparse import OptionParser
+
 from twisted.internet import pollreactor; pollreactor.install()
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineOnlyReceiver
@@ -179,15 +181,26 @@ class EchoFactory(Factory):
     protocol = EchoProtocol
     noisy = False
 
+
+parser = OptionParser()
+parser.add_option("-p", "--port", dest="port", type="int", default=10000,
+                  help="specify port to listen on (default = 10000)",
+                  metavar="port")
+parser.add_option("-v", "--verify", dest="verify", action="store_true", default=0,
+                  help="verify peer certificates (default = no)")
+
+options, args = parser.parse_args()
+
+
 certs_path = os.path.join(script_path, 'certs')
 
 cert = Certificate(certs_path + '/valid.crt')
 key = PrivateKey(certs_path + '/valid.key')
 ca = Certificate(certs_path + '/ca.pem')
-ctx_factory = OpenSSLContextFactory(key, cert, verify=False, caCerts=[ca])
+ctx_factory = OpenSSLContextFactory(key, cert, verify=options.verify, caCerts=[ca])
 
 echo_factory = EchoFactory()
 
-reactor.listenSSL(10000, EchoFactory(), ctx_factory)
+reactor.listenSSL(options.port, EchoFactory(), ctx_factory)
 reactor.run()
 

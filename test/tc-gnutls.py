@@ -10,6 +10,8 @@ sys.path[0:0] = [gnutls_path]
 
 from application.debug.timing import timer
 
+from optparse import OptionParser
+
 from twisted.internet import pollreactor; pollreactor.install()
 from twisted.internet.protocol import ClientFactory
 from twisted.protocols.basic import LineOnlyReceiver
@@ -50,25 +52,34 @@ class EchoFactory(ClientFactory):
         if active == 0:
             reactor.stop()
 
+
+parser = OptionParser(usage="%prog [host]")
+parser.add_option("-p", "--port", dest="port", type="int", default=port,
+                  help="specify port to connect (default=%s)" % port,
+                  metavar="port")
+parser.add_option("-v", "--verify", dest="verify", action="store_true",
+                  default=False, help="verify peer certificates")
+parser.add_option("-n", "--no-certs", dest="send_certs", action="store_false",
+                  default=True, help="do not send any certificates")
+
+options, args = parser.parse_args()
+
+host, port = args and args[0] or host, options.port
+
+
 certs_path = os.path.join(script_path, 'certs')
 
 cert = X509Certificate(open(certs_path + '/valid.crt').read())
 key = X509PrivateKey(open(certs_path + '/valid.key').read())
 ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
-cred = X509Credentials(cert, key, [ca])
+if options.send_certs:
+    cred = X509Credentials(cert, key, [ca])
+else:
+    cred = X509Credentials(trusted=[ca])
+cred.verify_peer = options.verify
 
 echo_factory = EchoFactory()
-
-from optparse import OptionParser
-parser = OptionParser(usage="%prog [host]")
-parser.add_option("-p", "--port", dest="port", type="int", default=port,
-                  help="specify port to connect (default=%s)" % port,
-                  metavar="port")
-
-options, args = parser.parse_args()
-
-host, port = args and args[0] or host, options.port
 
 t = timer(count)
 

@@ -10,6 +10,8 @@ sys.path[0:0] = [gnutls_path]
 
 from application.debug.timing import timer
 
+from optparse import OptionParser
+
 from twisted.internet import pollreactor; pollreactor.install()
 from twisted.internet.protocol import ClientFactory
 from twisted.protocols.basic import LineOnlyReceiver
@@ -200,24 +202,32 @@ class EchoFactory(ClientFactory):
         if active == 0:
             reactor.stop()
 
+
+parser = OptionParser(usage="%prog [host]")
+parser.add_option("-p", "--port", dest="port", type="int", default=port,
+                  help="specify port to connect (default=%s)" % port,
+                  metavar="port")
+parser.add_option("-v", "--verify", dest="verify", action="store_true",
+                  default=False, help="verify peer certificates")
+parser.add_option("-n", "--no-certs", dest="send_certs", action="store_false",
+                  default=True, help="do not send any certificates")
+
+options, args = parser.parse_args()
+
+host, port = args and args[0] or host, options.port
+
+
 certs_path = os.path.join(script_path, 'certs')
 
 cert = Certificate(certs_path + '/valid.crt')
 key = PrivateKey(certs_path + '/valid.key')
 ca = Certificate(certs_path + '/ca.pem')
-ctx_factory = OpenSSLContextFactory(key, cert, verify=False, caCerts=[ca])
+if options.send_certs:
+    ctx_factory = OpenSSLContextFactory(key, cert, verify=options.verify, caCerts=[ca])
+else:
+    ctx_factory = OpenSSLContextFactory(verify=options.verify, caCerts=[ca])
 
 echo_factory = EchoFactory()
-
-from optparse import OptionParser
-parser = OptionParser(usage="%prog [host]")
-parser.add_option("-p", "--port", dest="port", type="int", default=port,
-                  help="specify port to connect (default=%s)" % port,
-                  metavar="port")
-
-options, args = parser.parse_args()
-
-host, port = args and args[0] or host, options.port
 
 t = timer(count)
 
