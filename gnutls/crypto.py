@@ -68,9 +68,14 @@ class X509Name(str):
 
 
 class X509Certificate(object):
+
+    def __new__(cls, *args, **kwargs):
+        instance = object.__new__(cls)
+        instance.__deinit = gnutls_x509_crt_deinit
+        instance._c_object = gnutls_x509_crt_t()
+        return instance
+
     def __init__(self, buffer, format=X509_FMT_PEM):
-        self.__deinit = gnutls_x509_crt_deinit
-        self._c_object = gnutls_x509_crt_t()
         if format not in (X509_FMT_PEM, X509_FMT_DER):
             raise ValueError("Incorrect format: " + format)
         # int gnutls_x509_crt_init (gnutls_x509_crt_t * cert)
@@ -192,9 +197,13 @@ class X509Certificate(object):
 
 
 class X509PrivateKey(object):
+    def __new__(cls, *args, **kwargs):
+        instance = object.__new__(cls)
+        instance.__deinit = gnutls_x509_privkey_deinit
+        instance._c_object = gnutls_x509_privkey_t()
+        return instance
+
     def __init__(self, buffer, format=X509_FMT_PEM):
-        self.__deinit = gnutls_x509_privkey_deinit
-        self._c_object = gnutls_x509_privkey_t()
         if format not in (X509_FMT_PEM, X509_FMT_DER):
             raise ValueError("Incorrect format: " + format)
         # int gnutls_x509_privkey_init (gnutls_x509_privkey_t * key)
@@ -210,9 +219,13 @@ class X509PrivateKey(object):
 
 
 class X509CRL(object):
+    def __new__(cls, *args, **kwargs):
+        instance = object.__new__(cls)
+        instance.__deinit = gnutls_x509_crl_deinit
+        instance._c_object = gnutls_x509_crl_t()
+        return instance
+
     def __init__(self, buffer, format=X509_FMT_PEM):
-        self.__deinit = gnutls_x509_crl_deinit
-        self._c_object = gnutls_x509_crl_t()
         if format not in (X509_FMT_PEM, X509_FMT_DER):
             raise ValueError("Incorrect format: " + format)
         # int gnutls_x509_crl_init (gnutls_x509_crl_t * crl)
@@ -270,9 +283,13 @@ class X509CRL(object):
 
 
 class DHParams(object):
+    def __new__(cls, *args, **kwargs):
+        instance = object.__new__(cls)
+        instance.__deinit = gnutls_dh_params_deinit
+        instance._c_object = gnutls_dh_params_t()
+        return instance
+
     def __init__(self, bits=1024):
-        self.__deinit = gnutls_dh_params_deinit
-        self._c_object = gnutls_dh_params_t()
         gnutls_dh_params_init(byref(self._c_object))
         gnutls_dh_params_generate2(self._c_object, bits)
 
@@ -287,9 +304,13 @@ class DHParams(object):
 
 
 class RSAParams(object):
+    def __new__(cls, *args, **kwargs):
+        instance = object.__new__(cls)
+        instance.__deinit = gnutls_rsa_params_deinit
+        instance._c_object = gnutls_rsa_params_t()
+        return instance
+
     def __init__(self, bits=1024):
-        self.__deinit = gnutls_rsa_params_deinit
-        self._c_object = gnutls_rsa_params_t()
         gnutls_rsa_params_init(byref(self._c_object))
         gnutls_rsa_params_generate2(self._c_object, bits)
 

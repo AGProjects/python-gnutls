@@ -29,11 +29,15 @@ class X509Credentials(object):
     dh_params  = None
     rsa_params = None
 
+    def __new__(cls, *args, **kwargs):
+        instance = object.__new__(cls)
+        instance.__deinit = gnutls_certificate_free_credentials
+        instance._c_object = gnutls_certificate_credentials_t()
+        return instance
+
     def __init__(self, cert=None, key=None, trusted=[], crl_list=[]):
         """Credentials object containing an X509 certificate, a private key and 
            optionally a list of trusted CAs and a list of CRLs."""
-        self.__deinit = gnutls_certificate_free_credentials
-        self._c_object = gnutls_certificate_credentials_t()
         retcode = gnutls_certificate_allocate_credentials(byref(self._c_object))
         GNUTLSException.check(retcode)
         if (key is None) != (cert is None):
@@ -131,11 +135,15 @@ class Session(object):
 
     session_type = None ## placeholder for GNUTLS_SERVER or GNUTLS_CLIENT as defined by subclass
 
-    def __init__(self, socket, credentials):
-        self.__deinit = gnutls_deinit
-        self._c_object = gnutls_session_t()
-        if self.__class__ is Session:
+    def __new__(cls, *args, **kwargs):
+        if cls is Session:
             raise RuntimeError("Session cannot be instantiated directly")
+        instance = object.__new__(cls)
+        instance.__deinit = gnutls_deinit
+        instance._c_object = gnutls_session_t()
+        return instance
+
+    def __init__(self, socket, credentials):
         # int gnutls_init (gnutls_session_t * session, gnutls_connection_end_t con_end)
         retcode = gnutls_init(byref(self._c_object), self.session_type)
         GNUTLSException.check(retcode)
