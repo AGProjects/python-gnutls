@@ -307,6 +307,8 @@ class Session(object):
         raw_cert = cert_list[0] # we should get the address of the first element in the list
         return X509Certificate(raw_cert, X509_FMT_DER)
 
+    # Session methods
+
     def _update_params(self):
         """Update the priorities of the session params using the credentials."""
         def c_priority_list(priorities):
@@ -327,8 +329,6 @@ class Session(object):
         # int gnutls_compression_set_priority (gnutls_session_t session, const int * list)
         retcode = gnutls_compression_set_priority(self._c_object, c_priority_list(self.credentials.session_params.compressions))
         GNUTLSException.check(retcode)
-
-    # Session methods
 
     def handshake(self):
         # int gnutls_handshake (gnutls_session_t session)
