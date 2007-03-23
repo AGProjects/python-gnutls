@@ -9,20 +9,24 @@
 __all__ = ['X509Credentials', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
 
 from time import time
-from socket import SHUT_RDWR
+from socket import SHUT_RDWR as SOCKET_SHUT_RDWR
 
 from ctypes import *
 
-from gnutls.errors import *
+from gnutls.constants import *
 from gnutls.crypto import *
-from gnutls.library.constants import *
+from gnutls.errors import *
+
+from gnutls.library.constants import GNUTLS_SERVER, GNUTLS_CLIENT, GNUTLS_CRT_X509
+from gnutls.library.constants import GNUTLS_CERT_INVALID, GNUTLS_CERT_REVOKED, GNUTLS_CERT_INSECURE_ALGORITHM
+from gnutls.library.constants import GNUTLS_CERT_SIGNER_NOT_FOUND, GNUTLS_CERT_SIGNER_NOT_CA
+from gnutls.library.constants import * # temporary -Dan
 from gnutls.library.types import *
 from gnutls.library.functions import *
-from gnutls.library.constants import *
 
 
 class ProtocolValidator(tuple):
-    _protocols      = set((GNUTLS_TLS1_1, GNUTLS_TLS1_0, GNUTLS_SSL3))
+    _protocols = set((PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3))
 
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
@@ -33,7 +37,7 @@ class ProtocolValidator(tuple):
 
 
 class KeyExchangeValidator(tuple):
-    _algorithms      = set((GNUTLS_KX_RSA, GNUTLS_KX_DHE_DSS, GNUTLS_KX_DHE_RSA))
+    _algorithms = set((KX_RSA, KX_DHE_DSS, KX_DHE_RSA, KX_RSA_EXPORT, KX_ANON_DH))
 
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
@@ -44,7 +48,7 @@ class KeyExchangeValidator(tuple):
 
 
 class CipherValidator(tuple):
-    _ciphers      = set((GNUTLS_CIPHER_AES_128_CBC, GNUTLS_CIPHER_3DES_CBC, GNUTLS_CIPHER_ARCFOUR_128))
+    _ciphers = set((CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128, CIPHER_AES_256_CBC, CIPHER_DES_CBC))
 
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
@@ -55,7 +59,7 @@ class CipherValidator(tuple):
 
 
 class MACValidator(tuple):
-    _algorithms      = set((GNUTLS_MAC_SHA1, GNUTLS_MAC_MD5, GNUTLS_MAC_RMD160))
+    _algorithms = set((MAC_SHA1, MAC_MD5, MAC_RMD160))
 
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
@@ -66,7 +70,7 @@ class MACValidator(tuple):
 
 
 class CompressionValidator(tuple):
-    _compressions     = set((GNUTLS_COMP_DEFLATE, GNUTLS_COMP_LZO, GNUTLS_COMP_NULL))
+    _compressions = set((COMP_DEFLATE, COMP_LZO, COMP_NULL))
 
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
@@ -78,20 +82,20 @@ class CompressionValidator(tuple):
 
 class SessionParams(object):
     _default_kx_algorithms = {
-        GNUTLS_CRD_CERTIFICATE: (GNUTLS_KX_RSA, GNUTLS_KX_DHE_DSS, GNUTLS_KX_DHE_RSA),
-        GNUTLS_CRD_ANON: (GNUTLS_KX_ANON_DH,)}
+        CRED_CERTIFICATE: (KX_RSA, KX_DHE_DSS, KX_DHE_RSA),
+        CRED_ANON: (KX_ANON_DH,)}
 
     def __new__(cls, credentials_type):
         if credentials_type not in cls._default_kx_algorithms:
-            raise TypeError("Unknown credentials type: %d" % credentials_type)
+            raise TypeError("Unknown credentials type: %r" % credentials_type)
         return object.__new__(cls)
 
     def __init__(self, credentials_type):
-        self._protocols = (GNUTLS_TLS1_1, GNUTLS_TLS1_0, GNUTLS_SSL3)
+        self._protocols = (PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3)
         self._kx_algorithms = self._default_kx_algorithms[credentials_type]
-        self._ciphers = (GNUTLS_CIPHER_AES_128_CBC, GNUTLS_CIPHER_3DES_CBC, GNUTLS_CIPHER_ARCFOUR_128)
-        self._mac_algorithms = (GNUTLS_MAC_SHA1, GNUTLS_MAC_MD5, GNUTLS_MAC_RMD160)
-        self._compressions = (GNUTLS_COMP_NULL,)
+        self._ciphers = (CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128)
+        self._mac_algorithms = (MAC_SHA1, MAC_MD5, MAC_RMD160)
+        self._compressions = (COMP_NULL,)
 
     def _get_protocols(self):
         return self._protocols
@@ -156,7 +160,7 @@ class X509Credentials(object):
         # this generates core dumping - gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
         self._max_depth = 5
         self._max_bits  = 8200
-        self._type = GNUTLS_CRD_CERTIFICATE
+        self._type = CRED_CERTIFICATE
         self._trusted = ()
         self.cert = cert
         self.key = key
@@ -392,13 +396,13 @@ class Session(object):
         GNUTLSException.check(retcode)
         return data.value
 
-    def bye(self, how=GNUTLS_SHUT_RDWR):
-        if how not in (GNUTLS_SHUT_RDWR, GNUTLS_SHUT_WR):
+    def bye(self, how=SHUT_RDWR):
+        if how not in (SHUT_RDWR, SHUT_WR):
             raise ValueError("Invalid argument: %s" % how)
         retcode = gnutls_bye(self._c_object, how)
         GNUTLSException.check(retcode)
 
-    def shutdown(self, how=SHUT_RDWR):
+    def shutdown(self, how=SOCKET_SHUT_RDWR):
         self.socket.shutdown(how)
 
     def close(self):
@@ -431,7 +435,7 @@ class ServerSession(Session):
 
     def __init__(self, socket, credentials):
         Session.__init__(self, socket, credentials)
-        gnutls_certificate_server_set_request(self._c_object, GNUTLS_CERT_REQUEST)
+        gnutls_certificate_server_set_request(self._c_object, CERT_REQUEST)
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
 
 
@@ -460,7 +464,7 @@ class ServerSessionFactory(object):
         session = self.session_class(new_sock, self.credentials)
         return (session, address)
 
-    def shutdown(self, how=SHUT_RDWR):
+    def shutdown(self, how=SOCKET_SHUT_RDWR):
         self.socket.shutdown(how)
 
     def close(self):

@@ -3,9 +3,11 @@
 
 """GNUTLS errors"""
 
-__all__ = ['Error', 'GNUTLSError', 'OperationWouldBlock', 'OperationInterrupted', 'CertificateError', 'X509NameError', 'GNUTLSException']
+__all__ = ['Error', 'GNUTLSError', 'OperationWouldBlock', 'OperationInterrupted', 'CertificateError',
+           'X509NameError', 'GNUTLSException']
 
-from gnutls.library.constants import *
+from gnutls.library.constants import GNUTLS_E_AGAIN, GNUTLS_E_INTERRUPTED, GNUTLS_E_NO_CERTIFICATE_FOUND
+from gnutls.library.constants import GNUTLS_E_MEMORY_ERROR, GNUTLS_E_SHORT_MEMORY_BUFFER
 from gnutls.library.functions import gnutls_strerror
 
 class Error(Exception): pass

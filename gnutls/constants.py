@@ -11,10 +11,28 @@ __all__ = [
     'CERT_INVALID', 'CERT_REVOKED', 'CERT_SIGNER_NOT_FOUND', 'CERT_SIGNER_NOT_CA', 'CERT_INSECURE_ALGORITHM',
     
     ## GNUTLS session protocols
-    'PROTO_TLS1_1', 'PROTO_TLS1_0', 'PROTO_SSL3'
+    'PROTO_TLS1_1', 'PROTO_TLS1_0', 'PROTO_SSL3',
+    
+    ## Key exchange algorithms
+    'KX_RSA', 'KX_DHE_DSS', 'KX_DHE_RSA', 'KX_RSA_EXPORT', 'KX_ANON_DH',
+    
+    ## Ciphers
+    'CIPHER_AES_128_CBC', 'CIPHER_3DES_CBC', 'CIPHER_ARCFOUR_128', 'CIPHER_AES_256_CBC', 'CIPHER_DES_CBC',
+    
+    ## MAC algorithms
+    'MAC_SHA1', 'MAC_MD5', 'MAC_RMD160',
+    
+    ## Compressions
+    'COMP_DEFLATE', 'COMP_LZO', 'COMP_NULL',
+    
+    ## Miscelaneous
+    'CRED_CERTIFICATE', 'CRED_ANON', 'CERT_REQUEST', 'CERT_REQUIRE', 'SHUT_RDWR', 'SHUT_WR'
 ]
 
-__name_map__ = {'PROTO_TLS1_1': 'TLS1_1', 'PROTO_TLS1_0': 'TLS1_0', 'PROTO_SSL3': 'SSL3'}
+__name_map__ = {
+    'PROTO_TLS1_1': 'TLS1_1', 'PROTO_TLS1_0': 'TLS1_0', 'PROTO_SSL3': 'SSL3',
+    'CRED_CERTIFICATE': 'CRD_CERTIFICATE', 'CRED_ANON': 'CRD_ANON'
+}
 
 
 from gnutls.library import constants

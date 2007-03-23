@@ -5,26 +5,17 @@
 
 # TODO: better error handling and check the error hierarchy
 
-__all__ = ['X509_FMT_DER', 'X509_FMT_PEM', 'X509Certificate', 'X509CRL', 'X509PrivateKey', 'DHParams', 'RSAParams']
+__all__ = ['X509Name', 'X509Certificate', 'X509CRL', 'X509PrivateKey', 'DHParams', 'RSAParams']
 
 import re
 from ctypes import *
 
+from gnutls.constants import X509_FMT_DER, X509_FMT_PEM
 from gnutls.errors import *
-from gnutls.library.constants import *
+
+from gnutls.library.constants import GNUTLS_E_SHORT_MEMORY_BUFFER
 from gnutls.library.types import *
 from gnutls.library.functions import *
-
-# Certificate format
-X509_FMT_DER = GNUTLS_X509_FMT_DER
-X509_FMT_PEM = GNUTLS_X509_FMT_PEM
-
-# enum gnutls_certificate_status_t; used in the verify process
-CERT_INVALID            = GNUTLS_CERT_INVALID
-CERT_REVOKED            = GNUTLS_CERT_REVOKED
-CERT_SIGNER_NOT_FOUND   = GNUTLS_CERT_SIGNER_NOT_FOUND
-CERT_SIGNER_NOT_CA      = GNUTLS_CERT_SIGNER_NOT_CA
-CERT_INSECURE_ALGORITHM = GNUTLS_CERT_INSECURE_ALGORITHM
 
 
 class X509NameMeta(type):
