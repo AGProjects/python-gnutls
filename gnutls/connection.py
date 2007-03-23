@@ -4,9 +4,7 @@
 """GNUTLS connection support"""
 
 # TODO
-# - decide on the best method to check certificate revocation
 # - make the server params callback function work
-# - more tests
 
 __all__ = ['X509Credentials', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
 
