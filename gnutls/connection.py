@@ -18,6 +18,62 @@ from gnutls.crypto import *
 from gnutls.library.constants import *
 from gnutls.library.types import *
 from gnutls.library.functions import *
+from gnutls.library.constants import *
+
+
+class ProtocolValidator(tuple):
+    _protocols      = set((GNUTLS_TLS1_1, GNUTLS_TLS1_0, GNUTLS_SSL3))
+
+    def __new__(cls, arg):
+        if not isinstance(arg, (tuple, list)):
+            raise TypeError("Argument must be a tuple or list")
+        if not cls._protocols.issuperset(set(arg)):
+            raise ValueError("Got invalid protocol")
+        return tuple.__new__(cls, arg)
+
+
+class KeyExchangeValidator(tuple):
+    _algorithms      = set((GNUTLS_KX_RSA, GNUTLS_KX_DHE_DSS, GNUTLS_KX_DHE_RSA))
+
+    def __new__(cls, arg):
+        if not isinstance(arg, (tuple, list)):
+            raise TypeError("Argument must be a tuple or list")
+        if not cls._algorithms.issuperset(set(arg)):
+            raise ValueError("Got invalid key exchange algorithm")
+        return tuple.__new__(cls, arg)
+
+
+class CipherValidator(tuple):
+    _ciphers      = set((GNUTLS_CIPHER_AES_128_CBC, GNUTLS_CIPHER_3DES_CBC, GNUTLS_CIPHER_ARCFOUR_128))
+
+    def __new__(cls, arg):
+        if not isinstance(arg, (tuple, list)):
+            raise TypeError("Argument must be a tuple or list")
+        if not cls._ciphers.issuperset(set(arg)):
+            raise ValueError("Got invalid cipher")
+        return tuple.__new__(cls, arg)
+
+
+class MACValidator(tuple):
+    _algorithms      = set((GNUTLS_MAC_SHA1, GNUTLS_MAC_MD5, GNUTLS_MAC_RMD160))
+
+    def __new__(cls, arg):
+        if not isinstance(arg, (tuple, list)):
+            raise TypeError("Argument must be a tuple or list")
+        if not cls._algorithms.issuperset(set(arg)):
+            raise ValueError("Got invalid MAC algorithm")
+        return tuple.__new__(cls, arg)
+
+
+class CompressionValidator(tuple):
+    _compressions     = set((GNUTLS_COMP_DEFLATE, GNUTLS_COMP_LZO, GNUTLS_COMP_NULL))
+
+    def __new__(cls, arg):
+        if not isinstance(arg, (tuple, list)):
+            raise TypeError("Argument must be a tuple or list")
+        if not cls._compressions.issuperset(set(arg)):
+            raise ValueError("Got invalid compression")
+        return tuple.__new__(cls, arg)
 
 
 class SessionParams(object):
@@ -36,6 +92,41 @@ class SessionParams(object):
         self._ciphers = (GNUTLS_CIPHER_AES_128_CBC, GNUTLS_CIPHER_3DES_CBC, GNUTLS_CIPHER_ARCFOUR_128)
         self._mac_algorithms = (GNUTLS_MAC_SHA1, GNUTLS_MAC_MD5, GNUTLS_MAC_RMD160)
         self._compressions = (GNUTLS_COMP_NULL,)
+
+    def _get_protocols(self):
+        return self._protocols
+    def _set_protocols(self, protocols):
+        self._protocols = ProtocolValidator(protocols)
+    protocols = property(_get_protocols, _set_protocols)
+    del _get_protocols, _set_protocols
+
+    def _get_kx_algorithms(self):
+        return self._kx_algorithms
+    def _set_kx_algorithms(self, algorithms):
+        self._kx_algorithms =  KeyExchangeValidator(algorithms)
+    kx_algorithms = property(_get_kx_algorithms, _set_kx_algorithms)
+    del _get_kx_algorithms, _set_kx_algorithms
+
+    def _get_ciphers(self):
+        return self._ciphers
+    def _set_ciphers(self, ciphers):
+        self._ciphers =  CipherValidator(ciphers)
+    ciphers = property(_get_ciphers, _set_ciphers)
+    del _get_ciphers, _set_ciphers
+
+    def _get_mac_algorithms(self):
+        return self._mac_algorithms
+    def _set_mac_algorithms(self, alogrithms):
+        self._mac_algorithms = MACValidator(alogrithms)
+    mac_algorithms = property(_get_mac_algorithms, _set_mac_algorithms)
+    del _get_mac_algorithms, _set_mac_algorithms
+
+    def _get_compressions(self):
+        return self._compressions
+    def _set_compressions(self, compressions):
+        self._compressions = CompressionValidator(compressions)
+    compressions = property(_get_compressions, _set_compressions)
+    del _get_compressions, _set_compressions
 
 
 class X509Credentials(object):
@@ -164,15 +255,13 @@ class Session(object):
         # int gnutls_init (gnutls_session_t * session, gnutls_connection_end_t con_end)
         retcode = gnutls_init(byref(self._c_object), self.session_type)
         GNUTLSException.check(retcode)
-        # int gnutls_set_default_priority (gnutls_session_t session)
-        retcode = gnutls_set_default_priority(self._c_object)
-        GNUTLSException.check(retcode)
         # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
         # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
         self.socket = socket
         self.credentials = credentials
+        self._update_params()
 
     def __del__(self):
         self.__deinit(self._c_object)
@@ -258,6 +347,27 @@ class Session(object):
             return None
         raw_cert = cert_list[0] # we should get the address of the first element in the list
         return X509Certificate(raw_cert, X509_FMT_DER)
+
+    def _update_params(self):
+        """Update the priorities of the session params using the credentials."""
+        def c_priority_list(priorities):
+            size = len(priorities) + 1
+            return (c_int * (size)) (*priorities)
+        # int gnutls_protocol_set_priority (gnutls_session_t session, const int * list)
+        retcode = gnutls_protocol_set_priority(self._c_object, c_priority_list(self.credentials.session_params.protocols))
+        GNUTLSException.check(retcode)
+        # int gnutls_kx_set_priority (gnutls_session_t session, const int * list)
+        retcode = gnutls_kx_set_priority(self._c_object, c_priority_list(self.credentials.session_params.kx_algorithms))
+        GNUTLSException.check(retcode)
+        # int gnutls_cipher_set_priority (gnutls_session_t session, const int * list)
+        retcode = gnutls_cipher_set_priority(self._c_object, c_priority_list(self.credentials.session_params.ciphers))
+        GNUTLSException.check(retcode)
+        # int gnutls_mac_set_priority (gnutls_session_t session, const int * list)
+        retcode = gnutls_mac_set_priority(self._c_object, c_priority_list(self.credentials.session_params.mac_algorithms))
+        GNUTLSException.check(retcode)
+        # int gnutls_compression_set_priority (gnutls_session_t session, const int * list)
+        retcode = gnutls_compression_set_priority(self._c_object, c_priority_list(self.credentials.session_params.compressions))
+        GNUTLSException.check(retcode)
 
     # Session methods
 
