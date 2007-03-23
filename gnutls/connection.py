@@ -22,6 +22,24 @@ from gnutls.library.types import *
 from gnutls.library.functions import *
 
 
+class SessionParams(object):
+    _default_kx_algorithms = {
+        GNUTLS_CRD_CERTIFICATE: (GNUTLS_KX_RSA, GNUTLS_KX_DHE_DSS, GNUTLS_KX_DHE_RSA),
+        GNUTLS_CRD_ANON: (GNUTLS_KX_ANON_DH,)}
+
+    def __new__(cls, credentials_type):
+        if credentials_type not in cls._default_kx_algorithms:
+            raise TypeError("Unknown credentials type: %d" % credentials_type)
+        return object.__new__(cls)
+
+    def __init__(self, credentials_type):
+        self._protocols = (GNUTLS_TLS1_1, GNUTLS_TLS1_0, GNUTLS_SSL3)
+        self._kx_algorithms = self._default_kx_algorithms[credentials_type]
+        self._ciphers = (GNUTLS_CIPHER_AES_128_CBC, GNUTLS_CIPHER_3DES_CBC, GNUTLS_CIPHER_ARCFOUR_128)
+        self._mac_algorithms = (GNUTLS_MAC_SHA1, GNUTLS_MAC_MD5, GNUTLS_MAC_RMD160)
+        self._compressions = (GNUTLS_COMP_NULL,)
+
+
 class X509Credentials(object):
     DH_BITS  = 1024
     RSA_BITS = 1024
@@ -47,14 +65,15 @@ class X509Credentials(object):
             retcode = gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
             GNUTLSException.check(retcode)
         # this generates core dumping - gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
+        self._max_depth = 5
+        self._max_bits  = 8200
+        self._type = GNUTLS_CRD_CERTIFICATE
         self._trusted = ()
         self.cert = cert
         self.key = key
         self.add_trusted(trusted)
         self.crl_list = crl_list
-        self._max_depth = 5
-        self._max_bits  = 8200
-        self._type = GNUTLS_CRD_CERTIFICATE
+        self.session_params = SessionParams(self._type)
 
     def __del__(self):
         self.__deinit(self._c_object)
