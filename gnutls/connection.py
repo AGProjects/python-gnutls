@@ -84,6 +84,9 @@ class SessionParams(object):
     _default_kx_algorithms = {
         CRED_CERTIFICATE: (KX_RSA, KX_DHE_DSS, KX_DHE_RSA),
         CRED_ANON: (KX_ANON_DH,)}
+    _all_kx_algorithms = {
+        CRED_CERTIFICATE: set((KX_RSA, KX_DHE_DSS, KX_DHE_RSA, KX_RSA_EXPORT)),
+        CRED_ANON: set((KX_ANON_DH,))}
 
     def __new__(cls, credentials_type):
         if credentials_type not in cls._default_kx_algorithms:
@@ -91,6 +94,7 @@ class SessionParams(object):
         return object.__new__(cls)
 
     def __init__(self, credentials_type):
+        self._credentials_type = credentials_type
         self._protocols = (PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3)
         self._kx_algorithms = self._default_kx_algorithms[credentials_type]
         self._ciphers = (CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128)
@@ -107,14 +111,19 @@ class SessionParams(object):
     def _get_kx_algorithms(self):
         return self._kx_algorithms
     def _set_kx_algorithms(self, algorithms):
-        self._kx_algorithms =  KeyExchangeValidator(algorithms)
+        cred_type = self._credentials_type
+        algorithms = KeyExchangeValidator(algorithms)
+        invalid = set(algorithms) - self._all_kx_algorithms[cred_type]
+        if invalid:
+            raise ValueError("Cannot specify %r with %r credentials" % (list(invalid), cred_type))
+        self._kx_algorithms = algorithms
     kx_algorithms = property(_get_kx_algorithms, _set_kx_algorithms)
     del _get_kx_algorithms, _set_kx_algorithms
 
     def _get_ciphers(self):
         return self._ciphers
     def _set_ciphers(self, ciphers):
-        self._ciphers =  CipherValidator(ciphers)
+        self._ciphers = CipherValidator(ciphers)
     ciphers = property(_get_ciphers, _set_ciphers)
     del _get_ciphers, _set_ciphers
 
