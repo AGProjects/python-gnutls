@@ -58,12 +58,12 @@ class X509Credentials(object):
            optionally a list of trusted CAs and a list of CRLs."""
         retcode = gnutls_certificate_allocate_credentials(byref(self._c_object))
         GNUTLSException.check(retcode)
-        if (key is None) != (cert is None):
-            raise ValueError("Specify neither or both of private key and certificate")
         # int gnutls_certificate_set_x509_key (gnutls_certificate_credentials_t res, gnutls_x509_crt_t * cert_list, int cert_list_size, gnutls_x509_privkey_t key)
         if cert and key:
             retcode = gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
             GNUTLSException.check(retcode)
+        elif (cert, key) != (None, None):
+            raise ValueError("Specify neither or both the certificate and private key")
         # this generates core dumping - gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
         self._max_depth = 5
         self._max_bits  = 8200
