@@ -13,6 +13,7 @@ from socket import SHUT_RDWR as SOCKET_SHUT_RDWR
 
 from ctypes import *
 
+from gnutls.validators import *
 from gnutls.constants import *
 from gnutls.crypto import *
 from gnutls.errors import *
@@ -23,133 +24,6 @@ from gnutls.library.constants import GNUTLS_CERT_SIGNER_NOT_FOUND, GNUTLS_CERT_S
 from gnutls.library.constants import * # temporary -Dan
 from gnutls.library.types import *
 from gnutls.library.functions import *
-
-
-class ProtocolValidator(tuple):
-    _protocols = set((PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3))
-
-    def __new__(cls, arg):
-        if not isinstance(arg, (tuple, list)):
-            raise TypeError("Argument must be a tuple or list")
-        if not arg:
-            raise ValueError("Protocol list cannot be empty")
-        if not cls._protocols.issuperset(set(arg)):
-            raise ValueError("Got invalid protocol")
-        return tuple.__new__(cls, arg)
-
-
-class KeyExchangeValidator(tuple):
-    _algorithms = set((KX_RSA, KX_DHE_DSS, KX_DHE_RSA, KX_RSA_EXPORT, KX_ANON_DH))
-
-    def __new__(cls, arg):
-        if not isinstance(arg, (tuple, list)):
-            raise TypeError("Argument must be a tuple or list")
-        if not arg:
-            raise ValueError("Key exchange algorithm list cannot be empty")
-        if not cls._algorithms.issuperset(set(arg)):
-            raise ValueError("Got invalid key exchange algorithm")
-        return tuple.__new__(cls, arg)
-
-
-class CipherValidator(tuple):
-    _ciphers = set((CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128, CIPHER_AES_256_CBC, CIPHER_DES_CBC))
-
-    def __new__(cls, arg):
-        if not isinstance(arg, (tuple, list)):
-            raise TypeError("Argument must be a tuple or list")
-        if not arg:
-            raise ValueError("Cipher list cannot be empty")
-        if not cls._ciphers.issuperset(set(arg)):
-            raise ValueError("Got invalid cipher")
-        return tuple.__new__(cls, arg)
-
-
-class MACValidator(tuple):
-    _algorithms = set((MAC_SHA1, MAC_MD5, MAC_RMD160))
-
-    def __new__(cls, arg):
-        if not isinstance(arg, (tuple, list)):
-            raise TypeError("Argument must be a tuple or list")
-        if not arg:
-            raise ValueError("MAC algorithm list cannot be empty")
-        if not cls._algorithms.issuperset(set(arg)):
-            raise ValueError("Got invalid MAC algorithm")
-        return tuple.__new__(cls, arg)
-
-
-class CompressionValidator(tuple):
-    _compressions = set((COMP_DEFLATE, COMP_LZO, COMP_NULL))
-
-    def __new__(cls, arg):
-        if not isinstance(arg, (tuple, list)):
-            raise TypeError("Argument must be a tuple or list")
-        if not arg:
-            raise ValueError("Compression list cannot be empty")
-        if not cls._compressions.issuperset(set(arg)):
-            raise ValueError("Got invalid compression")
-        return tuple.__new__(cls, arg)
-
-
-class SessionParams(object):
-    _default_kx_algorithms = {
-        CRED_CERTIFICATE: (KX_RSA, KX_DHE_DSS, KX_DHE_RSA),
-        CRED_ANON: (KX_ANON_DH,)}
-    _all_kx_algorithms = {
-        CRED_CERTIFICATE: set((KX_RSA, KX_DHE_DSS, KX_DHE_RSA, KX_RSA_EXPORT)),
-        CRED_ANON: set((KX_ANON_DH,))}
-
-    def __new__(cls, credentials_type):
-        if credentials_type not in cls._default_kx_algorithms:
-            raise TypeError("Unknown credentials type: %r" % credentials_type)
-        return object.__new__(cls)
-
-    def __init__(self, credentials_type):
-        self._credentials_type = credentials_type
-        self._protocols = (PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3)
-        self._kx_algorithms = self._default_kx_algorithms[credentials_type]
-        self._ciphers = (CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128)
-        self._mac_algorithms = (MAC_SHA1, MAC_MD5, MAC_RMD160)
-        self._compressions = (COMP_NULL,)
-
-    def _get_protocols(self):
-        return self._protocols
-    def _set_protocols(self, protocols):
-        self._protocols = ProtocolValidator(protocols)
-    protocols = property(_get_protocols, _set_protocols)
-    del _get_protocols, _set_protocols
-
-    def _get_kx_algorithms(self):
-        return self._kx_algorithms
-    def _set_kx_algorithms(self, algorithms):
-        cred_type = self._credentials_type
-        algorithms = KeyExchangeValidator(algorithms)
-        invalid = set(algorithms) - self._all_kx_algorithms[cred_type]
-        if invalid:
-            raise ValueError("Cannot specify %r with %r credentials" % (list(invalid), cred_type))
-        self._kx_algorithms = algorithms
-    kx_algorithms = property(_get_kx_algorithms, _set_kx_algorithms)
-    del _get_kx_algorithms, _set_kx_algorithms
-
-    def _get_ciphers(self):
-        return self._ciphers
-    def _set_ciphers(self, ciphers):
-        self._ciphers = CipherValidator(ciphers)
-    ciphers = property(_get_ciphers, _set_ciphers)
-    del _get_ciphers, _set_ciphers
-
-    def _get_mac_algorithms(self):
-        return self._mac_algorithms
-    def _set_mac_algorithms(self, alogrithms):
-        self._mac_algorithms = MACValidator(alogrithms)
-    mac_algorithms = property(_get_mac_algorithms, _set_mac_algorithms)
-    del _get_mac_algorithms, _set_mac_algorithms
-
-    def _get_compressions(self):
-        return self._compressions
-    def _set_compressions(self, compressions):
-        self._compressions = CompressionValidator(compressions)
-    compressions = property(_get_compressions, _set_compressions)
-    del _get_compressions, _set_compressions
 
 
 class X509Credentials(object):
@@ -258,6 +132,68 @@ class X509Credentials(object):
             raise CertificateError("certificate has expired")
         for crl in self.crl_list:
             crl.check_revocation(cert)
+
+
+class SessionParams(object):
+    _default_kx_algorithms = {
+        CRED_CERTIFICATE: (KX_RSA, KX_DHE_DSS, KX_DHE_RSA),
+        CRED_ANON: (KX_ANON_DH,)}
+    _all_kx_algorithms = {
+        CRED_CERTIFICATE: set((KX_RSA, KX_DHE_DSS, KX_DHE_RSA, KX_RSA_EXPORT)),
+        CRED_ANON: set((KX_ANON_DH,))}
+
+    def __new__(cls, credentials_type):
+        if credentials_type not in cls._default_kx_algorithms:
+            raise TypeError("Unknown credentials type: %r" % credentials_type)
+        return object.__new__(cls)
+
+    def __init__(self, credentials_type):
+        self._credentials_type = credentials_type
+        self._protocols = (PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3)
+        self._kx_algorithms = self._default_kx_algorithms[credentials_type]
+        self._ciphers = (CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128)
+        self._mac_algorithms = (MAC_SHA1, MAC_MD5, MAC_RMD160)
+        self._compressions = (COMP_NULL,)
+
+    def _get_protocols(self):
+        return self._protocols
+    def _set_protocols(self, protocols):
+        self._protocols = ProtocolValidator(protocols)
+    protocols = property(_get_protocols, _set_protocols)
+    del _get_protocols, _set_protocols
+
+    def _get_kx_algorithms(self):
+        return self._kx_algorithms
+    def _set_kx_algorithms(self, algorithms):
+        cred_type = self._credentials_type
+        algorithms = KeyExchangeValidator(algorithms)
+        invalid = set(algorithms) - self._all_kx_algorithms[cred_type]
+        if invalid:
+            raise ValueError("Cannot specify %r with %r credentials" % (list(invalid), cred_type))
+        self._kx_algorithms = algorithms
+    kx_algorithms = property(_get_kx_algorithms, _set_kx_algorithms)
+    del _get_kx_algorithms, _set_kx_algorithms
+
+    def _get_ciphers(self):
+        return self._ciphers
+    def _set_ciphers(self, ciphers):
+        self._ciphers = CipherValidator(ciphers)
+    ciphers = property(_get_ciphers, _set_ciphers)
+    del _get_ciphers, _set_ciphers
+
+    def _get_mac_algorithms(self):
+        return self._mac_algorithms
+    def _set_mac_algorithms(self, alogrithms):
+        self._mac_algorithms = MACValidator(alogrithms)
+    mac_algorithms = property(_get_mac_algorithms, _set_mac_algorithms)
+    del _get_mac_algorithms, _set_mac_algorithms
+
+    def _get_compressions(self):
+        return self._compressions
+    def _set_compressions(self, compressions):
+        self._compressions = CompressionValidator(compressions)
+    compressions = property(_get_compressions, _set_compressions)
+    del _get_compressions, _set_compressions
 
 
 class Session(object):
