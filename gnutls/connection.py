@@ -31,6 +31,8 @@ class ProtocolValidator(tuple):
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
             raise TypeError("Argument must be a tuple or list")
+        if not arg:
+            raise ValueError("Protocol list cannot be empty")
         if not cls._protocols.issuperset(set(arg)):
             raise ValueError("Got invalid protocol")
         return tuple.__new__(cls, arg)
@@ -42,6 +44,8 @@ class KeyExchangeValidator(tuple):
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
             raise TypeError("Argument must be a tuple or list")
+        if not arg:
+            raise ValueError("Key exchange algorithm list cannot be empty")
         if not cls._algorithms.issuperset(set(arg)):
             raise ValueError("Got invalid key exchange algorithm")
         return tuple.__new__(cls, arg)
@@ -53,6 +57,8 @@ class CipherValidator(tuple):
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
             raise TypeError("Argument must be a tuple or list")
+        if not arg:
+            raise ValueError("Cipher list cannot be empty")
         if not cls._ciphers.issuperset(set(arg)):
             raise ValueError("Got invalid cipher")
         return tuple.__new__(cls, arg)
@@ -64,6 +70,8 @@ class MACValidator(tuple):
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
             raise TypeError("Argument must be a tuple or list")
+        if not arg:
+            raise ValueError("MAC algorithm list cannot be empty")
         if not cls._algorithms.issuperset(set(arg)):
             raise ValueError("Got invalid MAC algorithm")
         return tuple.__new__(cls, arg)
@@ -75,6 +83,8 @@ class CompressionValidator(tuple):
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
             raise TypeError("Argument must be a tuple or list")
+        if not arg:
+            raise ValueError("Compression list cannot be empty")
         if not cls._compressions.issuperset(set(arg)):
             raise ValueError("Got invalid compression")
         return tuple.__new__(cls, arg)
