@@ -5,6 +5,7 @@
 ##################################################################
 [project attributes]
 proj.file-list = [loc('gnutls/connection.py'),
+                  loc('gnutls/constants.py'),
                   loc('gnutls/crypto.py'),
                   loc('gnutls/errors.py'),
                   loc('gnutls/interfaces/twisted/__init__.py'),
