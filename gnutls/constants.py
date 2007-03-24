@@ -4,9 +4,6 @@
 """GNUTLS constants"""
 
 __all__ = [
-    ## Certificate formats
-    'X509_FMT_DER', 'X509_FMT_PEM',
-
     ## GNUTLS session protocols
     'PROTO_TLS1_1', 'PROTO_TLS1_0', 'PROTO_SSL3',
     
@@ -21,9 +18,15 @@ __all__ = [
     
     ## Compressions
     'COMP_DEFLATE', 'COMP_LZO', 'COMP_NULL',
-    
+
+    ## Credential types
+    'CRED_CERTIFICATE', 'CRED_ANON',
+
+    ## X509 certificate/private key formats
+    'X509_FMT_DER', 'X509_FMT_PEM',
+
     ## Miscelaneous
-    'CRED_CERTIFICATE', 'CRED_ANON', 'CERT_REQUEST', 'CERT_REQUIRE', 'SHUT_RDWR', 'SHUT_WR'
+    'CERT_REQUEST', 'CERT_REQUIRE', 'SHUT_RDWR', 'SHUT_WR'
 ]
 
 __name_map__ = {
