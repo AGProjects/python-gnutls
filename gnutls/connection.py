@@ -314,20 +314,21 @@ class Session(object):
         def c_priority_list(priorities):
             size = len(priorities) + 1
             return (c_int * (size)) (*priorities)
+        session_params = self.credentials.session_params
         # int gnutls_protocol_set_priority (gnutls_session_t session, const int * list)
-        retcode = gnutls_protocol_set_priority(self._c_object, c_priority_list(self.credentials.session_params.protocols))
+        retcode = gnutls_protocol_set_priority(self._c_object, c_priority_list(session_params.protocols))
         GNUTLSException.check(retcode)
         # int gnutls_kx_set_priority (gnutls_session_t session, const int * list)
-        retcode = gnutls_kx_set_priority(self._c_object, c_priority_list(self.credentials.session_params.kx_algorithms))
+        retcode = gnutls_kx_set_priority(self._c_object, c_priority_list(session_params.kx_algorithms))
         GNUTLSException.check(retcode)
         # int gnutls_cipher_set_priority (gnutls_session_t session, const int * list)
-        retcode = gnutls_cipher_set_priority(self._c_object, c_priority_list(self.credentials.session_params.ciphers))
+        retcode = gnutls_cipher_set_priority(self._c_object, c_priority_list(session_params.ciphers))
         GNUTLSException.check(retcode)
         # int gnutls_mac_set_priority (gnutls_session_t session, const int * list)
-        retcode = gnutls_mac_set_priority(self._c_object, c_priority_list(self.credentials.session_params.mac_algorithms))
+        retcode = gnutls_mac_set_priority(self._c_object, c_priority_list(session_params.mac_algorithms))
         GNUTLSException.check(retcode)
         # int gnutls_compression_set_priority (gnutls_session_t session, const int * list)
-        retcode = gnutls_compression_set_priority(self._c_object, c_priority_list(self.credentials.session_params.compressions))
+        retcode = gnutls_compression_set_priority(self._c_object, c_priority_list(session_params.compressions))
         GNUTLSException.check(retcode)
 
     def handshake(self):
