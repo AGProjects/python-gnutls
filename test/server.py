@@ -30,17 +30,20 @@ while True:
     try:
         session.handshake()
         peer_cert = session.peer_certificate
-        print '\nNew connection!'
-        print 'Peer cert:', getattr(peer_cert, 'subject', None)
-        print 'Algorithm: ', session.kx_algorithm
-        print 'Protocol: ', session.protocol
-        print 'Compression: ', session.compression
-        print 'Cipher: ', session.cipher
-        print 'MAC algorithm: ', session.mac_algorithm
+        try:
+            peer_name = peer_cert.subject.common_name
+        except AttributeError:
+            peer_name = 'Unknown'
+        print '\nNew connection from:', peer_name
+        print 'Protocol:     ', session.protocol
+        print 'KX algorithm: ', session.kx_algorithm
+        print 'Cipher:       ', session.cipher
+        print 'MAC algorithm:', session.mac_algorithm
+        print 'Compression:  ', session.compression
         session.verify_peer()
         cred.check_certificate(peer_cert)
     except Exception, e:
-        print 'Handshake failed: ', e
+        print 'Handshake failed:', e
         session.bye()
     else:
         while True:

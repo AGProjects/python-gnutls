@@ -19,12 +19,16 @@ class EchoProtocol(LineOnlyReceiver):
 
     def connectionMade(self):
         session = self.transport.socket
-        print '\nNew connection from:', getattr(session.peer_certificate, 'subject', 'anonymous')
-        print 'Algorithm: ', session.kx_algorithm
-        print 'Protocol: ', session.protocol
-        print 'Compression: ', session.compression
-        print 'Cipher: ', session.cipher
-        print 'MAC algorithm: ', session.mac_algorithm
+        try:
+            peer_name = session.peer_certificate.subject.common_name
+        except AttributeError:
+            peer_name = 'Unknown'
+        print '\nNew connection from:', peer_name
+        print 'Protocol:     ', session.protocol
+        print 'KX algorithm: ', session.kx_algorithm
+        print 'Cipher:       ', session.cipher
+        print 'MAC algorithm:', session.mac_algorithm
+        print 'Compression:  ', session.compression
 
     def lineReceived(self, line):
         if line == 'quit':
