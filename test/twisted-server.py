@@ -20,7 +20,7 @@ class EchoProtocol(LineOnlyReceiver):
     def connectionMade(self):
         session = self.transport.socket
         print '\nNew connection from:', getattr(session.peer_certificate, 'subject', 'anonymous')
-        print 'Algorithm: ', session.key_exchange_algorithm
+        print 'Algorithm: ', session.kx_algorithm
         print 'Protocol: ', session.protocol
         print 'Compression: ', session.compression
         print 'Cipher: ', session.cipher

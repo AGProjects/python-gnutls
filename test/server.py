@@ -32,7 +32,7 @@ while True:
         peer_cert = session.peer_certificate
         print '\nNew connection!'
         print 'Peer cert:', getattr(peer_cert, 'subject', None)
-        print 'Algorithm: ', session.key_exchange_algorithm
+        print 'Algorithm: ', session.kx_algorithm
         print 'Protocol: ', session.protocol
         print 'Compression: ', session.compression
         print 'Cipher: ', session.cipher

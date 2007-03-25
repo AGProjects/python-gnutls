@@ -244,7 +244,7 @@ class Session(object):
     del _get_credentials, _set_credentials
 
     @property
-    def key_exchange_algorithm(self):
+    def kx_algorithm(self):
         # gnutls_kx_algorithm_t gnutls_kx_get (gnutls_session_t session)
         # const char * gnutls_kx_get_name (gnutls_kx_algorithm_t algorithm)
         return gnutls_kx_get_name(gnutls_kx_get(self._c_object))
