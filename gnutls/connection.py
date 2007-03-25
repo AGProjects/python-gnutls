@@ -245,67 +245,45 @@ class Session(object):
 
     @property
     def key_exchange_algorithm(self):
-        kx = gnutls_kx_algorithm_t()
         # gnutls_kx_algorithm_t gnutls_kx_get (gnutls_session_t session)
-        kx = gnutls_kx_get(self._c_object)
-        name = create_string_buffer(10)
         # const char * gnutls_kx_get_name (gnutls_kx_algorithm_t algorithm)
-        name = gnutls_kx_get_name(kx)
-        return name
+        return gnutls_kx_get_name(gnutls_kx_get(self._c_object))
 
     @property
     def protocol(self):
-        version = gnutls_protocol_t()
         # gnutls_protocol_t gnutls_protocol_get_version (gnutls_session_t session)
-        version = gnutls_protocol_get_version(self._c_object)
-        name = create_string_buffer(10)
         # const char * gnutls_protocol_get_name (gnutls_protocol_t version)
-        name = gnutls_protocol_get_name(version)
-        return name
+        return gnutls_protocol_get_name(gnutls_protocol_get_version(self._c_object))
 
     @property
     def compression(self):
-        method = gnutls_compression_method_t()
         # gnutls_compression_method_t gnutls_compression_get (gnutls_session_t session)
-        method = gnutls_compression_get(self._c_object)
-        name = create_string_buffer(10)
         # const char * gnutls_compression_get_name (gnutls_compression_method_t algorithm)
-        name = gnutls_compression_get_name(method)
-        return name
+        return gnutls_compression_get_name(gnutls_compression_get(self._c_object))
 
     @property
     def cipher(self):
-        algorithm = gnutls_cipher_algorithm_t()
         # gnutls_cipher_algorithm_t gnutls_cipher_get (gnutls_session_t session)
-        algorithm = gnutls_cipher_get(self._c_object)
-        name = create_string_buffer(10)
         # const char * gnutls_compression_get_name (gnutls_compression_method_t algorithm)
-        name = gnutls_cipher_get_name(algorithm)
-        return name
+        return gnutls_cipher_get_name(gnutls_cipher_get(self._c_object))
 
     @property
     def mac_algorithm(self):
-        algorithm = gnutls_mac_algorithm_t()
         # gnutls_mac_algorithm_t gnutls_mac_get (gnutls_session_t session)
-        algorithm = gnutls_mac_get(self._c_object)
-        name = create_string_buffer(10)
         # const char * gnutls_mac_get_name (gnutls_mac_algorithm_t algorithm)
-        name = gnutls_mac_get_name(algorithm)
-        return name
+        return gnutls_mac_get_name(gnutls_mac_get(self._c_object))
 
     @property
     def peer_certificate(self):
         # gnutls_certificate_type_t gnutls_certificate_type_get (gnutls_session_t session)
         if (gnutls_certificate_type_get(self._c_object) != GNUTLS_CRT_X509):
             return
-        cert_list = pointer(gnutls_datum_t())
         list_size = c_uint()
         # const gnutls_datum_t * gnutls_certificate_get_peers (gnutls_session_t session, unsigned int * list_size)
         cert_list = gnutls_certificate_get_peers(self._c_object, byref(list_size))
         if list_size.value == 0:
             return None
-        raw_cert = cert_list[0] # we should get the address of the first element in the list
-        return X509Certificate(raw_cert, X509_FMT_DER)
+        return X509Certificate(cert_list[0], X509_FMT_DER)
 
     # Session methods
 
@@ -313,7 +291,7 @@ class Session(object):
         """Update the priorities of the session params using the credentials."""
         def c_priority_list(priorities):
             size = len(priorities) + 1
-            return (c_int * (size)) (*priorities)
+            return (c_int * size)(*priorities)
         session_params = self.credentials.session_params
         # int gnutls_protocol_set_priority (gnutls_session_t session, const int * list)
         retcode = gnutls_protocol_set_priority(self._c_object, c_priority_list(session_params.protocols))
@@ -369,7 +347,7 @@ class Session(object):
         status = c_uint()
         retcode = gnutls_certificate_verify_peers2(self._c_object, byref(status))
         GNUTLSException.check(retcode)
-        status = int(status.value)
+        status = status.value
         if status & GNUTLS_CERT_INVALID:
             raise CertificateError("invalid certificate")
         elif status & GNUTLS_CERT_SIGNER_NOT_FOUND:
