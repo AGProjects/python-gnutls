@@ -244,22 +244,16 @@ class Session(object):
     del _get_credentials, _set_credentials
 
     @property
-    def kx_algorithm(self):
-        # gnutls_kx_algorithm_t gnutls_kx_get (gnutls_session_t session)
-        # const char * gnutls_kx_get_name (gnutls_kx_algorithm_t algorithm)
-        return gnutls_kx_get_name(gnutls_kx_get(self._c_object))
-
-    @property
     def protocol(self):
         # gnutls_protocol_t gnutls_protocol_get_version (gnutls_session_t session)
         # const char * gnutls_protocol_get_name (gnutls_protocol_t version)
         return gnutls_protocol_get_name(gnutls_protocol_get_version(self._c_object))
 
     @property
-    def compression(self):
-        # gnutls_compression_method_t gnutls_compression_get (gnutls_session_t session)
-        # const char * gnutls_compression_get_name (gnutls_compression_method_t algorithm)
-        return gnutls_compression_get_name(gnutls_compression_get(self._c_object))
+    def kx_algorithm(self):
+        # gnutls_kx_algorithm_t gnutls_kx_get (gnutls_session_t session)
+        # const char * gnutls_kx_get_name (gnutls_kx_algorithm_t algorithm)
+        return gnutls_kx_get_name(gnutls_kx_get(self._c_object))
 
     @property
     def cipher(self):
@@ -272,6 +266,12 @@ class Session(object):
         # gnutls_mac_algorithm_t gnutls_mac_get (gnutls_session_t session)
         # const char * gnutls_mac_get_name (gnutls_mac_algorithm_t algorithm)
         return gnutls_mac_get_name(gnutls_mac_get(self._c_object))
+
+    @property
+    def compression(self):
+        # gnutls_compression_method_t gnutls_compression_get (gnutls_session_t session)
+        # const char * gnutls_compression_get_name (gnutls_compression_method_t algorithm)
+        return gnutls_compression_get_name(gnutls_compression_get(self._c_object))
 
     @property
     def peer_certificate(self):
