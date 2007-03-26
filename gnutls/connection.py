@@ -262,6 +262,20 @@ class Session(object):
             return None
         return X509Certificate(cert_list[0], X509_FMT_DER)
 
+    # Status checking after an operation was interrupted (it only makes sense
+    # to use these properties after an operation was interrupted, else their
+    # value is undefined and irrelevant).
+
+    @property
+    def interrupted_while_writing(self):
+        """True if an operation was interrupted while writing"""
+        return gnutls_record_get_direction(self._c_object)==1
+
+    @property
+    def interrupted_while_reading(self):
+        """True if an operation was interrupted while reading"""
+        return gnutls_record_get_direction(self._c_object)==0
+
     # Session methods
 
     def _update_params(self):
