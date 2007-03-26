@@ -297,7 +297,6 @@ class Session(object):
         GNUTLSException.check(retcode)
 
     def handshake(self):
-        # int gnutls_handshake (gnutls_session_t session)
         retcode = gnutls_handshake(self._c_object)
         GNUTLSException.check(retcode)
 
