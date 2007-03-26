@@ -67,10 +67,8 @@ class X509Credentials(object):
         # int gnutls_certificate_set_x509_trust (gnutls_certificate_credentials_t res, gnutls_x509_crt_t * ca_list, int ca_list_size)
         size = len(trusted)
         if size > 0:
-            block = (gnutls_x509_crt_t * size)() ## declare the array of gnutls_x509_crt_t elements
-            for i in range(size):
-                block[i] = trusted[i]._c_object
-            retcode = gnutls_certificate_set_x509_trust(self._c_object, cast(byref(block), POINTER(gnutls_x509_crt_t)), size)
+            ca_list = (gnutls_x509_crt_t * size)(*[cert._c_object for cert in trusted])
+            retcode = gnutls_certificate_set_x509_trust(self._c_object, cast(byref(ca_list), POINTER(gnutls_x509_crt_t)), size)
             GNUTLSException.check(retcode)
             self._trusted = self._trusted + tuple(trusted)
 
