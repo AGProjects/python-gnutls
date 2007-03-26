@@ -3,8 +3,8 @@
 
 """GNUTLS errors"""
 
-__all__ = ['Error', 'GNUTLSError', 'OperationWouldBlock', 'OperationInterrupted', 'CertificateError',
-           'X509NameError', 'GNUTLSException']
+__all__ = ['Error', 'GNUTLSError', 'OperationWouldBlock', 'OperationInterrupted',
+           'CertificateError', 'X509NameError', 'GNUTLSException']
 
 from gnutls.library.constants import GNUTLS_E_AGAIN, GNUTLS_E_INTERRUPTED, GNUTLS_E_NO_CERTIFICATE_FOUND
 from gnutls.library.constants import GNUTLS_E_MEMORY_ERROR, GNUTLS_E_SHORT_MEMORY_BUFFER
@@ -19,11 +19,13 @@ class OperationInterrupted(GNUTLSError): pass
 class CertificateError(Error): pass
 class X509NameError(Error): pass
 
+
 class ErrorMessage(str):
     def __new__(cls, code):
         obj = str.__new__(cls, gnutls_strerror(code))
         obj.code = code
         return obj
+
 
 class GNUTLSException(object):
     @classmethod
@@ -40,3 +42,4 @@ class GNUTLSException(object):
             raise CertificateError(gnutls_strerror(retcode))
         else:
             raise GNUTLSError(ErrorMessage(retcode))
+
