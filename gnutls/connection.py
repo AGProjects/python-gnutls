@@ -289,15 +289,13 @@ class Session(object):
 
     def send(self, data):
         data = str(data)
-        size = c_size_t(len(data))
-        retcode = gnutls_record_send(self._c_object, data, size.value)
+        retcode = gnutls_record_send(self._c_object, data, len(data))
         GNUTLSException.check(retcode)
         return retcode
 
     def recv(self, limit):
-        size = c_size_t(limit)
         data = create_string_buffer(limit)
-        retcode = gnutls_record_recv(self._c_object, data, size.value)
+        retcode = gnutls_record_recv(self._c_object, data, limit)
         GNUTLSException.check(retcode)
         return data.value
 
