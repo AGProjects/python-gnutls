@@ -43,7 +43,6 @@ class X509Credentials(object):
            optionally a list of trusted CAs and a list of CRLs."""
         retcode = gnutls_certificate_allocate_credentials(byref(self._c_object))
         GNUTLSException.check(retcode)
-        # int gnutls_certificate_set_x509_key (gnutls_certificate_credentials_t res, gnutls_x509_crt_t * cert_list, int cert_list_size, gnutls_x509_privkey_t key)
         if cert and key:
             retcode = gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
             GNUTLSException.check(retcode)
@@ -64,7 +63,6 @@ class X509Credentials(object):
         self.__deinit(self._c_object)
 
     def add_trusted(self, trusted):
-        # int gnutls_certificate_set_x509_trust (gnutls_certificate_credentials_t res, gnutls_x509_crt_t * ca_list, int ca_list_size)
         size = len(trusted)
         if size > 0:
             ca_list = (gnutls_x509_crt_t * size)(*[cert._c_object for cert in trusted])
@@ -105,7 +103,6 @@ class X509Credentials(object):
     def _get_max_verify_length(self):
         return self._max_depth
     def _set_max_verify_length(self, max_depth):
-        # void gnutls_certificate_set_verify_limits (gnutls_certificate_credentials_t res, unsigned int max_bits, unsigned int max_depth)
         gnutls_certificate_set_verify_limits(self._c_object, self._max_bits, max_depth)
         self._max_depth = max_depth
     max_verify_length = property(_get_max_verify_length, _set_max_verify_length)
@@ -114,7 +111,6 @@ class X509Credentials(object):
     def _get_max_verify_bits(self):
         return self._max_bits
     def _set_max_verify_bits(self, max_bits):
-        # void gnutls_certificate_set_verify_limits (gnutls_certificate_credentials_t res, unsigned int max_bits, unsigned int max_depth)
         gnutls_certificate_set_verify_limits(self._c_object, max_bits, self._max_depth)
         self._max_bits = max_bits
     max_verify_bits = property(_get_max_verify_bits, _set_max_verify_bits)
@@ -208,12 +204,10 @@ class Session(object):
         return instance
 
     def __init__(self, socket, credentials):
-        # int gnutls_init (gnutls_session_t * session, gnutls_connection_end_t con_end)
         retcode = gnutls_init(byref(self._c_object), self.session_type)
         GNUTLSException.check(retcode)
         # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
-        # void gnutls_transport_set_ptr (gnutls_session_t session, gnutls_transport_ptr_t ptr)
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
         self.socket = socket
         self.credentials = credentials
@@ -231,9 +225,7 @@ class Session(object):
     def _get_credentials(self):
         return self._credentials
     def _set_credentials(self, credentials):
-        # void gnutls_credentials_clear (gnutls_session_t session)
         gnutls_credentials_clear(self._c_object) # do we need this ? -Mircea
-        # int gnutls_credentials_set (gnutls_session_t session, gnutls_credentials_type_t type, void * cred)
         retcode = gnutls_credentials_set(self._c_object, credentials._type, cast(credentials._c_object, c_void_p))
         GNUTLSException.check(retcode)
         self._credentials = credentials
@@ -242,41 +234,29 @@ class Session(object):
 
     @property
     def protocol(self):
-        # gnutls_protocol_t gnutls_protocol_get_version (gnutls_session_t session)
-        # const char * gnutls_protocol_get_name (gnutls_protocol_t version)
         return gnutls_protocol_get_name(gnutls_protocol_get_version(self._c_object))
 
     @property
     def kx_algorithm(self):
-        # gnutls_kx_algorithm_t gnutls_kx_get (gnutls_session_t session)
-        # const char * gnutls_kx_get_name (gnutls_kx_algorithm_t algorithm)
         return gnutls_kx_get_name(gnutls_kx_get(self._c_object))
 
     @property
     def cipher(self):
-        # gnutls_cipher_algorithm_t gnutls_cipher_get (gnutls_session_t session)
-        # const char * gnutls_compression_get_name (gnutls_compression_method_t algorithm)
         return gnutls_cipher_get_name(gnutls_cipher_get(self._c_object))
 
     @property
     def mac_algorithm(self):
-        # gnutls_mac_algorithm_t gnutls_mac_get (gnutls_session_t session)
-        # const char * gnutls_mac_get_name (gnutls_mac_algorithm_t algorithm)
         return gnutls_mac_get_name(gnutls_mac_get(self._c_object))
 
     @property
     def compression(self):
-        # gnutls_compression_method_t gnutls_compression_get (gnutls_session_t session)
-        # const char * gnutls_compression_get_name (gnutls_compression_method_t algorithm)
         return gnutls_compression_get_name(gnutls_compression_get(self._c_object))
 
     @property
     def peer_certificate(self):
-        # gnutls_certificate_type_t gnutls_certificate_type_get (gnutls_session_t session)
         if (gnutls_certificate_type_get(self._c_object) != GNUTLS_CRT_X509):
             return
         list_size = c_uint()
-        # const gnutls_datum_t * gnutls_certificate_get_peers (gnutls_session_t session, unsigned int * list_size)
         cert_list = gnutls_certificate_get_peers(self._c_object, byref(list_size))
         if list_size.value == 0:
             return None
@@ -293,16 +273,12 @@ class Session(object):
         # int gnutls_protocol_set_priority (gnutls_session_t session, const int * list)
         retcode = gnutls_protocol_set_priority(self._c_object, c_priority_list(session_params.protocols))
         GNUTLSException.check(retcode)
-        # int gnutls_kx_set_priority (gnutls_session_t session, const int * list)
         retcode = gnutls_kx_set_priority(self._c_object, c_priority_list(session_params.kx_algorithms))
         GNUTLSException.check(retcode)
-        # int gnutls_cipher_set_priority (gnutls_session_t session, const int * list)
         retcode = gnutls_cipher_set_priority(self._c_object, c_priority_list(session_params.ciphers))
         GNUTLSException.check(retcode)
-        # int gnutls_mac_set_priority (gnutls_session_t session, const int * list)
         retcode = gnutls_mac_set_priority(self._c_object, c_priority_list(session_params.mac_algorithms))
         GNUTLSException.check(retcode)
-        # int gnutls_compression_set_priority (gnutls_session_t session, const int * list)
         retcode = gnutls_compression_set_priority(self._c_object, c_priority_list(session_params.compressions))
         GNUTLSException.check(retcode)
 
@@ -312,7 +288,6 @@ class Session(object):
         GNUTLSException.check(retcode)
 
     def send(self, data):
-        # ssize_t gnutls_record_send (gnutls_session_t session, const void * data, size_t sizeofdata)
         data = str(data)
         size = c_size_t(len(data))
         retcode = gnutls_record_send(self._c_object, data, size.value)
@@ -320,7 +295,6 @@ class Session(object):
         return retcode
 
     def recv(self, limit):
-        # ssize_t gnutls_record_recv (gnutls_session_t session, void * data, size_t sizeofdata)
         size = c_size_t(limit)
         data = create_string_buffer(limit)
         retcode = gnutls_record_recv(self._c_object, data, size.value)
@@ -340,7 +314,6 @@ class Session(object):
         self.socket.close()
 
     def verify_peer(self):
-        # int gnutls_certificate_verify_peers2 (gnutls_session_t session, unsigned int * status)
         status = c_uint()
         retcode = gnutls_certificate_verify_peers2(self._c_object, byref(status))
         GNUTLSException.check(retcode)
