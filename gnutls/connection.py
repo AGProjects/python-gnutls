@@ -255,7 +255,7 @@ class Session(object):
     @property
     def peer_certificate(self):
         if (gnutls_certificate_type_get(self._c_object) != GNUTLS_CRT_X509):
-            return
+            return None
         list_size = c_uint()
         cert_list = gnutls_certificate_get_peers(self._c_object, byref(list_size))
         if list_size.value == 0:
