@@ -68,7 +68,7 @@ class X509Certificate(object):
 
     def __init__(self, buffer, format=X509_FMT_PEM):
         if format not in (X509_FMT_PEM, X509_FMT_DER):
-            raise ValueError("Incorrect format: " + format)
+            raise ValueError("Incorrect format: %r" % format)
         # int gnutls_x509_crt_init (gnutls_x509_crt_t * cert)
         retcode = gnutls_x509_crt_init(byref(self._c_object))
         GNUTLSException.check(retcode)
@@ -196,7 +196,7 @@ class X509PrivateKey(object):
 
     def __init__(self, buffer, format=X509_FMT_PEM):
         if format not in (X509_FMT_PEM, X509_FMT_DER):
-            raise ValueError("Incorrect format: " + format)
+            raise ValueError("Incorrect format: %r" % format)
         # int gnutls_x509_privkey_init (gnutls_x509_privkey_t * key)
         retcode = gnutls_x509_privkey_init(byref(self._c_object))
         GNUTLSException.check(retcode)
@@ -218,7 +218,7 @@ class X509CRL(object):
 
     def __init__(self, buffer, format=X509_FMT_PEM):
         if format not in (X509_FMT_PEM, X509_FMT_DER):
-            raise ValueError("Incorrect format: " + format)
+            raise ValueError("Incorrect format: %r" % format)
         # int gnutls_x509_crl_init (gnutls_x509_crl_t * crl)
         retcode = gnutls_x509_crl_init(byref(self._c_object))
         GNUTLSException.check(retcode)

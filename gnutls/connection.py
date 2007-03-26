@@ -331,7 +331,7 @@ class Session(object):
 
     def bye(self, how=SHUT_RDWR):
         if how not in (SHUT_RDWR, SHUT_WR):
-            raise ValueError("Invalid argument: %s" % how)
+            raise ValueError("Invalid argument: %r" % how)
         retcode = gnutls_bye(self._c_object, how)
         GNUTLSException.check(retcode)
 
