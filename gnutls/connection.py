@@ -115,7 +115,7 @@ class X509Credentials(object):
         return self._max_bits
     def _set_max_verify_bits(self, max_bits):
         # void gnutls_certificate_set_verify_limits (gnutls_certificate_credentials_t res, unsigned int max_bits, unsigned int max_depth)
-        gnutls_certificate_set_verify_limits(self._c_object, _max_bits, self._max_depth)
+        gnutls_certificate_set_verify_limits(self._c_object, max_bits, self._max_depth)
         self._max_bits = max_bits
     max_verify_bits = property(_get_max_verify_bits, _set_max_verify_bits)
     del _get_max_verify_bits, _set_max_verify_bits
