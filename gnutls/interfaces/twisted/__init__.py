@@ -3,8 +3,7 @@
 
 """GNUTLS Twisted interface"""
 
-__all__ = ['X509Credentials', 'TLSMixin', 'TLSClient', 'TLSServer',
-           'TLSConnector', 'TLSPort', 'connectTLS', 'listenTLS']
+__all__ = ['X509Credentials', 'connectTLS', 'listenTLS']
 
 import socket
 from time import time
