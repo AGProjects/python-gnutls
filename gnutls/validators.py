@@ -1,13 +1,13 @@
 # Copyright (C) 2007 AG Projects
 #
 
-"""GNUTLS validators"""
+"""GNUTLS data validators"""
 
-__all__ = ['ProtocolValidator', 'KeyExchangeValidator', 'CipherValidator', 'MACValidator', 'CompressionValidator']
+__all__ = ['ProtocolListValidator', 'KeyExchangeListValidator', 'CipherListValidator', 'MACListValidator', 'CompressionListValidator']
 
 from gnutls.constants import *
 
-class ProtocolValidator(tuple):
+class ProtocolListValidator(tuple):
     _protocols = set((PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3))
 
     def __new__(cls, arg):
@@ -20,7 +20,7 @@ class ProtocolValidator(tuple):
         return tuple.__new__(cls, arg)
 
 
-class KeyExchangeValidator(tuple):
+class KeyExchangeListValidator(tuple):
     _algorithms = set((KX_RSA, KX_DHE_DSS, KX_DHE_RSA, KX_RSA_EXPORT, KX_ANON_DH))
 
     def __new__(cls, arg):
@@ -33,7 +33,7 @@ class KeyExchangeValidator(tuple):
         return tuple.__new__(cls, arg)
 
 
-class CipherValidator(tuple):
+class CipherListValidator(tuple):
     _ciphers = set((CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128, CIPHER_AES_256_CBC, CIPHER_DES_CBC))
 
     def __new__(cls, arg):
@@ -46,7 +46,7 @@ class CipherValidator(tuple):
         return tuple.__new__(cls, arg)
 
 
-class MACValidator(tuple):
+class MACListValidator(tuple):
     _algorithms = set((MAC_SHA1, MAC_MD5, MAC_RMD160))
 
     def __new__(cls, arg):
@@ -59,7 +59,7 @@ class MACValidator(tuple):
         return tuple.__new__(cls, arg)
 
 
-class CompressionValidator(tuple):
+class CompressionListValidator(tuple):
     _compressions = set((COMP_DEFLATE, COMP_LZO, COMP_NULL))
 
     def __new__(cls, arg):

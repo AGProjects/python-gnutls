@@ -151,7 +151,7 @@ class SessionParams(object):
     def _get_protocols(self):
         return self._protocols
     def _set_protocols(self, protocols):
-        self._protocols = ProtocolValidator(protocols)
+        self._protocols = ProtocolListValidator(protocols)
     protocols = property(_get_protocols, _set_protocols)
     del _get_protocols, _set_protocols
 
@@ -159,7 +159,7 @@ class SessionParams(object):
         return self._kx_algorithms
     def _set_kx_algorithms(self, algorithms):
         cred_type = self._credentials_type
-        algorithms = KeyExchangeValidator(algorithms)
+        algorithms = KeyExchangeListValidator(algorithms)
         invalid = set(algorithms) - self._all_kx_algorithms[cred_type]
         if invalid:
             raise ValueError("Cannot specify %r with %r credentials" % (list(invalid), cred_type))
@@ -170,21 +170,21 @@ class SessionParams(object):
     def _get_ciphers(self):
         return self._ciphers
     def _set_ciphers(self, ciphers):
-        self._ciphers = CipherValidator(ciphers)
+        self._ciphers = CipherListValidator(ciphers)
     ciphers = property(_get_ciphers, _set_ciphers)
     del _get_ciphers, _set_ciphers
 
     def _get_mac_algorithms(self):
         return self._mac_algorithms
     def _set_mac_algorithms(self, alogrithms):
-        self._mac_algorithms = MACValidator(alogrithms)
+        self._mac_algorithms = MACListValidator(alogrithms)
     mac_algorithms = property(_get_mac_algorithms, _set_mac_algorithms)
     del _get_mac_algorithms, _set_mac_algorithms
 
     def _get_compressions(self):
         return self._compressions
     def _set_compressions(self, compressions):
-        self._compressions = CompressionValidator(compressions)
+        self._compressions = CompressionListValidator(compressions)
     compressions = property(_get_compressions, _set_compressions)
     del _get_compressions, _set_compressions
 
