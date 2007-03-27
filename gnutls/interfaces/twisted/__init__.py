@@ -126,7 +126,7 @@ class TLSClient(TLSMixin, tcp.Client):
         if not self.connected or self.disconnecting:
             return
         try:
-            self.socket.credentials.verify_callback(self.socket.peer_certificate)
+            self.credentials.verify_callback(self.socket.peer_certificate)
         except Exception, e:
             self.loseConnection(e)
             return
@@ -135,7 +135,7 @@ class TLSClient(TLSMixin, tcp.Client):
 
     def _verifyPeer(self):
         session = self.socket
-        credentials = session.credentials
+        credentials = self.credentials
         if not credentials.verify_peer:
             return
         try:
@@ -215,13 +215,14 @@ class TLSServer(TLSMixin, tcp.Server):
     
     def __init__(self, sock, protocol, client, server, sessionno):
         self.__watchdog = None
+        self.credentials = server.credentials
         tcp.Server.__init__(self, sock, protocol, client, server, sessionno)
 
     def _recurentVerify(self):
         if not self.connected or self.disconnecting:
             return
         try:
-            self.socket.credentials.verify_callback(self.socket.peer_certificate)
+            self.credentials.verify_callback(self.socket.peer_certificate)
         except Exception, e:
             self.loseConnection(e)
             return
@@ -230,7 +231,7 @@ class TLSServer(TLSMixin, tcp.Server):
 
     def _verifyPeer(self):
         session = self.socket
-        credentials = session.credentials
+        credentials = self.credentials
         if not credentials.verify_peer:
             return
         try:
