@@ -288,7 +288,7 @@ class TLSServer(TLSMixin, tcp.Server):
 
 
 class TLSPort(tcp.Port):
-    """TLS enable TCP port"""
+    """Add TLS capabilities to a TCP port"""
     
     transport = TLSServer
 
