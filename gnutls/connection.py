@@ -21,7 +21,7 @@ from gnutls.errors import *
 from gnutls.library.constants import GNUTLS_SERVER, GNUTLS_CLIENT, GNUTLS_CRT_X509
 from gnutls.library.constants import GNUTLS_CERT_INVALID, GNUTLS_CERT_REVOKED, GNUTLS_CERT_INSECURE_ALGORITHM
 from gnutls.library.constants import GNUTLS_CERT_SIGNER_NOT_FOUND, GNUTLS_CERT_SIGNER_NOT_CA
-from gnutls.library.types import *
+from gnutls.library.types     import gnutls_certificate_credentials_t, gnutls_session_t
 from gnutls.library.functions import *
 
 
