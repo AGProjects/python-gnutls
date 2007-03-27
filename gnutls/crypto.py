@@ -14,8 +14,8 @@ from gnutls.constants import X509_FMT_DER, X509_FMT_PEM
 from gnutls.errors import *
 
 from gnutls.library.constants import GNUTLS_E_SHORT_MEMORY_BUFFER
-from gnutls.library.types     import gnutls_datum_t, gnutls_x509_crt_t, gnutls_x509_privkey_t
-from gnutls.library.types     import gnutls_x509_crl_t, gnutls_dh_params_t, gnutls_rsa_params_t
+from gnutls.library.types     import gnutls_x509_crt_t, gnutls_x509_privkey_t, gnutls_x509_crl_t
+from gnutls.library.types     import gnutls_datum_t, gnutls_dh_params_t, gnutls_rsa_params_t
 from gnutls.library.functions import *
 
 
