@@ -176,8 +176,8 @@ class SessionParams(object):
 
     def _get_mac_algorithms(self):
         return self._mac_algorithms
-    def _set_mac_algorithms(self, alogrithms):
-        self._mac_algorithms = MACListValidator(alogrithms)
+    def _set_mac_algorithms(self, algorithms):
+        self._mac_algorithms = MACListValidator(algorithms)
     mac_algorithms = property(_get_mac_algorithms, _set_mac_algorithms)
     del _get_mac_algorithms, _set_mac_algorithms
 
