@@ -57,6 +57,7 @@ class RecurentCall(object):
 class CertificateOK: pass
 
 class X509Credentials(_X509Credentials):
+    """A Twisted enhanced X509Credentials"""
     verify_peer = False
     verify_period = None
 
@@ -111,7 +112,7 @@ class TLSMixin:
 
 
 class TLSClient(TLSMixin, tcp.Client):
-    """I am an TLS client."""
+    """Add TLS capabilities to a TCP client"""
     
     def __init__(self, host, port, bindAddress, credentials, connector, reactor=None):
         self.credentials = credentials
@@ -207,11 +208,7 @@ class TLSConnector(base.BaseConnector):
 
 
 class TLSServer(TLSMixin, tcp.Server):
-    """I am an TLS server.
-    
-    I am a serverside network connection transport; a socket which came from an
-    accept() on a server.
-    """
+    """Add TLS capabilities to a TCP server"""
     
     def __init__(self, sock, protocol, client, server, sessionno):
         self.__watchdog = None
@@ -291,7 +288,7 @@ class TLSServer(TLSMixin, tcp.Server):
 
 
 class TLSPort(tcp.Port):
-    """I am an TLS port."""
+    """TLS enable TCP port"""
     
     transport = TLSServer
 
@@ -300,8 +297,6 @@ class TLSPort(tcp.Port):
         self.credentials = credentials
 
     def createInternetSocket(self):
-        """(internal) create an SSL socket
-        """
         sock = tcp.Port.createInternetSocket(self)
         return ServerSessionFactory(sock, self.credentials, ServerSession)
 
