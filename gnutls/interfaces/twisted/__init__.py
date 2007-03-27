@@ -62,8 +62,7 @@ class X509Credentials(_X509Credentials):
     verify_period = None
 
     def verify_callback(self, peer_cert, preverify_status=None):
-        # here you can take the decision not to drop the connection even
-        # if the initial verify failed, by not raising the exception
+        """Verifies peer certificate and raises an exception if it cannot be accepted"""
         if isinstance(preverify_status, Exception):
             raise preverify_status
         self.check_certificate(peer_cert)
@@ -145,11 +144,9 @@ class TLSClient(TLSMixin, tcp.Client):
             preverify_status = e
         else:
             preverify_status = CertificateOK
-            
+        
         credentials.verify_callback(session.peer_certificate, preverify_status)
         
-        ## If we got here without raising an exception, the peer verification was
-        ## succesful and we can setup the recurent verification (if it was asked for)
         if credentials.verify_period > 0:
             self.__watchdog = RecurentCall(credentials.verify_period, self._recurentVerify)
 
@@ -164,18 +161,17 @@ class TLSClient(TLSMixin, tcp.Client):
         except GNUTLSError, e:
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
-
-        # verify peer after the handshake completion
+        
         try:
             self._verifyPeer()
         except Exception, e:
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
-
-        # If I have reached this point without raising or returning, that means
-        # that the handshake has finished succesfully.
+        
+        ## TLS handshake (including certificate verification) finished succesfully
+        
         del self.doRead
-        # we first stop and then start, to reset any references to the old doRead
+        ## reset any references to the old doRead by stopping and starting
         self.stopReading()
         tcp.Client._connectDone(self)
         
@@ -240,11 +236,9 @@ class TLSServer(TLSMixin, tcp.Server):
             preverify_status = e
         else:
             preverify_status = CertificateOK
-
+        
         credentials.verify_callback(session.peer_certificate, preverify_status)
-
-        ## If we got here without raising an exception, the peer verification was
-        ## succesful and we can setup the recurent verification (if it was asked for)
+        
         if credentials.verify_period > 0:
             self.__watchdog = RecurentCall(credentials.verify_period, self._recurentVerify)
 
@@ -258,18 +252,17 @@ class TLSServer(TLSMixin, tcp.Server):
             return
         except GNUTLSError, e:
             return e
-
-        # verify peer after the handshake completion
+        
         try:
             self._verifyPeer()
         except Exception, e:
             self.loseConnection(e)
             return
-
-        # If I have reached this point without raising or returning, that means
-        # that the handshake has finished succesfully.
+        
+        ## TLS handshake (including certificate verification) finished succesfully
+        
         del self.doRead
-        # we first stop and then start, to reset any references to the old doRead
+        ## reset any references to the old doRead by stopping and starting
         self.stopReading()
         self.startReading()
         del self.protocol.makeConnection
