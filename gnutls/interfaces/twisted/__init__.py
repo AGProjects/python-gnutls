@@ -154,9 +154,12 @@ class TLSClient(TLSMixin, tcp.Client):
             self.__watchdog = RecurentCall(credentials.verify_period, self._recurentVerify)
 
     def doHandshake(self):
+        self.stopWriting()
         try:
             self.socket.handshake()
-        except OperationWouldBlock, e:
+        except (OperationWouldBlock, OperationInterrupted):
+            if self.socket.interrupted_while_writing:
+                self.startWriting()
             return
         except GNUTLSError, e:
             self.failIfNotConnected(err = error.getConnectError(str(e)))
@@ -249,7 +252,7 @@ class TLSServer(TLSMixin, tcp.Server):
         self.stopWriting()
         try:
             self.socket.handshake()
-        except (OperationWouldBlock, OperationInterrupted), e:
+        except (OperationWouldBlock, OperationInterrupted):
             if self.socket.interrupted_while_writing:
                 self.startWriting()
             return
