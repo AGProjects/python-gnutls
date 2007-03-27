@@ -244,7 +244,7 @@ class X509CRL(object):
     def is_revoked(self, cert):
         """Return True if certificate is revoked, False otherwise"""
         if not isinstance(cert, X509Certificate):
-            raise TypeError("cert must be a X509Certificate object")
+            raise TypeError("cert must be an X509Certificate object")
         retcode = gnutls_x509_crt_check_revocation(cert._c_object, byref(self._c_object), 1)
         GNUTLSException.check(retcode)
         return bool(retcode)
