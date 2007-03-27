@@ -117,7 +117,7 @@ class X509Credentials(object):
     del _get_max_verify_bits, _set_max_verify_bits
 
     def check_certificate(self, cert):
-        """Override this method to make additional checks on the certificate."""
+        """Verify activation, expiration and revocation for the given certificate"""
         now = time()
         if cert.activation_time > now:
             raise CertificateError("certificate is not yet activated")        
