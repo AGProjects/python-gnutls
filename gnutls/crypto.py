@@ -66,15 +66,15 @@ class X509Certificate(object):
         instance._c_object = gnutls_x509_crt_t()
         return instance
 
-    def __init__(self, buffer, format=X509_FMT_PEM):
+    def __init__(self, buf, format=X509_FMT_PEM):
         if format not in (X509_FMT_PEM, X509_FMT_DER):
             raise ValueError("Incorrect format: %r" % format)
         retcode = gnutls_x509_crt_init(byref(self._c_object))
         GNUTLSException.check(retcode)
-        if type(buffer) is gnutls_datum_t: ## accept raw certificate data in GNUTLS' datum_t format
-            data = buffer
+        if type(buf) is gnutls_datum_t: ## accept raw certificate data in GNUTLS' datum_t format
+            data = buf
         else:
-            data = gnutls_datum_t(cast(c_char_p(buffer), POINTER(c_ubyte)), c_uint(len(buffer)))
+            data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
         retcode = gnutls_x509_crt_import(self._c_object, byref(data), format)
         GNUTLSException.check(retcode)
 
@@ -184,12 +184,12 @@ class X509PrivateKey(object):
         instance._c_object = gnutls_x509_privkey_t()
         return instance
 
-    def __init__(self, buffer, format=X509_FMT_PEM):
+    def __init__(self, buf, format=X509_FMT_PEM):
         if format not in (X509_FMT_PEM, X509_FMT_DER):
             raise ValueError("Incorrect format: %r" % format)
         retcode = gnutls_x509_privkey_init(byref(self._c_object))
         GNUTLSException.check(retcode)
-        data = gnutls_datum_t(cast(c_char_p(buffer), POINTER(c_ubyte)), c_uint(len(buffer)))
+        data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
         retcode = gnutls_x509_privkey_import(self._c_object, byref(data), format)
         GNUTLSException.check(retcode)
 
@@ -204,12 +204,12 @@ class X509CRL(object):
         instance._c_object = gnutls_x509_crl_t()
         return instance
 
-    def __init__(self, buffer, format=X509_FMT_PEM):
+    def __init__(self, buf, format=X509_FMT_PEM):
         if format not in (X509_FMT_PEM, X509_FMT_DER):
             raise ValueError("Incorrect format: %r" % format)
         retcode = gnutls_x509_crl_init(byref(self._c_object))
         GNUTLSException.check(retcode)
-        data = gnutls_datum_t(cast(c_char_p(buffer), POINTER(c_ubyte)), c_uint(len(buffer)))
+        data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
         retcode = gnutls_x509_crl_import(self._c_object, byref(data), format)
         GNUTLSException.check(retcode)
 
