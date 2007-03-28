@@ -225,27 +225,30 @@ ignore = type('ignore', (), {})()
 # Helpers for writing well behaved decorators
 #
 
-try:
-    from application.python.decorator import *
-except ImportError:
-    def decorator(func):
-        """A syntactic marker with no other effect than improving readability."""
-        return func
-    
-    def preserve_signature(func):
-        """Preserve the original function signature and attributes in decorator wrappers."""
-        from inspect import getargspec, formatargspec
-        signature  = formatargspec(*getargspec(func))[1:-1]
-        parameters = formatargspec(*getargspec(func), **{'formatvalue': lambda value: ""})[1:-1]
-        def fix_signature(wrapper):
-            code = "def %s(%s): return wrapper(%s)\nnew_wrapper = %s\n" % (func.__name__, signature, parameters, func.__name__)
+def decorator(func):
+    """A syntactic marker with no other effect than improving readability."""
+    return func
+
+def preserve_signature(func):
+    """Preserve the original function signature and attributes in decorator wrappers."""
+    from inspect import getargspec, formatargspec
+    from gnutls.constants import GNUTLSConstant
+    constants  = [c for c in (getargspec(func)[3] or []) if isinstance(c, GNUTLSConstant)]
+    signature  = formatargspec(*getargspec(func))[1:-1]
+    parameters = formatargspec(*getargspec(func), **{'formatvalue': lambda value: ""})[1:-1]
+    def fix_signature(wrapper):
+        if constants:
+            ## import the required GNUTLSConstants used as function default arguments
+            code = "from gnutls.constants import %s\n" % ', '.join(c.name for c in constants)
             exec code in locals(), locals()
-            new_wrapper.__name__ = func.__name__
-            new_wrapper.__doc__ = func.__doc__
-            new_wrapper.__module__ = func.__module__
-            new_wrapper.__dict__.update(func.__dict__)
-            return new_wrapper
-        return fix_signature
+        code = "def %s(%s): return wrapper(%s)\nnew_wrapper = %s\n" % (func.__name__, signature, parameters, func.__name__)
+        exec code in locals(), locals()
+        new_wrapper.__name__ = func.__name__
+        new_wrapper.__doc__ = func.__doc__
+        new_wrapper.__module__ = func.__module__
+        new_wrapper.__dict__.update(func.__dict__)
+        return new_wrapper
+    return fix_signature
 
 # Argument validating decorators
 #
