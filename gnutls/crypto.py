@@ -3,8 +3,6 @@
 
 """GNUTLS crypto support"""
 
-# TODO: better error handling and check the error hierarchy
-
 __all__ = ['X509Name', 'X509Certificate', 'X509CRL', 'X509PrivateKey', 'DHParams', 'RSAParams']
 
 import re
@@ -159,7 +157,7 @@ class X509Certificate(object):
     def has_hostname(self, hostname):
         """Return True if the hostname matches the DNSName/IPAddress subject alternative name extension
            of this certificate, False otherwise."""
-        # see http://www.ietf.org/rfc/rfc2459.txt, section 4.2.1.7 Subject Alternative Name
+        ## For details see http://www.ietf.org/rfc/rfc2459.txt, section 4.2.1.7 Subject Alternative Name
         retcode = gnutls_x509_crt_check_hostname(self._c_object, hostname)
         GNUTLSException.check(retcode)
         return bool(retcode)
@@ -218,8 +216,6 @@ class X509CRL(object):
         retcode = gnutls_x509_crl_get_crt_count(self._c_object)
         GNUTLSException.check(retcode)
         return retcode
-
-    # int gnutls_x509_crl_get_crt_serial (gnutls_x509_crl_t crl, int indx, unsigned char * serial, size_t * serial_size, time_t * t)
 
     @property
     def version(self):

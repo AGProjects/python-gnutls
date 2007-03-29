@@ -3,9 +3,6 @@
 
 """GNUTLS connection support"""
 
-# TODO
-# - make the server params callback function work
-
 __all__ = ['X509Credentials', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
 
 from time import time
@@ -231,7 +228,9 @@ class Session(object):
         return self._credentials
     @method_args(X509Credentials)
     def _set_credentials(self, credentials):
-        gnutls_credentials_clear(self._c_object) # do we need this ? -Mircea
+        ## Release all credentials, otherwise gnutls will only release an existing credential of
+        ## the same type as the one being set and we can end up with multiple credentials in C.
+        gnutls_credentials_clear(self._c_object)
         retcode = gnutls_credentials_set(self._c_object, credentials._type, cast(credentials._c_object, c_void_p))
         GNUTLSException.check(retcode)
         self._credentials = credentials
@@ -291,7 +290,8 @@ class Session(object):
             size = len(priorities) + 1
             return (c_int * size)(*priorities)
         session_params = self.credentials.session_params
-        # int gnutls_protocol_set_priority (gnutls_session_t session, const int * list)
+        # protocol order in the priority list is irrelevant (it always uses newer protocols first)
+        # the protocol list only specifies what protocols are to be enabled.
         retcode = gnutls_protocol_set_priority(self._c_object, c_priority_list(session_params.protocols))
         GNUTLSException.check(retcode)
         retcode = gnutls_kx_set_priority(self._c_object, c_priority_list(session_params.kx_algorithms))
@@ -358,7 +358,6 @@ class ServerSession(Session):
     def __init__(self, socket, credentials):
         Session.__init__(self, socket, credentials)
         gnutls_certificate_server_set_request(self._c_object, CERT_REQUEST)
-        # gnutls_dh_set_prime_bits(session, DH_BITS)?
 
 
 class ServerSessionFactory(object):
