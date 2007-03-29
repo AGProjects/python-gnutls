@@ -10,6 +10,7 @@ __all__ = ['X509Name', 'X509Certificate', 'X509CRL', 'X509PrivateKey', 'DHParams
 import re
 from ctypes import *
 
+from gnutls.validators import method_args, none, ignore, list_of, one_of
 from gnutls.constants import X509_FMT_DER, X509_FMT_PEM
 from gnutls.errors import *
 
@@ -66,9 +67,8 @@ class X509Certificate(object):
         instance._c_object = gnutls_x509_crt_t()
         return instance
 
+    @method_args(str, one_of(X509_FMT_PEM, X509_FMT_DER))
     def __init__(self, buf, format=X509_FMT_PEM):
-        if format not in (X509_FMT_PEM, X509_FMT_DER):
-            raise ValueError("Incorrect format: %r" % format)
         retcode = gnutls_x509_crt_init(byref(self._c_object))
         GNUTLSException.check(retcode)
         data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
@@ -146,14 +146,16 @@ class X509Certificate(object):
         GNUTLSException.check(retcode)
         return retcode
 
+    #@method_args(X509Certificate)
     def has_issuer(self, issuer):
         """Return True if the certificate was issued by the given issuer, False otherwise."""
         if not isinstance(issuer, X509Certificate):
-            raise TypeError("issuer must be a X509Certificate object")
+            raise TypeError("issuer must be an X509Certificate object")
         retcode = gnutls_x509_crt_check_issuer(self._c_object, issuer._c_object)
         GNUTLSException.check(retcode)
         return bool(retcode)
 
+    @method_args(str)
     def has_hostname(self, hostname):
         """Return True if the hostname matches the DNSName/IPAddress subject alternative name extension
            of this certificate, False otherwise."""
@@ -181,9 +183,8 @@ class X509PrivateKey(object):
         instance._c_object = gnutls_x509_privkey_t()
         return instance
 
+    @method_args(str, one_of(X509_FMT_PEM, X509_FMT_DER))
     def __init__(self, buf, format=X509_FMT_PEM):
-        if format not in (X509_FMT_PEM, X509_FMT_DER):
-            raise ValueError("Incorrect format: %r" % format)
         retcode = gnutls_x509_privkey_init(byref(self._c_object))
         GNUTLSException.check(retcode)
         data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
@@ -201,9 +202,8 @@ class X509CRL(object):
         instance._c_object = gnutls_x509_crl_t()
         return instance
 
+    @method_args(str, one_of(X509_FMT_PEM, X509_FMT_DER))
     def __init__(self, buf, format=X509_FMT_PEM):
-        if format not in (X509_FMT_PEM, X509_FMT_DER):
-            raise ValueError("Incorrect format: %r" % format)
         retcode = gnutls_x509_crl_init(byref(self._c_object))
         GNUTLSException.check(retcode)
         data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
@@ -238,10 +238,9 @@ class X509CRL(object):
         GNUTLSException.check(retcode)
         return X509Name(dname.value)
 
+    @method_args(X509Certificate)
     def is_revoked(self, cert):
         """Return True if certificate is revoked, False otherwise"""
-        if not isinstance(cert, X509Certificate):
-            raise TypeError("cert must be an X509Certificate object")
         retcode = gnutls_x509_crt_check_revocation(cert._c_object, byref(self._c_object), 1)
         GNUTLSException.check(retcode)
         return bool(retcode)
@@ -259,6 +258,7 @@ class DHParams(object):
         instance._c_object = gnutls_dh_params_t()
         return instance
 
+    @method_args(int)
     def __init__(self, bits=1024):
         gnutls_dh_params_init(byref(self._c_object))
         gnutls_dh_params_generate2(self._c_object, bits)
@@ -280,6 +280,7 @@ class RSAParams(object):
         instance._c_object = gnutls_rsa_params_t()
         return instance
 
+    @method_args(int)
     def __init__(self, bits=1024):
         gnutls_rsa_params_init(byref(self._c_object))
         gnutls_rsa_params_generate2(self._c_object, bits)

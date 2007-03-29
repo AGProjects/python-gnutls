@@ -38,6 +38,7 @@ class X509Credentials(object):
         instance._c_object = gnutls_certificate_credentials_t()
         return instance
 
+    @method_args((X509Certificate, none), (X509PrivateKey, none), list_of(X509Certificate), list_of(X509CRL))
     def __init__(self, cert=None, key=None, trusted=[], crl_list=[]):
         """Credentials object containing an X509 certificate, a private key and 
            optionally a list of trusted CAs and a list of CRLs."""
@@ -62,6 +63,7 @@ class X509Credentials(object):
     def __del__(self):
         self.__deinit(self._c_object)
 
+    @method_args(list_of(X509Certificate))
     def add_trusted(self, trusted):
         size = len(trusted)
         if size > 0:
@@ -95,6 +97,7 @@ class X509Credentials(object):
 
     def _get_crl_list(self):
         return self._crl_list
+    @method_args(list_of(X509CRL)) 
     def _set_crl_list(self, crl_list):
         self._crl_list = tuple(crl_list)
     crl_list = property(_get_crl_list, _set_crl_list)
@@ -102,6 +105,7 @@ class X509Credentials(object):
 
     def _get_max_verify_length(self):
         return self._max_depth
+    @method_args(int) 
     def _set_max_verify_length(self, max_depth):
         gnutls_certificate_set_verify_limits(self._c_object, self._max_bits, max_depth)
         self._max_depth = max_depth
@@ -110,6 +114,7 @@ class X509Credentials(object):
 
     def _get_max_verify_bits(self):
         return self._max_bits
+    @method_args(int) 
     def _set_max_verify_bits(self, max_bits):
         gnutls_certificate_set_verify_limits(self._c_object, max_bits, self._max_depth)
         self._max_bits = max_bits
@@ -224,6 +229,7 @@ class Session(object):
 
     def _get_credentials(self):
         return self._credentials
+    @method_args(X509Credentials)
     def _set_credentials(self, credentials):
         gnutls_credentials_clear(self._c_object) # do we need this ? -Mircea
         retcode = gnutls_credentials_set(self._c_object, credentials._type, cast(credentials._c_object, c_void_p))
@@ -301,6 +307,7 @@ class Session(object):
         retcode = gnutls_handshake(self._c_object)
         GNUTLSException.check(retcode)
 
+    #@method_args((basestring, buffer))
     def send(self, data):
         data = str(data)
         retcode = gnutls_record_send(self._c_object, data, len(data))
@@ -313,9 +320,8 @@ class Session(object):
         GNUTLSException.check(retcode)
         return data.value
 
+    @method_args(one_of(SHUT_RDWR, SHUT_WR))
     def bye(self, how=SHUT_RDWR):
-        if how not in (SHUT_RDWR, SHUT_WR):
-            raise ValueError("Invalid argument: %r" % how)
         retcode = gnutls_bye(self._c_object, how)
         GNUTLSException.check(retcode)
 
@@ -363,7 +369,6 @@ class ServerSessionFactory(object):
         self.socket = socket
         self.credentials = credentials
         self.session_class = session_class
-        #self.credentials.generate_dh_params()
 
     def __getattr__(self, name):
         ## Generic wrapper for the underlying socket methods and attributes
