@@ -71,10 +71,7 @@ class X509Certificate(object):
             raise ValueError("Incorrect format: %r" % format)
         retcode = gnutls_x509_crt_init(byref(self._c_object))
         GNUTLSException.check(retcode)
-        if type(buf) is gnutls_datum_t: ## accept raw certificate data in GNUTLS' datum_t format
-            data = buf
-        else:
-            data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
+        data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
         retcode = gnutls_x509_crt_import(self._c_object, byref(data), format)
         GNUTLSException.check(retcode)
 

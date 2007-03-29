@@ -260,7 +260,8 @@ class Session(object):
         cert_list = gnutls_certificate_get_peers(self._c_object, byref(list_size))
         if list_size.value == 0:
             return None
-        return X509Certificate(cert_list[0], X509_FMT_DER)
+        cert = cert_list[0]
+        return X509Certificate(string_at(cert.data, cert.size), X509_FMT_DER)
 
     # Status checking after an operation was interrupted (it only makes sense
     # to use these properties after an operation was interrupted, else their
