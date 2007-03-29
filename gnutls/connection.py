@@ -318,7 +318,7 @@ class Session(object):
         data = create_string_buffer(limit)
         retcode = gnutls_record_recv(self._c_object, data, limit)
         GNUTLSException.check(retcode)
-        return data.value
+        return data[:retcode]
 
     @method_args(one_of(SHUT_RDWR, SHUT_WR))
     def bye(self, how=SHUT_RDWR):
