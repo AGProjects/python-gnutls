@@ -314,6 +314,12 @@ class Session(object):
         GNUTLSException.check(retcode)
         return retcode
 
+    def sendall(self, data):
+        size = len(data)
+        while size > 0:
+            sent = self.send(data[-size:])
+            size -= sent
+
     def recv(self, limit):
         data = create_string_buffer(limit)
         retcode = gnutls_record_recv(self._c_object, data, limit)
