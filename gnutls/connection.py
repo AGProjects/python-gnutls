@@ -146,7 +146,6 @@ class SessionParams(object):
         self._ciphers = (CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128)
         self._mac_algorithms = (MAC_SHA1, MAC_MD5, MAC_RMD160)
         self._compressions = (COMP_NULL,)
-        self._use_private_extensions = False
 
     def _get_protocols(self):
         return self._protocols
@@ -188,13 +187,6 @@ class SessionParams(object):
     compressions = property(_get_compressions, _set_compressions)
     del _get_compressions, _set_compressions
 
-    def _get_use_private_extensions(self):
-        return self._use_private_extensions or (COMP_LZO in self._compressions)
-    def _set_use_private_extensions(self, value):
-        self._use_private_extensions = bool(value)
-    use_private_extensions = property(_get_use_private_extensions, _set_use_private_extensions)
-    del _get_use_private_extensions, _set_use_private_extensions
-
 
 class Session(object):
     """Abstract class representing a TLS session created from a TCP socket
@@ -214,6 +206,7 @@ class Session(object):
         gnutls_init(byref(self._c_object), self.session_type)
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
+        gnutls_handshake_set_private_extensions(self._c_object, 1)
         self.socket = socket
         self.credentials = credentials
         self._update_params()
@@ -299,7 +292,6 @@ class Session(object):
         gnutls_cipher_set_priority(self._c_object, c_priority_list(session_params.ciphers))
         gnutls_mac_set_priority(self._c_object, c_priority_list(session_params.mac_algorithms))
         gnutls_compression_set_priority(self._c_object, c_priority_list(session_params.compressions))
-        gnutls_handshake_set_private_extensions(self._c_object, int(session_params.use_private_extensions))
 
     def handshake(self):
         gnutls_handshake(self._c_object)
