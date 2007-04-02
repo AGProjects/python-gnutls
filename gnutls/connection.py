@@ -39,11 +39,9 @@ class X509Credentials(object):
     def __init__(self, cert=None, key=None, trusted=[], crl_list=[]):
         """Credentials object containing an X509 certificate, a private key and 
            optionally a list of trusted CAs and a list of CRLs."""
-        retcode = gnutls_certificate_allocate_credentials(byref(self._c_object))
-        GNUTLSException.check(retcode)
+        gnutls_certificate_allocate_credentials(byref(self._c_object))
         if cert and key:
-            retcode = gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
-            GNUTLSException.check(retcode)
+            gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         elif (cert, key) != (None, None):
             raise ValueError("Specify neither or both the certificate and private key")
         # this generates core dumping - gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
@@ -65,8 +63,7 @@ class X509Credentials(object):
         size = len(trusted)
         if size > 0:
             ca_list = (gnutls_x509_crt_t * size)(*[cert._c_object for cert in trusted])
-            retcode = gnutls_certificate_set_x509_trust(self._c_object, cast(byref(ca_list), POINTER(gnutls_x509_crt_t)), size)
-            GNUTLSException.check(retcode)
+            gnutls_certificate_set_x509_trust(self._c_object, cast(byref(ca_list), POINTER(gnutls_x509_crt_t)), size)
             self._trusted = self._trusted + tuple(trusted)
 
     def generate_dh_params(self, bits=DH_BITS):
@@ -206,8 +203,7 @@ class Session(object):
         return instance
 
     def __init__(self, socket, credentials):
-        retcode = gnutls_init(byref(self._c_object), self.session_type)
-        GNUTLSException.check(retcode)
+        gnutls_init(byref(self._c_object), self.session_type)
         # int gnutls_certificate_type_set_priority (gnutls_session_t session, const int * list) TODO?
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
@@ -231,8 +227,7 @@ class Session(object):
         ## Release all credentials, otherwise gnutls will only release an existing credential of
         ## the same type as the one being set and we can end up with multiple credentials in C.
         gnutls_credentials_clear(self._c_object)
-        retcode = gnutls_credentials_set(self._c_object, credentials._type, cast(credentials._c_object, c_void_p))
-        GNUTLSException.check(retcode)
+        gnutls_credentials_set(self._c_object, credentials._type, cast(credentials._c_object, c_void_p))
         self._credentials = credentials
     credentials = property(_get_credentials, _set_credentials)
     del _get_credentials, _set_credentials
@@ -292,27 +287,19 @@ class Session(object):
         session_params = self.credentials.session_params
         # protocol order in the priority list is irrelevant (it always uses newer protocols first)
         # the protocol list only specifies what protocols are to be enabled.
-        retcode = gnutls_protocol_set_priority(self._c_object, c_priority_list(session_params.protocols))
-        GNUTLSException.check(retcode)
-        retcode = gnutls_kx_set_priority(self._c_object, c_priority_list(session_params.kx_algorithms))
-        GNUTLSException.check(retcode)
-        retcode = gnutls_cipher_set_priority(self._c_object, c_priority_list(session_params.ciphers))
-        GNUTLSException.check(retcode)
-        retcode = gnutls_mac_set_priority(self._c_object, c_priority_list(session_params.mac_algorithms))
-        GNUTLSException.check(retcode)
-        retcode = gnutls_compression_set_priority(self._c_object, c_priority_list(session_params.compressions))
-        GNUTLSException.check(retcode)
+        gnutls_protocol_set_priority(self._c_object, c_priority_list(session_params.protocols))
+        gnutls_kx_set_priority(self._c_object, c_priority_list(session_params.kx_algorithms))
+        gnutls_cipher_set_priority(self._c_object, c_priority_list(session_params.ciphers))
+        gnutls_mac_set_priority(self._c_object, c_priority_list(session_params.mac_algorithms))
+        gnutls_compression_set_priority(self._c_object, c_priority_list(session_params.compressions))
 
     def handshake(self):
-        retcode = gnutls_handshake(self._c_object)
-        GNUTLSException.check(retcode)
+        gnutls_handshake(self._c_object)
 
     #@method_args((basestring, buffer))
     def send(self, data):
         data = str(data)
-        retcode = gnutls_record_send(self._c_object, data, len(data))
-        GNUTLSException.check(retcode)
-        return retcode
+        return gnutls_record_send(self._c_object, data, len(data))
 
     def sendall(self, data):
         size = len(data)
@@ -322,14 +309,12 @@ class Session(object):
 
     def recv(self, limit):
         data = create_string_buffer(limit)
-        retcode = gnutls_record_recv(self._c_object, data, limit)
-        GNUTLSException.check(retcode)
-        return data[:retcode]
+        size = gnutls_record_recv(self._c_object, data, limit)
+        return data[:size]
 
     @method_args(one_of(SHUT_RDWR, SHUT_WR))
     def bye(self, how=SHUT_RDWR):
-        retcode = gnutls_bye(self._c_object, how)
-        GNUTLSException.check(retcode)
+        gnutls_bye(self._c_object, how)
 
     def shutdown(self, how=SOCKET_SHUT_RDWR):
         self.socket.shutdown(how)
@@ -339,8 +324,7 @@ class Session(object):
 
     def verify_peer(self):
         status = c_uint()
-        retcode = gnutls_certificate_verify_peers2(self._c_object, byref(status))
-        GNUTLSException.check(retcode)
+        gnutls_certificate_verify_peers2(self._c_object, byref(status))
         status = status.value
         if status & GNUTLS_CERT_INVALID:
             raise CertificateError("invalid certificate")

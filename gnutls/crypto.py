@@ -67,11 +67,9 @@ class X509Certificate(object):
 
     @method_args(str, one_of(X509_FMT_PEM, X509_FMT_DER))
     def __init__(self, buf, format=X509_FMT_PEM):
-        retcode = gnutls_x509_crt_init(byref(self._c_object))
-        GNUTLSException.check(retcode)
+        gnutls_x509_crt_init(byref(self._c_object))
         data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
-        retcode = gnutls_x509_crt_import(self._c_object, byref(data), format)
-        GNUTLSException.check(retcode)
+        gnutls_x509_crt_import(self._c_object, byref(data), format)
 
     def __del__(self):
         self.__deinit(self._c_object)
@@ -80,34 +78,34 @@ class X509Certificate(object):
     def subject(self):
         size = c_size_t(256)
         dname = create_string_buffer(size.value)
-        retcode = gnutls_x509_crt_get_dn(self._c_object, dname, byref(size))
-        if retcode == GNUTLS_E_SHORT_MEMORY_BUFFER:
+        try:
+            gnutls_x509_crt_get_dn(self._c_object, dname, byref(size))
+        except MemoryError:
             dname = create_string_buffer(size.value)
-            retcode = gnutls_x509_crt_get_dn(self._c_object, dname, byref(size))
-        GNUTLSException.check(retcode)
+            gnutls_x509_crt_get_dn(self._c_object, dname, byref(size))
         return X509Name(dname.value)
 
     @property
     def issuer(self):
         size = c_size_t(256)
         dname = create_string_buffer(size.value)
-        retcode = gnutls_x509_crt_get_issuer_dn(self._c_object, dname, byref(size))
-        if retcode == GNUTLS_E_SHORT_MEMORY_BUFFER:
+        try:
+            gnutls_x509_crt_get_issuer_dn(self._c_object, dname, byref(size))
+        except MemoryError:
             dname = create_string_buffer(size.value)
-            retcode = gnutls_x509_crt_get_issuer_dn(self._c_object, dname, byref(size))
-        GNUTLSException.check(retcode)
+            gnutls_x509_crt_get_issuer_dn(self._c_object, dname, byref(size))
         return X509Name(dname.value)
 
     @property
     def serial_number(self):
         size = c_size_t(1)
         serial = c_ulong()
-        retcode = gnutls_x509_crt_get_serial(self._c_object, cast(byref(serial), c_void_p), byref(size))
-        if retcode == GNUTLS_E_SHORT_MEMORY_BUFFER:
+        try:
+            gnutls_x509_crt_get_serial(self._c_object, cast(byref(serial), c_void_p), byref(size))
+        except MemoryError:
             import struct, sys
             serial = create_string_buffer(size.value * sizeof(c_void_p))
-            retcode = gnutls_x509_crt_get_serial(self._c_object, cast(serial, c_void_p), byref(size))
-            GNUTLSException.check(retcode)
+            gnutls_x509_crt_get_serial(self._c_object, cast(serial, c_void_p), byref(size))
             pad = size.value * sizeof(c_void_p) - len(serial.value)
             format = '@%dL' % size.value
             numbers = list(struct.unpack(format, serial.value + pad*'\x00'))
@@ -119,48 +117,33 @@ class X509Certificate(object):
                 number = (number<<offset) + n
             return number
         else:
-            GNUTLSException.check(retcode)
             return serial.value
 
     @property
     def activation_time(self):
-        retcode = gnutls_x509_crt_get_activation_time(self._c_object)
-        if retcode == -1:
-            raise GNUTLSError("cannot retrieve activation time")
-        GNUTLSException.check(retcode)
-        return retcode
+        return gnutls_x509_crt_get_activation_time(self._c_object)
 
     @property
     def expiration_time(self):
-        retcode = gnutls_x509_crt_get_expiration_time(self._c_object)
-        if retcode == -1:
-            raise GNUTLSError("cannot retrieve expiration time")
-        GNUTLSException.check(retcode)
-        return retcode
+        return gnutls_x509_crt_get_expiration_time(self._c_object)
 
     @property
     def version(self):
-        retcode = gnutls_x509_crt_get_version(self._c_object)
-        GNUTLSException.check(retcode)
-        return retcode
+        return gnutls_x509_crt_get_version(self._c_object)
 
     #@method_args(X509Certificate)
     def has_issuer(self, issuer):
         """Return True if the certificate was issued by the given issuer, False otherwise."""
         if not isinstance(issuer, X509Certificate):
             raise TypeError("issuer must be an X509Certificate object")
-        retcode = gnutls_x509_crt_check_issuer(self._c_object, issuer._c_object)
-        GNUTLSException.check(retcode)
-        return bool(retcode)
+        return bool(gnutls_x509_crt_check_issuer(self._c_object, issuer._c_object))
 
     @method_args(str)
     def has_hostname(self, hostname):
         """Return True if the hostname matches the DNSName/IPAddress subject alternative name extension
            of this certificate, False otherwise."""
         ## For details see http://www.ietf.org/rfc/rfc2459.txt, section 4.2.1.7 Subject Alternative Name
-        retcode = gnutls_x509_crt_check_hostname(self._c_object, hostname)
-        GNUTLSException.check(retcode)
-        return bool(retcode)
+        return bool(gnutls_x509_crt_check_hostname(self._c_object, hostname))
 
     def check_issuer(self, issuer):
         """Raise CertificateError if certificate was not issued by the given issuer"""
@@ -183,11 +166,9 @@ class X509PrivateKey(object):
 
     @method_args(str, one_of(X509_FMT_PEM, X509_FMT_DER))
     def __init__(self, buf, format=X509_FMT_PEM):
-        retcode = gnutls_x509_privkey_init(byref(self._c_object))
-        GNUTLSException.check(retcode)
+        gnutls_x509_privkey_init(byref(self._c_object))
         data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
-        retcode = gnutls_x509_privkey_import(self._c_object, byref(data), format)
-        GNUTLSException.check(retcode)
+        gnutls_x509_privkey_import(self._c_object, byref(data), format)
 
     def __del__(self):
         self.__deinit(self._c_object)
@@ -202,44 +183,36 @@ class X509CRL(object):
 
     @method_args(str, one_of(X509_FMT_PEM, X509_FMT_DER))
     def __init__(self, buf, format=X509_FMT_PEM):
-        retcode = gnutls_x509_crl_init(byref(self._c_object))
-        GNUTLSException.check(retcode)
+        gnutls_x509_crl_init(byref(self._c_object))
         data = gnutls_datum_t(cast(c_char_p(buf), POINTER(c_ubyte)), c_uint(len(buf)))
-        retcode = gnutls_x509_crl_import(self._c_object, byref(data), format)
-        GNUTLSException.check(retcode)
+        gnutls_x509_crl_import(self._c_object, byref(data), format)
 
     def __del__(self):
         self.__deinit(self._c_object)
 
     @property
     def count(self):
-        retcode = gnutls_x509_crl_get_crt_count(self._c_object)
-        GNUTLSException.check(retcode)
-        return retcode
+        return gnutls_x509_crl_get_crt_count(self._c_object)
 
     @property
     def version(self):
-        retcode = gnutls_x509_crl_get_version(self._c_object)
-        GNUTLSException.check(retcode)
-        return retcode
+        return gnutls_x509_crl_get_version(self._c_object)
 
     @property
     def issuer(self):
         size = c_size_t(256)
         dname = create_string_buffer(size.value)
-        retcode = gnutls_x509_crl_get_issuer_dn(self._c_object, dname, byref(size))
-        if retcode == GNUTLS_E_SHORT_MEMORY_BUFFER:
+        try:
+            gnutls_x509_crl_get_issuer_dn(self._c_object, dname, byref(size))
+        except MemoryError:
             dname = create_string_buffer(size.value)
-            retcode = gnutls_x509_crl_get_issuer_dn(self._c_object, dname, byref(size))
-        GNUTLSException.check(retcode)
+            gnutls_x509_crl_get_issuer_dn(self._c_object, dname, byref(size))
         return X509Name(dname.value)
 
     @method_args(X509Certificate)
     def is_revoked(self, cert):
         """Return True if certificate is revoked, False otherwise"""
-        retcode = gnutls_x509_crt_check_revocation(cert._c_object, byref(self._c_object), 1)
-        GNUTLSException.check(retcode)
-        return bool(retcode)
+        return bool(gnutls_x509_crt_check_revocation(cert._c_object, byref(self._c_object), 1))
 
     def check_revocation(self, cert):
         """Raise CertificateError if the given certificate is revoked"""
