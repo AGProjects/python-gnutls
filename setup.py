@@ -26,4 +26,10 @@ setup(name         = "python-gnutls",
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules"
       ],
-      packages     = ['gnutls', 'gnutls.interfaces', 'gnutls.interfaces.twisted', 'gnutls.library'])
+      packages     = ['gnutls', 'gnutls.interfaces', 'gnutls.interfaces.twisted', 'gnutls.library'],
+      ext_modules  = [Extension(name='gnutls.library._gnutls_init',
+                          sources=['gnutls/library/_gnutls_init.c'],
+                          include_dirs=[],
+                          library_dirs=[],
+                          libraries=['gcrypt', 'gnutls', 'gnutls-extra'])])
+
