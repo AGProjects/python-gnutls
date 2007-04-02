@@ -213,8 +213,6 @@ class Session(object):
     def __init__(self, socket, credentials):
         gnutls_init(byref(self._c_object), self.session_type)
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
-        use_private_extensions = int(credentials.session_params.use_private_extensions)
-        gnutls_handshake_set_private_extensions(self._c_object, use_private_extensions)
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
         self.socket = socket
         self.credentials = credentials
@@ -301,6 +299,7 @@ class Session(object):
         gnutls_cipher_set_priority(self._c_object, c_priority_list(session_params.ciphers))
         gnutls_mac_set_priority(self._c_object, c_priority_list(session_params.mac_algorithms))
         gnutls_compression_set_priority(self._c_object, c_priority_list(session_params.compressions))
+        gnutls_handshake_set_private_extensions(self._c_object, int(session_params.use_private_extensions))
 
     def handshake(self):
         gnutls_handshake(self._c_object)
