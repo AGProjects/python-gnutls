@@ -9,6 +9,7 @@ from twisted.internet.protocol import ClientFactory
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet import reactor
 
+from gnutls.constants import *
 from gnutls.crypto import *
 from gnutls.errors import *
 from gnutls.interfaces.twisted import X509Credentials

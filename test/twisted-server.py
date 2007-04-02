@@ -11,6 +11,7 @@ from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.error import CannotListenError, ConnectionDone
 from twisted.internet import reactor
 
+from gnutls.constants import *
 from gnutls.crypto import *
 from gnutls.errors import *
 from gnutls.interfaces.twisted import X509Credentials
@@ -52,6 +53,7 @@ ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
 cred = X509Credentials(cert, key, [ca], [crl])
 cred.verify_peer = True
+cred.session_params.compressions = (COMP_LZO, COMP_DEFLATE, COMP_NULL)
 
 reactor.listenTLS(10000, EchoFactory(), cred)
 reactor.run()
