@@ -13,10 +13,11 @@
 #include <gcrypt.h>
 #include <errno.h>
 #include <pthread.h>
+
+// Use POSIX threads for libgcrypt locking
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
-/* List of functions defined in the module */
-
+// List of functions defined in the module
 static PyMethodDef gnutls_methods[] = {
     {NULL, NULL}   // sentinel
 };
@@ -27,7 +28,6 @@ PyDoc_STRVAR(module_doc,
 "initialization functions.");
 
 // Initialization function for the module (must be called init_gnutls_init)
-
 PyMODINIT_FUNC
 init_gnutls_init(void)
 {
