@@ -1,3 +1,3 @@
-recursive-include debian  changelog compat control copyright pycompat rules
-recursive-include test twisted-server.py twisted-client.py server.py client.py
-include MANIFEST.in Makefile
+recursive-include debian   changelog compat control copyright pycompat rules
+recursive-include examples README *.py certs/*.pem certs/valid.* certs/revoked.*
+include MANIFEST.in Makefile build_inplace
