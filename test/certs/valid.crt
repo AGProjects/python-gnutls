@@ -1,91 +1,34 @@
-Certificate:
-    Data:
-        Version: 3 (0x2)
-        Serial Number: 19 (0x13)
-        Signature Algorithm: sha1WithRSAEncryption
-        Issuer: CN=AG Projects Root CA, ST=Noord-Holland, C=NL, O=AG Projects, OU=Managed DNS/emailAddress=support@ag-projects.com
-        Validity
-            Not Before: Jun  1 10:16:05 2006 GMT
-            Not After : May 31 10:16:05 2008 GMT
-        Subject: CN=node003.sipthor.net, ST=Haarlem, C=NL, O=AG Projects, OU=Managed DNS/emailAddress=support@ag-projects.com
-        Subject Public Key Info:
-            Public Key Algorithm: rsaEncryption
-            RSA Public Key: (1024 bit)
-                Modulus (1024 bit):
-                    00:a0:2e:cc:69:7b:d6:de:dc:43:b3:e8:8e:30:fa:
-                    f3:8f:a1:56:44:5b:ba:2e:d4:8f:c8:60:e9:16:c2:
-                    47:8f:85:4a:3f:75:65:4c:b9:22:e4:85:67:3d:56:
-                    ae:53:ea:7f:91:63:a4:73:88:85:d5:75:53:77:49:
-                    3a:33:88:c5:b2:83:d4:00:f0:6e:a6:6c:aa:eb:2a:
-                    af:b8:12:fc:05:aa:cd:6f:97:ea:75:41:c2:a8:a5:
-                    fb:b2:ea:de:b8:fe:c4:75:7c:c5:1a:76:af:47:27:
-                    fc:9b:b1:f1:c9:aa:d4:64:81:ea:ef:b3:75:3f:e0:
-                    00:c1:c3:6e:f4:a3:b0:06:f9
-                Exponent: 65537 (0x10001)
-        X509v3 extensions:
-            X509v3 Basic Constraints: 
-                CA:FALSE
-            X509v3 Subject Key Identifier: 
-                26:35:74:E2:33:FF:1D:A4:97:E0:45:BA:6C:09:A7:F7:14:77:4C:0E
-            X509v3 Authority Key Identifier: 
-                DirName:/CN=AG Projects Root CA/ST=Noord-Holland/C=NL/O=AG Projects/OU=Managed DNS/emailAddress=support@ag-projects.com
-                serial:A7:75:59:D7:7D:68:56:72
-
-            X509v3 Key Usage: 
-                Digital Signature, Non Repudiation, Key Encipherment, Data Encipherment, Key Agreement
-            X509v3 Extended Key Usage: 
-                TLS Web Server Authentication, TLS Web Client Authentication, E-mail Protection, Code Signing
-            Netscape Comment: 
-                Signed by AG Projects Root CA
-            Netscape CA Revocation Url: 
-                https://secure.dns-hosting.info/tls/ca-crl.pem
-            Netscape Base Url: 
-                https://secure.dns-hosting.info/tls/
-            X509v3 Subject Alternative Name: 
-                DNS:proxy.sipthor.net, URI:http://www.ag-projects.com
-    Signature Algorithm: sha1WithRSAEncryption
-        43:56:85:bd:32:f1:6b:fe:f8:5c:14:ab:87:e3:2d:3f:05:c2:
-        32:54:60:36:60:9e:4a:8c:e8:01:25:2f:0f:79:42:ac:e6:40:
-        24:c7:87:8c:88:66:c7:e9:fb:16:50:ad:a9:1a:f3:97:26:f9:
-        fb:63:7d:b4:c5:da:28:7a:3b:70:fc:c7:2b:b5:78:17:cf:8d:
-        8f:d2:63:44:a0:25:fd:9b:ee:f1:f6:a5:a7:bb:15:42:bd:dd:
-        a4:ef:08:04:7d:16:b1:23:2b:a3:b2:88:ab:79:ad:bc:6c:86:
-        a3:73:93:a6:aa:53:c1:b2:5a:c8:b7:aa:de:16:38:0c:a8:67:
-        f3:79:44:7e:8e:d3:70:24:e3:71:3f:00:29:58:cc:b8:b4:26:
-        c9:3a:84:cb:f2:ab:05:bc:3e:ca:e6:09:46:ae:72:17:1e:75:
-        ea:13:98:03:0d:78:9e:87:51:1d:1a:8a:f6:b9:24:d0:b6:5d:
-        3c:a3:69:00:ac:70:5b:37:7d:02:c7:fe:5c:84:0b:2b:2e:4c:
-        dd:9e:44:4c:85:c0:3e:d0:d4:54:a9:41:15:00:22:32:49:e2:
-        4e:db:86:2c:c4:7e:ca:5e:cc:5c:b2:db:68:09:9f:ae:4b:ac:
-        46:c2:b9:ae:ef:c9:c6:91:61:76:53:6d:d1:9a:ea:64:44:2d:
-        47:f3:96:1d
 -----BEGIN CERTIFICATE-----
-MIIFJjCCBA6gAwIBAgIBEzANBgkqhkiG9w0BAQUFADCBlzEcMBoGA1UEAxMTQUcg
-UHJvamVjdHMgUm9vdCBDQTEWMBQGA1UECBMNTm9vcmQtSG9sbGFuZDELMAkGA1UE
-BhMCTkwxFDASBgNVBAoTC0FHIFByb2plY3RzMRQwEgYDVQQLEwtNYW5hZ2VkIERO
-UzEmMCQGCSqGSIb3DQEJARYXc3VwcG9ydEBhZy1wcm9qZWN0cy5jb20wHhcNMDYw
-NjAxMTAxNjA1WhcNMDgwNTMxMTAxNjA1WjCBkTEcMBoGA1UEAxMTbm9kZTAwMy5z
-aXB0aG9yLm5ldDEQMA4GA1UECBMHSGFhcmxlbTELMAkGA1UEBhMCTkwxFDASBgNV
-BAoTC0FHIFByb2plY3RzMRQwEgYDVQQLEwtNYW5hZ2VkIEROUzEmMCQGCSqGSIb3
-DQEJARYXc3VwcG9ydEBhZy1wcm9qZWN0cy5jb20wgZ8wDQYJKoZIhvcNAQEBBQAD
-gY0AMIGJAoGBAKAuzGl71t7cQ7PojjD684+hVkRbui7Uj8hg6RbCR4+FSj91ZUy5
-IuSFZz1WrlPqf5FjpHOIhdV1U3dJOjOIxbKD1ADwbqZsqusqr7gS/AWqzW+X6nVB
-wqil+7Lq3rj+xHV8xRp2r0cn/Jux8cmq1GSB6u+zdT/gAMHDbvSjsAb5AgMBAAGj
-ggIDMIIB/zAJBgNVHRMEAjAAMB0GA1UdDgQWBBQmNXTiM/8dpJfgRbpsCaf3FHdM
-DjCBtgYDVR0jBIGuMIGroYGdpIGaMIGXMRwwGgYDVQQDExNBRyBQcm9qZWN0cyBS
-b290IENBMRYwFAYDVQQIEw1Ob29yZC1Ib2xsYW5kMQswCQYDVQQGEwJOTDEUMBIG
-A1UEChMLQUcgUHJvamVjdHMxFDASBgNVBAsTC01hbmFnZWQgRE5TMSYwJAYJKoZI
-hvcNAQkBFhdzdXBwb3J0QGFnLXByb2plY3RzLmNvbYIJAKd1Wdd9aFZyMAsGA1Ud
-DwQEAwID+DAxBgNVHSUEKjAoBggrBgEFBQcDAQYIKwYBBQUHAwIGCCsGAQUFBwME
-BggrBgEFBQcDAzAsBglghkgBhvhCAQ0EHxYdU2lnbmVkIGJ5IEFHIFByb2plY3Rz
-IFJvb3QgQ0EwPQYJYIZIAYb4QgEEBDAWLmh0dHBzOi8vc2VjdXJlLmRucy1ob3N0
-aW5nLmluZm8vdGxzL2NhLWNybC5wZW0wMwYJYIZIAYb4QgECBCYWJGh0dHBzOi8v
-c2VjdXJlLmRucy1ob3N0aW5nLmluZm8vdGxzLzA4BgNVHREEMTAvghFwcm94eS5z
-aXB0aG9yLm5ldIYaaHR0cDovL3d3dy5hZy1wcm9qZWN0cy5jb20wDQYJKoZIhvcN
-AQEFBQADggEBAENWhb0y8Wv++FwUq4fjLT8FwjJUYDZgnkqM6AElLw95QqzmQCTH
-h4yIZsfp+xZQraka85cm+ftjfbTF2ih6O3D8xyu1eBfPjY/SY0SgJf2b7vH2pae7
-FUK93aTvCAR9FrEjK6OyiKt5rbxshqNzk6aqU8GyWsi3qt4WOAyoZ/N5RH6O03Ak
-43E/AClYzLi0Jsk6hMvyqwW8PsrmCUauchcedeoTmAMNeJ6HUR0aiva5JNC2XTyj
-aQCscFs3fQLH/lyECysuTN2eREyFwD7Q1FSpQRUAIjJJ4k7bhizEfspezFyy22gJ
-n65LrEbCua7vycaRYXZTbdGa6mRELUfzlh0=
+MIIF3jCCA8agAwIBAgIBATANBgkqhkiG9w0BAQUFADCBqzELMAkGA1UEBhMCTkwx
+FjAUBgNVBAgTDU5vb3JkLUhvb2xhbmQxEDAOBgNVBAcTB0hhYXJsZW0xFDASBgNV
+BAoTC0FHIFByb2plY3RzMRQwEgYDVQQLEwtEZXZlbG9wbWVudDEgMB4GA1UEAxMX
+QUcgUHJvamVjdHMgRGV2ZWxvcG1lbnQxJDAiBgkqhkiG9w0BCQEWFWRldmVsQGFn
+LXByb2plY3RzLmNvbTAeFw0wNzA0MDMxMjEwNTFaFw0xNzAzMzExMjEwNTFaMIGk
+MQswCQYDVQQGEwJOTDEWMBQGA1UECBMNTm9vcmQtSG9vbGFuZDEQMA4GA1UEBxMH
+SGFhcmxlbTEUMBIGA1UEChMLQUcgUHJvamVjdHMxFDASBgNVBAsTC0RldmVsb3Bt
+ZW50MRowGAYDVQQDExFWYWxpZCBjZXJ0aWZpY2F0ZTEjMCEGCSqGSIb3DQEJARYU
+dGVzdEBhZy1wcm9qZWN0cy5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGB
+AKYb9BLca4J3yszyRaMC+zvJKheOsROYFN9wIc+EAFO5RUFEFRQ/Ahfw2AmY+1bn
+S5K7tMV8J54coHI0ROohskTEXKx1iF+67Krezf3tfUY0zGPhTGaXJ2OkReAmZQvj
+a4IhWxBTQBFq1bbpDpOy/DJ24nBEgJoPTULfqGx5IVoJAgMBAAGjggGUMIIBkDAJ
+BgNVHRMEAjAAMBEGCWCGSAGG+EIBAQQEAwIGQDArBglghkgBhvhCAQ0EHhYcVGlu
+eUNBIEdlbmVyYXRlZCBDZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUDN4YV9HDpJrHcbzV
+8Ayu0Lymh2AwgeAGA1UdIwSB2DCB1YAUlndPzCUDtctDM6fXnveiAcMIOPqhgbGk
+ga4wgasxCzAJBgNVBAYTAk5MMRYwFAYDVQQIEw1Ob29yZC1Ib29sYW5kMRAwDgYD
+VQQHEwdIYWFybGVtMRQwEgYDVQQKEwtBRyBQcm9qZWN0czEUMBIGA1UECxMLRGV2
+ZWxvcG1lbnQxIDAeBgNVBAMTF0FHIFByb2plY3RzIERldmVsb3BtZW50MSQwIgYJ
+KoZIhvcNAQkBFhVkZXZlbEBhZy1wcm9qZWN0cy5jb22CCQD1dqnIe6qBGTAgBgNV
+HRIEGTAXgRVkZXZlbEBhZy1wcm9qZWN0cy5jb20wHwYDVR0RBBgwFoEUdGVzdEBh
+Zy1wcm9qZWN0cy5jb20wDQYJKoZIhvcNAQEFBQADggIBABCal7eKH7K5UmMt2CRh
+xjLdpLfo2d83dCSvAerabfyLYuSE4qg4pP6x1P3vBGFVuMc504AF+TwZIOLWQ47U
+b0NbzNi49NGPKjCUsjZiAhGE9SBjiac2xZXUW7UytkVlboyeqKn3Tc9rMT+THd/y
+wJj5Nqz2vcAcJ1LSpKs/c+NFE3KX+gdaiQtkgUZfkGBz2N6gvXn6r6w1sY/j8Gdw
+wuVXHv2pbM2zkhUFIFJbuT/3AEQlM2sqk7fVEHlm9cLOtzHsoBVo0pnSw/8mcl5J
+Z6oss51eR8zLVBhU3XrKTbammHv8uZ2vawRKuUR2Ot2RfINAPdwiW6r61ugBj/ux
+HGTmY8uO1Zx8dpNS/cC+HtjTKqD2zaBa6dX+6USf+4jgrVismMGAtUCX7IlwjNYV
+/p5TiwovA5p+xC2KWb9d0vTr8pGHV6vyDaE5Ba0jLfEjkT6b4MbZmWanUDUkYHuy
+P31NTgUPrIiU83bKfBlQZbS5YsyspdJQBzuGuon68Bw/ULpfERdRlipeTpkDhUn3
+gAAS0iLwgPybw8d9/d16nKPCdtSjDBvOUmMLPc0FqggvSGeFkkDn5hiN6eJ4DgTA
+Ze5X9kpc57dV2SvA1eqPCkmA8pZfPWaJtwf5AiiOzhGUAAx4+4hXyRWULIJXNCcD
+175SpToDKAei7ZSJfaiqPU/T
 -----END CERTIFICATE-----
