@@ -4,6 +4,7 @@
 from gnutls.library import _gnutls_init
 from gnutls.library import constants
 from gnutls.library import types
+from gnutls.library import errors
 from gnutls.library import functions
 
 __need_version__ = '1.4.4'
