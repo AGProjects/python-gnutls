@@ -9,7 +9,7 @@
 (^|/)core(\.[0-9]+|)$
 \.(pyc|pyo|o|so|orig|bak|BAK|prof|wpu|cvsignore)$
 (^|/)build($|/)
-^gnutls.xml$
-^test/gnutls-client$
 (^|/)dist($|/)
 ^MANIFEST$
+^gnutls.xml$
+^test/gnutls-client$
