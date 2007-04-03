@@ -11,3 +11,5 @@
 (^|/)build($|/)
 ^gnutls.xml$
 ^test/gnutls-client$
+(^|/)dist($|/)
+^MANIFEST$
