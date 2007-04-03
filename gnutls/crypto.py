@@ -46,7 +46,7 @@ class X509Name(str):
             try:
                 name, value = pair.split('=')
             except ValueError:
-                raise X509NameError("Invalid X509 distinguished name: %s" % dname)
+                raise ValueError("Invalid X509 distinguished name: %s" % dname)
             str.__setattr__(self, name, value)
         for name in X509Name.ids:
             if not hasattr(self, name):
