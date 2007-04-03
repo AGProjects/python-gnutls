@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
-import sys, os
-script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
-gnutls_path = os.path.realpath(os.path.join(script_path, '..'))
-sys.path[0:0] = [gnutls_path]
+"""Asynchronous client using Twisted with GNUTLS"""
+
+import sys
+import os
 
 from twisted.internet.protocol import ClientFactory
 from twisted.protocols.basic import LineOnlyReceiver
@@ -33,6 +33,8 @@ class EchoFactory(ClientFactory):
         print err.value
         reactor.stop()
 
+
+script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
 certs_path = os.path.join(script_path, 'certs')
 
 cert = X509Certificate(open(certs_path + '/valid.crt').read())

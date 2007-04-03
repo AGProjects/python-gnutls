@@ -1,11 +1,10 @@
 #!/usr/bin/python
 
-import sys, os
-script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
-gnutls_path = os.path.realpath(os.path.join(script_path, '..'))
-sys.path[0:0] = [gnutls_path]
+"""Asynchronous server using Twisted with GNUTLS"""
 
-from twisted.internet import pollreactor; pollreactor.install()
+import sys
+import os
+
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.error import CannotListenError, ConnectionDone
@@ -44,7 +43,7 @@ class EchoProtocol(LineOnlyReceiver):
 class EchoFactory(Factory):
     protocol = EchoProtocol
 
-
+script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
 certs_path = os.path.join(script_path, 'certs')
 
 cert = X509Certificate(open(certs_path + '/valid.crt').read())

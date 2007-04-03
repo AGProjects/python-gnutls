@@ -1,22 +1,21 @@
 #!/usr/bin/python
 
-import sys, os
-script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
-gnutls_path = os.path.realpath(os.path.join(script_path, '..'))
-sys.path[0:0] = [gnutls_path]
+"""Synchronous server using python-gnutls"""
 
+import sys
+import os
 import socket
+
 from gnutls.crypto import *
 from gnutls.connection import *
 
+script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
 certs_path = os.path.join(script_path, 'certs')
 
 cert = X509Certificate(open(certs_path + '/valid.crt').read())
 key = X509PrivateKey(open(certs_path + '/valid.key').read())
-
 ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
-
 cred = X509Credentials(cert, key, [ca], [crl])
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,7 +56,6 @@ while True:
                         print "Got quit command, closing connection"
                         session.bye()
                         break
-                #buf = buf.rstrip() + " ACK!\r\n"
                 session.send(buf)
             except Exception, e:
                 print "Error in reception: ", e
