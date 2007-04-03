@@ -24,13 +24,30 @@ from gnutls.interfaces.twisted import X509Credentials
 class EchoProtocol(LineOnlyReceiver):
 
     def connectionMade(self):
+        if not options.verbose:
+            return
         session = self.transport.socket
+        try:
+            peer_name = session.peer_certificate.subject
+        except AttributeError:
+            peer_name = 'Unknown'
+        print '\nNew connection from:', peer_name
+        print 'Protocol:     ', session.protocol
+        print 'KX algorithm: ', session.kx_algorithm
+        print 'Cipher:       ', session.cipher
+        print 'MAC algorithm:', session.mac_algorithm
+        print 'Compression:  ', session.compression
 
     def lineReceived(self, line):
         if line == 'quit':
             self.transport.loseConnection()
             return
         self.sendLine(line)
+
+    def connectionLost(self, reason):
+        if options.verbose and reason.type != ConnectionDone:
+            print "Connection was lost:", str(reason.value)
+
 
 class EchoFactory(Factory):
     protocol = EchoProtocol
@@ -42,6 +59,8 @@ parser.add_option("-p", "--port", dest="port", type="int", default=10000,
                   metavar="port")
 parser.add_option("-v", "--verify", dest="verify", action="store_true", default=0,
                   help="verify peer certificates (default = no)")
+parser.add_option("-V", "--verbose", dest="verbose", action="store_true", default=0,
+                  help="verbose output (default = no)")
 
 options, args = parser.parse_args()
 
