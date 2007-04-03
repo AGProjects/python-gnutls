@@ -67,7 +67,7 @@ options, args = parser.parse_args()
 host, port = args and args[0] or host, options.port
 
 
-certs_path = os.path.join(script_path, 'certs')
+certs_path = os.path.join(gnutls_path, 'examples/certs')
 
 cert = X509Certificate(open(certs_path + '/valid.crt').read())
 key = X509PrivateKey(open(certs_path + '/valid.key').read())

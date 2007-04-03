@@ -45,7 +45,7 @@ parser.add_option("-v", "--verify", dest="verify", action="store_true", default=
 
 options, args = parser.parse_args()
 
-certs_path = os.path.join(script_path, 'certs')
+certs_path = os.path.join(gnutls_path, 'examples/certs')
 
 cert = X509Certificate(open(certs_path + '/valid.crt').read())
 key = X509PrivateKey(open(certs_path + '/valid.key').read())

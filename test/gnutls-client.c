@@ -19,9 +19,9 @@
 
 #define TRIES 100
 
-#define KEYFILE "certs/valid.key"
-#define CERTFILE "certs/valid.crt"
-#define CAFILE "certs/ca.pem"
+#define KEYFILE "../examples/certs/valid.key"
+#define CERTFILE "../examples/certs/valid.crt"
+#define CAFILE "../examples/certs/ca.pem"
 
 
 
