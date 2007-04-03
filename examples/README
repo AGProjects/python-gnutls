@@ -1,9 +1,21 @@
 
-Here are a few examples of using python-gnutls, its Twisted interface and
-the crypto module.
+This directory holds some examples of using python-gnutls. 
 
-To run the examples, either install python-gnutls first, or run this command
-prior to running the examples to indicate where to find python-gnutls:
+- An example of writing a synchronous client and server using the
+  ClientSession and ServerSession classes from python-gnutls is
+  given in client.py and server.py
+
+- An example of writing an asynchronous client and server using the
+  python-gnutls twisted interface is given in twisted-client.py and
+  twisted-server.py
+
+- An example of working with X509 certificates and their attributes
+  as well as using a CRL to check their revocation is in crypto.py
+
+
+
+To run the examples without installing python-gnutls, run the following
+command prior to trying the examples (after python-gnutls was built):
 
 export PYTHONPATH=/path/to/python-gnutls
 
