@@ -3,5 +3,5 @@
 exec openssl s_server -cert ../examples/certs/valid.crt \
                       -key ../examples/certs/valid.key \
                       -CAfile ../examples/certs/ca.pem \
-                      -quiet -accept 10000 -www
+                      -quiet -accept 10000 -www $@
 
