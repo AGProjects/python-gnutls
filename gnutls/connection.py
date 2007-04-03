@@ -30,16 +30,17 @@ class X509Credentials(object):
     rsa_params = None
 
     def __new__(cls, *args, **kwargs):
+        c_object = gnutls_certificate_credentials_t()
+        gnutls_certificate_allocate_credentials(byref(c_object))
         instance = object.__new__(cls)
         instance.__deinit = gnutls_certificate_free_credentials
-        instance._c_object = gnutls_certificate_credentials_t()
+        instance._c_object = c_object
         return instance
 
     @method_args((X509Certificate, none), (X509PrivateKey, none), list_of(X509Certificate), list_of(X509CRL))
     def __init__(self, cert=None, key=None, trusted=[], crl_list=[]):
         """Credentials object containing an X509 certificate, a private key and 
            optionally a list of trusted CAs and a list of CRLs."""
-        gnutls_certificate_allocate_credentials(byref(self._c_object))
         if cert and key:
             gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         elif (cert, key) != (None, None):
