@@ -1,0 +1,9 @@
+
+Here are a few examples of using python-gnutls, its Twisted interface and
+the crypto module.
+
+To run the examples, either install python-gnutls first, or run this command
+prior to running the examples to indicate where to find python-gnutls:
+
+export PYTHONPATH=/path/to/python-gnutls
+
