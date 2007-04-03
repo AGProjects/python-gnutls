@@ -21,7 +21,7 @@ class EchoProtocol(LineOnlyReceiver):
     def connectionMade(self):
         session = self.transport.socket
         try:
-            peer_name = session.peer_certificate.subject.common_name
+            peer_name = session.peer_certificate.subject
         except AttributeError:
             peer_name = 'Unknown'
         print '\nNew connection from:', peer_name

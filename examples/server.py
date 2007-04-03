@@ -31,7 +31,7 @@ while True:
         session.handshake()
         peer_cert = session.peer_certificate
         try:
-            peer_name = peer_cert.subject.common_name
+            peer_name = peer_cert.subject
         except AttributeError:
             peer_name = 'Unknown'
         print '\nNew connection from:', peer_name
