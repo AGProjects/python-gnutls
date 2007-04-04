@@ -13,8 +13,6 @@ certs_path = os.path.join(script_path, 'certs')
 
 cert = X509Certificate(open(certs_path + '/valid.crt').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
-subject = cert.subject
-issuer  = cert.issuer
 
 print ''
 
