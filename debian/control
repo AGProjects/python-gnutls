@@ -9,6 +9,7 @@ Standards-Version: 3.7.2
 Package: python-gnutls
 Architecture: any
 Depends: ${python:Depends}, python-twisted-core, ${shlibs:Depends}
+Provides: ${python:Provides}
 XB-Python-Version: ${python:Versions}
 Description: Python wrapper for the GNUTLS library
  This package provides a high level object oriented wrapper around libgnutls,
