@@ -22,7 +22,7 @@ class KeepRunning:
     """Return this class from a recurent function to indicate that it should keep running"""
     pass
 
-class RecurentCall(object):
+class RecurrentCall(object):
     """Execute a function repeatedly at the given interval, until signaled to stop"""
     def __init__(self, period, func, *args, **kwargs):
         from twisted.internet import reactor
@@ -148,7 +148,7 @@ class TLSClient(TLSMixin, tcp.Client):
         credentials.verify_callback(session.peer_certificate, preverify_status)
         
         if credentials.verify_period > 0:
-            self.__watchdog = RecurentCall(credentials.verify_period, self._recurentVerify)
+            self.__watchdog = RecurrentCall(credentials.verify_period, self._recurentVerify)
 
     def doHandshake(self):
         self.stopWriting()
@@ -240,7 +240,7 @@ class TLSServer(TLSMixin, tcp.Server):
         credentials.verify_callback(session.peer_certificate, preverify_status)
         
         if credentials.verify_period > 0:
-            self.__watchdog = RecurentCall(credentials.verify_period, self._recurentVerify)
+            self.__watchdog = RecurrentCall(credentials.verify_period, self._recurentVerify)
 
     def doHandshake(self):
         self.stopWriting()
