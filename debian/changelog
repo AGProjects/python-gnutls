@@ -1,3 +1,11 @@
+python-gnutls (1.0.2) unstable; urgency=low
+
+  * Avoid the need to handle bye timeouts in the twisted interface by not
+    waiting for the bye notification acknowledgement as we do not use the
+    TCP connection anymore after closing the TLS session.
+
+ -- Dan Pascu <dan@ag-projects.com>  Wed, 11 Apr 2007 18:00:30 +0300
+
 python-gnutls (1.0.1) unstable; urgency=low
 
   * Fixed typo in internal class name in the twisted interface
