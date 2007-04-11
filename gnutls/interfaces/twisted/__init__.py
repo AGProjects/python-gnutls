@@ -94,34 +94,15 @@ class TLSMixin:
             return e
 
     def _postLoseConnection(self):
-        self.doRead = self.doBye
-        self.doWrite = self.doBye
-        # The bye timeout value can be stored on credentials.session_params if needed.
-        # If timeout is 0, we're not going to wait for the bye acknowledgement, else
-        # if positive we wait that much time for the acknwoledgement before giving up.
-        self.__bye_timer = self.reactor.callLater(0, self.startWriting)
-        self.startReading()
-        return self.doBye()
-
-    def doBye(self):
-        if not self.__bye_timer.called:
-            try:
-                self.socket.bye()
-            except OperationWouldBlock, e:
-                return None
-            except GNUTLSError, e:
-                reason = e
-            else:
-                reason = getattr(self, '_close_reason', main.CONNECTION_DONE)
-            self.__bye_timer.cancel()
-        else:
-            reason = getattr(self, '_close_reason', main.CONNECTION_DONE)
-        self.stopReading()
-        self.stopWriting()
-        del self.doRead
-        del self.doWrite
-        del self.__bye_timer
-        return reason
+        try:
+            self.socket.bye()
+        except OperationWouldBlock, e:
+            # Since we do not continue to use the connection after closing TLS
+            # we do not need to wait for the bye notification acknowledgement.
+            pass
+        except GNUTLSError, e:
+            return e
+        return getattr(self, '_close_reason', main.CONNECTION_DONE)
 
 
 class TLSClient(TLSMixin, tcp.Client):
