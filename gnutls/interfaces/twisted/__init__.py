@@ -19,7 +19,7 @@ from gnutls.errors import *
 
 
 class KeepRunning:
-    """Return this class from a recurent function to indicate that it should keep running"""
+    """Return this class from a recurrent function to indicate that it should keep running"""
     pass
 
 class RecurrentCall(object):
@@ -117,7 +117,7 @@ class TLSClient(TLSMixin, tcp.Client):
         sock = tcp.Client.createInternetSocket(self)
         return ClientSession(sock, self.credentials)
 
-    def _recurentVerify(self):
+    def _recurrentVerify(self):
         if not self.connected or self.disconnecting:
             return
         try:
@@ -143,7 +143,7 @@ class TLSClient(TLSMixin, tcp.Client):
         credentials.verify_callback(session.peer_certificate, preverify_status)
         
         if credentials.verify_period > 0:
-            self.__watchdog = RecurrentCall(credentials.verify_period, self._recurentVerify)
+            self.__watchdog = RecurrentCall(credentials.verify_period, self._recurrentVerify)
 
     def doHandshake(self):
         self.stopWriting()
@@ -209,7 +209,7 @@ class TLSServer(TLSMixin, tcp.Server):
         self.credentials = server.credentials
         tcp.Server.__init__(self, sock, protocol, client, server, sessionno)
 
-    def _recurentVerify(self):
+    def _recurrentVerify(self):
         if not self.connected or self.disconnecting:
             return
         try:
@@ -235,7 +235,7 @@ class TLSServer(TLSMixin, tcp.Server):
         credentials.verify_callback(session.peer_certificate, preverify_status)
         
         if credentials.verify_period > 0:
-            self.__watchdog = RecurrentCall(credentials.verify_period, self._recurentVerify)
+            self.__watchdog = RecurrentCall(credentials.verify_period, self._recurrentVerify)
 
     def doHandshake(self):
         self.stopWriting()
