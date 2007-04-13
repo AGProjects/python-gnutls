@@ -160,6 +160,8 @@ class TLSClient(TLSMixin, tcp.Client):
         try:
             self._verifyPeer()
         except Exception, e:
+            self._close_reason = e
+            self._postLoseConnection()
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
         
