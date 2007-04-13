@@ -264,9 +264,9 @@ class Session(object):
         cert = cert_list[0]
         return X509Certificate(string_at(cert.data, cert.size), X509_FMT_DER)
 
-    # Status checking after an operation was interrupted (it only makes sense
-    # to use these properties after an operation was interrupted, else their
-    # value is undefined and irrelevant).
+    # Status checking after an operation was interrupted (these properties are
+    # only useful to check after an operation was interrupted, otherwise their
+    # value is meaningless).
 
     @property
     def interrupted_while_writing(self):
