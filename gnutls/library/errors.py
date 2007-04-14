@@ -42,7 +42,7 @@ def _check_status(retcode, function, args):
         raise OperationInterrupted(gnutls_strerror(retcode))
     elif retcode in (GNUTLS_E_MEMORY_ERROR, GNUTLS_E_SHORT_MEMORY_BUFFER):
         raise MemoryError(ErrorMessage(retcode))
-    elif retcode in (GNUTLS_E_NO_CERTIFICATE_FOUND, ):
+    elif retcode == GNUTLS_E_NO_CERTIFICATE_FOUND:
         raise CertificateError(gnutls_strerror(retcode))
     else:
         raise GNUTLSError(ErrorMessage(retcode))
