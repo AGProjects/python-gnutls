@@ -18,6 +18,9 @@ from gnutls.errors import *
 from gnutls.library.constants import GNUTLS_SERVER, GNUTLS_CLIENT, GNUTLS_CRT_X509
 from gnutls.library.constants import GNUTLS_CERT_INVALID, GNUTLS_CERT_REVOKED, GNUTLS_CERT_INSECURE_ALGORITHM
 from gnutls.library.constants import GNUTLS_CERT_SIGNER_NOT_FOUND, GNUTLS_CERT_SIGNER_NOT_CA
+from gnutls.library.constants import GNUTLS_AL_FATAL, GNUTLS_A_BAD_CERTIFICATE
+from gnutls.library.constants import GNUTLS_A_UNKNOWN_CA, GNUTLS_A_INSUFFICIENT_SECURITY
+from gnutls.library.constants import GNUTLS_A_CERTIFICATE_EXPIRED, GNUTLS_A_CERTIFICATE_REVOKED
 from gnutls.library.types     import gnutls_certificate_credentials_t, gnutls_session_t, gnutls_x509_crt_t
 from gnutls.library.functions import *
 
@@ -312,6 +315,17 @@ class Session(object):
         data = create_string_buffer(limit)
         size = gnutls_record_recv(self._c_object, data, limit)
         return data[:size]
+
+    def send_alert(self, exception):
+        alertdict = {
+            CertificateError: GNUTLS_A_BAD_CERTIFICATE,
+            CertificateAuthorityError: GNUTLS_A_UNKNOWN_CA,
+            CertificateSecurityError: GNUTLS_A_INSUFFICIENT_SECURITY,
+            CertificateExpiredError: GNUTLS_A_CERTIFICATE_EXPIRED,
+            CertificateRevokedError: GNUTLS_A_CERTIFICATE_REVOKED}
+        alert = alertdict.get(exception.__class__)
+        if alert:
+            gnutls_alert_send(self._c_object, GNUTLS_AL_FATAL, alert)
 
     @method_args(one_of(SHUT_RDWR, SHUT_WR))
     def bye(self, how=SHUT_RDWR):

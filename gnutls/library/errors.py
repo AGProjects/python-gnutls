@@ -8,7 +8,10 @@ from gnutls.errors import __all__
 
 from gnutls.library.constants import GNUTLS_E_AGAIN, GNUTLS_E_INTERRUPTED, GNUTLS_E_NO_CERTIFICATE_FOUND
 from gnutls.library.constants import GNUTLS_E_MEMORY_ERROR, GNUTLS_E_SHORT_MEMORY_BUFFER
-from gnutls.library.functions import gnutls_strerror
+from gnutls.library.constants import GNUTLS_E_FATAL_ALERT_RECEIVED, GNUTLS_A_BAD_CERTIFICATE
+from gnutls.library.constants import GNUTLS_A_UNKNOWN_CA, GNUTLS_A_INSUFFICIENT_SECURITY
+from gnutls.library.constants import GNUTLS_A_CERTIFICATE_EXPIRED, GNUTLS_A_CERTIFICATE_REVOKED
+from gnutls.library.functions import gnutls_strerror, gnutls_alert_get
 
 class ErrorMessage(str):
     def __new__(cls, code):
@@ -44,6 +47,16 @@ def _check_status(retcode, function, args):
         raise MemoryError(ErrorMessage(retcode))
     elif retcode == GNUTLS_E_NO_CERTIFICATE_FOUND:
         raise CertificateSecurityError(gnutls_strerror(retcode))
+    elif retcode == GNUTLS_E_FATAL_ALERT_RECEIVED:
+        alertdict = {
+            GNUTLS_A_BAD_CERTIFICATE: (CertificateError, "peer rejected our certificate as invalid"),
+            GNUTLS_A_UNKNOWN_CA: (CertificateAuthorityError, "peer does not trust our certificate authority"),
+            GNUTLS_A_INSUFFICIENT_SECURITY: (CertificateSecurityError, "peer rejected us on insufficient security"),
+            GNUTLS_A_CERTIFICATE_EXPIRED: (CertificateExpiredError, "peer rejected our certificate as expired"),
+            GNUTLS_A_CERTIFICATE_REVOKED: (CertificateRevokedError, "peer rejected our certificate as revoked")}
+        alert = gnutls_alert_get(args[0])
+        exception, reason = alertdict.get(alert, (GNUTLSError, ErrorMessage(retcode)))
+        raise exception(reason)
     else:
         raise GNUTLSError(ErrorMessage(retcode))
 
