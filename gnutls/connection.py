@@ -120,9 +120,9 @@ class X509Credentials(object):
         """Verify activation, expiration and revocation for the given certificate"""
         now = time()
         if cert.activation_time > now:
-            raise CertificateError("certificate is not yet activated")        
+            raise CertificateExpiredError("certificate is not yet activated")        
         if cert.expiration_time < now:
-            raise CertificateError("certificate has expired")
+            raise CertificateExpiredError("certificate has expired")
         for crl in self.crl_list:
             crl.check_revocation(cert)
 
@@ -330,13 +330,13 @@ class Session(object):
         if status & GNUTLS_CERT_INVALID:
             raise CertificateError("invalid certificate")
         elif status & GNUTLS_CERT_SIGNER_NOT_FOUND:
-            raise CertificateError("couldn't find certificate signer")
-        elif status & GNUTLS_CERT_REVOKED:
-            raise CertificateError("certificate was revoked")
+            raise CertificateAuthorityError("couldn't find certificate signer")
         elif status & GNUTLS_CERT_SIGNER_NOT_CA:
-            raise CertificateError("certificate signer is not a CA")
+            raise CertificateAuthorityError("certificate signer is not a CA")
         elif status & GNUTLS_CERT_INSECURE_ALGORITHM:
-            raise CertificateError("insecure algorithm")
+            raise CertificateSecurityError("insecure algorithm")
+        elif status & GNUTLS_CERT_REVOKED:
+            raise CertificateRevokedError("certificate was revoked")
 
 
 class ClientSession(Session):

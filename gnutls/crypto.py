@@ -215,9 +215,9 @@ class X509CRL(object):
         return bool(gnutls_x509_crt_check_revocation(cert._c_object, byref(self._c_object), 1))
 
     def check_revocation(self, cert):
-        """Raise CertificateError if the given certificate is revoked"""
+        """Raise CertificateRevokedError if the given certificate is revoked"""
         if self.is_revoked(cert):
-            raise CertificateError("certificate was revoked")
+            raise CertificateRevokedError("certificate was revoked")
 
 
 class DHParams(object):
