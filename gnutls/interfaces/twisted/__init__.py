@@ -94,6 +94,11 @@ class TLSMixin:
             return e
 
     def _postLoseConnection(self):
+        error = getattr(self, '_close_reason', main.CONNECTION_DONE)
+        try:
+            self.socket.send_alert(error)
+        except:
+            pass
         try:
             self.socket.bye()
         except OperationWouldBlock, e:
@@ -102,7 +107,7 @@ class TLSMixin:
             pass
         except GNUTLSError, e:
             return e
-        return getattr(self, '_close_reason', main.CONNECTION_DONE)
+        return error
 
 
 class TLSClient(TLSMixin, tcp.Client):
