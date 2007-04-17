@@ -9,7 +9,7 @@ import socket
 from time import time
 from errno import EWOULDBLOCK, EINTR
 
-from twisted.python import failure
+from twisted.python import log, failure
 from twisted.internet import main, base, address, tcp, error
 from twisted.internet.protocol import BaseProtocol
 
@@ -99,8 +99,13 @@ class TLSMixin:
                 self.socket.send_alert(reason)
             except OperationInterrupted:
                 self.closeTLSSession(reason, send_reason=True)
-            except:
-                return reason
+            except OperationWouldBlock:
+                # send_alert can only block while writing, thus we cannot send a bye next,
+                # at least not until send_alert returns success and we don't want to wait.
+                log.msg("failed to send close reason notification: %s" % str(e))
+                return
+            except Exception, e:
+                log.msg("failed to send close reason notification: %s" % str(e))
         try:
             self.socket.bye()
         except OperationInterrupted:
@@ -108,14 +113,15 @@ class TLSMixin:
         except OperationWouldBlock, e:
             # Since we do not continue to use the connection after closing TLS
             # we do not need to wait for the bye notification acknowledgement.
-            pass
-        except GNUTLSError, e:
-            return e
-        return reason
+            if self.socket.interrupted_while_writing:
+                log.msg("failed to send close alert: %s" % str(e))
+        except Exception, e:
+            log.msg("failed to send close alert: %s" % str(e))
 
     def _postLoseConnection(self):
         reason = getattr(self, '_close_reason', main.CONNECTION_DONE)
-        return self.closeTLSSession(reason)
+        self.closeTLSSession(reason)
+        return reason
 
 
 class TLSClient(TLSMixin, tcp.Client):
