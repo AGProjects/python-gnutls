@@ -173,11 +173,18 @@ class TLSClient(TLSMixin, tcp.Client):
                 self.startWriting()
             return
         except GNUTLSError, e:
+            self.failIfNotConnected(err = e)
+            return
+        except Exception, e:
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
         
         try:
             self._verifyPeer()
+        except GNUTLSError, e:
+            self.closeTLSSession(e)
+            self.failIfNotConnected(err = e)
+            return
         except Exception, e:
             self.closeTLSSession(e)
             self.failIfNotConnected(err = error.getConnectError(str(e)))
