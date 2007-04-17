@@ -93,21 +93,29 @@ class TLSMixin:
         except GNUTLSError, e:
             return e
 
-    def _postLoseConnection(self):
-        error = getattr(self, '_close_reason', main.CONNECTION_DONE)
-        try:
-            self.socket.send_alert(error)
-        except:
-            pass
+    def closeTLSSession(self, reason, send_reason=True):
+        if send_reason:
+            try:
+                self.socket.send_alert(reason)
+            except OperationInterrupted:
+                self.closeTLSSession(reason, send_reason=True)
+            except:
+                return reason
         try:
             self.socket.bye()
+        except OperationInterrupted:
+            self.closeTLSSession(reason, send_reason=False)
         except OperationWouldBlock, e:
             # Since we do not continue to use the connection after closing TLS
             # we do not need to wait for the bye notification acknowledgement.
             pass
         except GNUTLSError, e:
             return e
-        return error
+        return reason
+
+    def _postLoseConnection(self):
+        reason = getattr(self, '_close_reason', main.CONNECTION_DONE)
+        return self.closeTLSSession(reason)
 
 
 class TLSClient(TLSMixin, tcp.Client):
@@ -165,8 +173,7 @@ class TLSClient(TLSMixin, tcp.Client):
         try:
             self._verifyPeer()
         except Exception, e:
-            self._close_reason = e
-            self._postLoseConnection()
+            self.closeTLSSession(e)
             self.failIfNotConnected(err = error.getConnectError(str(e)))
             return
         
