@@ -62,11 +62,10 @@ class X509Credentials(_X509Credentials):
     verify_period = None
 
     def verify_callback(self, peer_cert, preverify_status=None):
-        """Verifies peer certificate and raises an exception if it cannot be accepted"""
+        """Verifies the peer certificate and raises an exception if it cannot be accepted"""
         if isinstance(preverify_status, Exception):
             raise preverify_status
         self.check_certificate(peer_cert)
-        
 
 
 class TLSMixin:
