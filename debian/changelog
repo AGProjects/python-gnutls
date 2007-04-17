@@ -1,3 +1,24 @@
+python-gnutls (1.1.0) unstable; urgency=low
+
+  * Send TLS bye if the client session peer certificate verification fails
+  * Based CertificateError on GNUTLSError and added 4 new certificate related
+    exceptions derived from it.
+  * Added the ability to send TLS alerts based on certain error conditions
+    Using this mechanism a python exception related to GNUTLS can be mapped
+    to a TLS alert and sent to the peer which will map it back to the original
+    python exception, making it possible to transfer error conditions and
+    raise their corresponding exception on the other side that becomes this
+    way aware of the errors that occured in the peer. Currently this is used
+    to map certificate related exceptions into TLS alerts and back to python
+    exceptions on the other side.
+  * Send a TLS alert before closing a connection as a result of an error in
+    the twisted interface.
+  * Preserve closing reason while sending the close alerts.
+  * Pass the proper exception when a client connection fails.
+  * Improved some exception messages related to certificate errors.
+
+ -- Dan Pascu <dan@ag-projects.com>  Tue, 17 Apr 2007 19:48:01 +0300
+
 python-gnutls (1.0.2) unstable; urgency=low
 
   * Avoid the need to handle bye timeouts in the twisted interface by not
