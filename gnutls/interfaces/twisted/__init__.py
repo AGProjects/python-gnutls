@@ -319,6 +319,7 @@ class TLSPort(tcp.Port):
 
     def _preMakeConnection(self, transport):
         transport.protocol.makeConnection = lambda *args: None
+        transport.protocol.transport = transport ## because we may call connectionLost before connectionMade
         transport.startTLS()
         return tcp.Port._preMakeConnection(self, transport)
 

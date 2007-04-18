@@ -19,8 +19,11 @@ python-gnutls (1.1.0) unstable; urgency=low
   * Added the ability to specify the certificate name to use in exceptions
     raised by certificate checking methods, which helps improve the clarity
     of the error messages.
+  * Set transport on protocol after the TCP connection is made, because we
+    may call connectionLost without calling connectionMade if TLS negociation
+    fails (which in turn will call connectionLost on the protocol).
 
- -- Dan Pascu <dan@ag-projects.com>  Wed, 18 Apr 2007 15:51:35 +0300
+ -- Dan Pascu <dan@ag-projects.com>  Wed, 18 Apr 2007 17:17:46 +0300
 
 python-gnutls (1.0.2) unstable; urgency=low
 
