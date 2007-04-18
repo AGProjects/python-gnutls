@@ -16,7 +16,7 @@ python-gnutls (1.1.0) unstable; urgency=low
   * Preserve closing reason while sending the close alerts.
   * Pass the proper exception when a client connection fails.
   * Improved some exception messages related to certificate errors.
-  * Added ability to specify the certificate name to use in exceptions
+  * Added the ability to specify the certificate name to use in exceptions
     raised by certificate checking methods, which helps improve the clarity
     of the error messages.
 
