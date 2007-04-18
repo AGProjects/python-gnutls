@@ -40,7 +40,7 @@ while True:
         print 'MAC algorithm:', session.mac_algorithm
         print 'Compression:  ', session.compression
         session.verify_peer()
-        cred.check_certificate(peer_cert)
+        cred.check_certificate(peer_cert, cert_name='peer certificate')
     except Exception, e:
         print 'Handshake failed:', e
         session.bye()

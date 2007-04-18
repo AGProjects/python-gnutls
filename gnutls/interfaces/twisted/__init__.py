@@ -65,7 +65,7 @@ class X509Credentials(_X509Credentials):
         """Verifies the peer certificate and raises an exception if it cannot be accepted"""
         if isinstance(preverify_status, Exception):
             raise preverify_status
-        self.check_certificate(peer_cert)
+        self.check_certificate(peer_cert, cert_name='peer certificate')
 
 
 class TLSMixin:

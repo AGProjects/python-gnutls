@@ -119,15 +119,15 @@ class X509Credentials(object):
     max_verify_bits = property(_get_max_verify_bits, _set_max_verify_bits)
     del _get_max_verify_bits, _set_max_verify_bits
 
-    def check_certificate(self, cert):
+    def check_certificate(self, cert, cert_name='certificate'):
         """Verify activation, expiration and revocation for the given certificate"""
         now = time()
         if cert.activation_time > now:
-            raise CertificateExpiredError("certificate is not yet activated")        
+            raise CertificateExpiredError("%s is not yet activated" % cert_name)
         if cert.expiration_time < now:
-            raise CertificateExpiredError("certificate has expired")
+            raise CertificateExpiredError("%s has expired" % cert_name)
         for crl in self.crl_list:
-            crl.check_revocation(cert)
+            crl.check_revocation(cert, cert_name=cert_name)
 
 
 class SessionParams(object):
