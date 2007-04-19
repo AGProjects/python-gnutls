@@ -102,7 +102,7 @@ class TLSMixin:
                 # send_alert can only block while writing, thus we cannot send a bye next,
                 # at least not until send_alert returns success and we don't want to wait.
                 log.msg("failed to send close reason notification: %s" % str(e))
-                return
+                return e
             except Exception, e:
                 log.msg("failed to send close reason notification: %s" % str(e))
         try:
@@ -114,13 +114,21 @@ class TLSMixin:
             # we do not need to wait for the bye notification acknowledgement.
             if self.socket.interrupted_while_writing:
                 log.msg("failed to send close alert: %s" % str(e))
+                return e
         except Exception, e:
             log.msg("failed to send close alert: %s" % str(e))
+            return e
 
     def _postLoseConnection(self):
         reason = getattr(self, '_close_reason', main.CONNECTION_DONE)
         self.closeTLSSession(reason)
         return reason
+
+    def _closeWriteConnection(self):
+        result = self.closeTLSSession(main.CONNECTION_DONE, send_reason=False)
+        if isinstance(result, Exception):
+            return result
+        return tcp.Connection._closeWriteConnection(self)
 
 
 class TLSClient(TLSMixin, tcp.Client):
