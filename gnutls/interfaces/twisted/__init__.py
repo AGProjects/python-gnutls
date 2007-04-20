@@ -15,6 +15,7 @@ from twisted.internet.protocol import BaseProtocol
 
 from gnutls.connection import ClientSession, ServerSession, ServerSessionFactory
 from gnutls.connection import X509Credentials as _X509Credentials
+from gnutls.constants import SHUT_RDWR, SHUT_WR
 from gnutls.errors import *
 
 
@@ -92,40 +93,49 @@ class TLSMixin:
         except GNUTLSError, e:
             return e
 
-    def closeTLSSession(self, reason, send_reason=True):
-        if send_reason:
-            try:
-                self.socket.send_alert(reason)
-            except OperationInterrupted:
-                self.closeTLSSession(reason, send_reason=True)
-            except OperationWouldBlock:
-                # send_alert can only block while writing, thus we cannot send a bye next,
-                # at least not until send_alert returns success and we don't want to wait.
-                log.msg("failed to send close reason notification: %s" % str(e))
-                return e
-            except Exception, e:
-                log.msg("failed to send close reason notification: %s" % str(e))
+    def _sendCloseReason(self, reason):
         try:
-            self.socket.bye()
+            self.socket.send_alert(reason)
         except OperationInterrupted:
-            self.closeTLSSession(reason, send_reason=False)
+            self._sendCloseReason(reason)
+
+    def _sendCloseAlert(self, how=SHUT_RDWR):
+        try:
+            self.socket.bye(how)
+        except OperationInterrupted:
+            self._sendCloseAlert(how)
+
+    def _postLoseConnection(self):
+        try:
+            self._sendCloseReason(self._close_reason)
+        except Exception, e:
+            log.msg("failed to send close reason notification: %s" % str(e))
+        try:
+            self._sendCloseAlert(SHUT_RDWR)
         except OperationWouldBlock, e:
             # Since we do not continue to use the connection after closing TLS
             # we do not need to wait for the bye notification acknowledgement.
             if self.socket.interrupted_while_writing:
                 log.msg("failed to send close alert: %s" % str(e))
-                return e
         except Exception, e:
             log.msg("failed to send close alert: %s" % str(e))
-            return e
+        return self._close_reason
 
-    def _postLoseConnection(self):
-        reason = getattr(self, '_close_reason', main.CONNECTION_DONE)
-        self.closeTLSSession(reason)
-        return reason
+    def endTLSWrite(self):
+        self.stopWriting()
+        try:
+            self._sendCloseAlert(SHUT_WR)
+        except OperationWouldBlock, e:
+            if self.socket.interrupted_while_writing:
+                self.startWriting()
+                return
+        except Exception, e:
+            return e
+        del self.doWrite
 
     def _closeWriteConnection(self):
-        result = self.closeTLSSession(main.CONNECTION_DONE, send_reason=False)
+        self.doWrite = self.endTLSWrite
+        result = self.endTLSWrite()
         if isinstance(result, Exception):
             return result
         return tcp.Connection._closeWriteConnection(self)
