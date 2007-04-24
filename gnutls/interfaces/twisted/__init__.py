@@ -105,9 +105,9 @@ class TLSMixin:
         except OperationInterrupted:
             self._sendCloseAlert(how)
 
-    def _postLoseConnection(self):
+    def closeTLSSession(self, reason):
         try:
-            self._sendCloseReason(self._close_reason)
+            self._sendCloseReason(reason)
         except Exception, e:
             log.msg("failed to send close reason notification: %s" % str(e))
         try:
@@ -119,6 +119,9 @@ class TLSMixin:
                 log.msg("failed to send close alert: %s" % str(e))
         except Exception, e:
             log.msg("failed to send close alert: %s" % str(e))
+
+    def _postLoseConnection(self):
+        self.closeTLSSession(self._close_reason)
         return self._close_reason
 
     def endTLSWrite(self):
