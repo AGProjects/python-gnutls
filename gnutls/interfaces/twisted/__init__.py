@@ -195,9 +195,6 @@ class TLSClient(TLSMixin, tcp.Client):
         except GNUTLSError, e:
             self.failIfNotConnected(err = e)
             return
-        except Exception, e:
-            self.failIfNotConnected(err = error.getConnectError(str(e)))
-            return
         
         try:
             self._verifyPeer()
