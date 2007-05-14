@@ -1,3 +1,9 @@
+python-gnutls (1.1.1) unstable; urgency=low
+
+  * Removed a circular reference manifesting on handshake failures.
+
+ -- Dan Pascu <dan@ag-projects.com>  Mon, 14 May 2007 15:57:06 +0300
+
 python-gnutls (1.1.0) unstable; urgency=low
 
   * Send TLS bye if the client session peer certificate verification fails

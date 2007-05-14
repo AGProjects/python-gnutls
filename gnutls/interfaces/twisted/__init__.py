@@ -185,8 +185,13 @@ class TLSClient(TLSMixin, tcp.Client):
                 self.startWriting()
             return
         except GNUTLSError, e:
+            del self.doRead
             self.failIfNotConnected(err = e)
             return
+        
+        ## reset any references to the old doRead
+        del self.doRead
+        self.stopReading()
         
         try:
             self._verifyPeer()
@@ -200,10 +205,6 @@ class TLSClient(TLSMixin, tcp.Client):
             return
         
         ## TLS handshake (including certificate verification) finished succesfully
-        
-        del self.doRead
-        ## reset any references to the old doRead by stopping and starting
-        self.stopReading()
         tcp.Client._connectDone(self)
         
     def startTLS(self):
@@ -282,7 +283,13 @@ class TLSServer(TLSMixin, tcp.Server):
                 self.startWriting()
             return
         except GNUTLSError, e:
+            del self.doRead
             return e
+        
+        ## reset any references to the old doRead
+        del self.doRead
+        self.stopReading()
+        self.startReading()
         
         try:
             self._verifyPeer()
@@ -292,10 +299,6 @@ class TLSServer(TLSMixin, tcp.Server):
         
         ## TLS handshake (including certificate verification) finished succesfully
         
-        del self.doRead
-        ## reset any references to the old doRead by stopping and starting
-        self.stopReading()
-        self.startReading()
         del self.protocol.makeConnection
         self.protocol.makeConnection(self)
 
