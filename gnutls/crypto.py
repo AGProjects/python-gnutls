@@ -44,7 +44,7 @@ class X509Name(str):
         pairs = [x.replace('\,', ',') for x in re.split(r'(?<!\\),\s*', dname)]
         for pair in pairs:
             try:
-                name, value = pair.split('=')
+                name, value = pair.split('=', 1)
             except ValueError:
                 raise ValueError("Invalid X509 distinguished name: %s" % dname)
             str.__setattr__(self, name, value)
