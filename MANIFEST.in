@@ -1,3 +1,2 @@
-recursive-include debian   changelog compat control copyright examples pycompat rules
 recursive-include examples README *.py certs/*.pem certs/valid.* certs/revoked.*
 include MANIFEST.in Makefile build_inplace
