@@ -1,3 +1,10 @@
+python-gnutls (1.1.2) unstable; urgency=low
+
+  * Added LICENSE and updated copyright notices to reference it.
+  * Only included the relevant examples in the source distribution.
+
+ -- Dan Pascu <dan@ag-projects.com>  Thu, 12 Jul 2007 20:12:44 +0300
+
 python-gnutls (1.1.1) unstable; urgency=low
 
   * Removed a circular reference manifesting on handshake failures.
