@@ -1,0 +1,50 @@
+Changes between 1.1.1 and 1.1.2
+-------------------------------
+
+  * Added LICENSE file and updated copyright notices to reference it.
+  * Only included the relevant examples in the source distribution.
+
+Changes between 1.1.0 and 1.1.1
+-------------------------------
+
+  * Removed a circular reference manifesting on handshake failures.
+
+Changes between 1.0.2 and 1.1.0
+-------------------------------
+
+  * Send TLS bye if the client session peer certificate verification fails
+  * Based CertificateError on GNUTLSError and added 4 new certificate related
+    exceptions derived from it.
+  * Added the ability to send TLS alerts based on certain error conditions
+    Using this mechanism a python exception related to GNUTLS can be mapped
+    to a TLS alert and sent to the peer which will map it back to the original
+    python exception, making it possible to transfer error conditions and
+    raise their corresponding exception on the other side that becomes this
+    way aware of the errors that occured in the peer. Currently this is used
+    to map certificate related exceptions into TLS alerts and back to python
+    exceptions on the other side.
+  * Send a TLS alert before closing a connection as a result of an error in
+    the twisted interface.
+  * Preserve closing reason while sending the close alerts.
+  * Pass the proper exception when a client connection fails.
+  * Improved some exception messages related to certificate errors.
+  * Added the ability to specify the certificate name to use in exceptions
+    raised by certificate checking methods, which helps improve the clarity
+    of the error messages.
+  * Set transport on protocol after the TCP connection is made, because we
+    may call connectionLost without calling connectionMade if TLS negociation
+    fails (which in turn will call connectionLost on the protocol).
+  * Added _closeWriteConnection to handle half closed connections.
+
+Changes between 1.0.1 and 1.0.2
+-------------------------------
+
+  * Avoid the need to handle bye timeouts in the twisted interface by not
+    waiting for the bye notification acknowledgement as we do not use the
+    TCP connection anymore after closing the TLS session.
+
+Changes between 1.0.0 and 1.0.1
+-------------------------------
+
+  * Fixed typo in internal class name in the twisted interface
+
