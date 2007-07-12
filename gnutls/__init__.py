@@ -1,4 +1,4 @@
-# Copyright (C) 2006-2007 Dan Pascu <dan@ag-projects.com>
+# Copyright (C) 2007 AG Projects. See LICENSE for details.
 #
 
 __version__ = '1.1.1'
