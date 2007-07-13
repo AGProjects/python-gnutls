@@ -2,8 +2,9 @@ python-gnutls (1.1.2) unstable; urgency=low
 
   * Added LICENSE and updated copyright notices to reference it.
   * Only included the relevant examples in the source distribution.
+  * Avoid multiple splits on name/value pairs in X509Name.
 
- -- Dan Pascu <dan@ag-projects.com>  Thu, 12 Jul 2007 20:12:44 +0300
+ -- Dan Pascu <dan@ag-projects.com>  Fri, 13 Jul 2007 14:21:12 +0300
 
 python-gnutls (1.1.1) unstable; urgency=low
 

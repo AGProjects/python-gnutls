@@ -3,6 +3,7 @@ Changes between 1.1.1 and 1.1.2
 
   * Added LICENSE file and updated copyright notices to reference it.
   * Only included the relevant examples in the source distribution.
+  * Avoid multiple splits on name/value pairs in X509Name.
 
 Changes between 1.1.0 and 1.1.1
 -------------------------------
