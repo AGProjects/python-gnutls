@@ -33,8 +33,9 @@ init_gnutls_init(void)
 {
     PyObject *m;
 
-    /* Create the module and add the functions */
     m = Py_InitModule3("_gnutls_init", gnutls_methods, module_doc);
+    if (m == NULL)
+        return;
 
     // Enable thread safety for the posix threads library.
     // This must be done before calling gnutls_global_init().
