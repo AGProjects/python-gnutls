@@ -2,8 +2,7 @@ Source: python-gnutls
 Section: python
 Priority: optional
 Maintainer: Dan Pascu <dan@ag-projects.com>
-Build-Depends: cdbs (>= 0.4.47), debhelper (>= 5.0.42), python-all-dev (>= 2.4.4-1), python-central (>= 0.5.6), libgnutls-dev (>= 1.4.4)
-XS-Python-Version: all
+Build-Depends: cdbs (>= 0.4.47), debhelper (>= 5.0.42), python-all-dev (>= 2.4.4-1), python-support, libgnutls-dev (>= 1.4.4)
 Standards-Version: 3.7.2
 
 Package: python-gnutls
@@ -11,7 +10,6 @@ Architecture: any
 Depends: ${python:Depends}, python-ctypes, ${shlibs:Depends}, ${misc:Depends}
 Recommends: python-twisted-core
 Provides: ${python:Provides}
-XB-Python-Version: ${python:Versions}
 Description: Python wrapper for the GNUTLS library
  This package provides a high level object oriented wrapper around
  libgnutls, as well as low level bindings to the GNUTLS types and
