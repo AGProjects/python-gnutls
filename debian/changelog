@@ -2,8 +2,13 @@ python-gnutls (1.1.4) unstable; urgency=low
 
   * Better integration with twisted. The TLSClient and TLSServer
     classes now declare that they implement ISSLTransport.
+  * Added python-ctypes as dependency.
+  * Moved python-twisted-core to Recommends.
+  * Rephrased debian package description.
+  * Do not compress .py files in the examples from the debian package.
+  * Switched to python-support.
 
- -- Dan Pascu <dan@ag-projects.com>  Mon, 17 Sep 2007 16:12:59 +0300
+ -- Dan Pascu <dan@ag-projects.com>  Mon, 17 Sep 2007 16:49:00 +0300
 
 python-gnutls (1.1.3) unstable; urgency=low
 
