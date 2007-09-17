@@ -1,3 +1,9 @@
+Changes in version 1.1.4
+------------------------
+
+  * Better integration with twisted. The TLSClient and TLSServer classes
+    now declare that they implement ISSLTransport.
+
 Changes in version 1.1.3
 ------------------------
 

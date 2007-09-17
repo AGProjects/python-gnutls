@@ -10,8 +10,10 @@ from time import time
 from errno import EWOULDBLOCK, EINTR
 
 from twisted.python import failure
-from twisted.internet import main, base, address, tcp, error
+from twisted.internet import main, base, interfaces, address, tcp, error
 from twisted.internet.protocol import BaseProtocol
+
+from zope.interface import implements, implementsOnly, implementedBy
 
 from gnutls.connection import ClientSession, ServerSession, ServerSessionFactory
 from gnutls.connection import X509Credentials as _X509Credentials
@@ -139,6 +141,8 @@ class TLSMixin:
 class TLSClient(TLSMixin, tcp.Client):
     """Add TLS capabilities to a TCP client"""
     
+    implementsOnly(interfaces.ISSLTransport, *[i for i in implementedBy(tcp.Client) if i != interfaces.ITLSTransport])
+    
     def __init__(self, host, port, bindAddress, credentials, connector, reactor=None):
         self.credentials = credentials
         self.__watchdog = None
@@ -240,6 +244,9 @@ class TLSConnector(base.BaseConnector):
 
 class TLSServer(TLSMixin, tcp.Server):
     """Add TLS capabilities to a TCP server"""
+    
+    #implements(interfaces.ISSLTransport)
+    implementsOnly(interfaces.ISSLTransport, *[i for i in implementedBy(tcp.Server) if i != interfaces.ITLSTransport])
     
     def __init__(self, sock, protocol, client, server, sessionno):
         self.__watchdog = None
