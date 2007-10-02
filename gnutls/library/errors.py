@@ -9,6 +9,7 @@ from gnutls.errors import __all__
 from gnutls.library.constants import GNUTLS_E_AGAIN, GNUTLS_E_INTERRUPTED, GNUTLS_E_NO_CERTIFICATE_FOUND
 from gnutls.library.constants import GNUTLS_E_MEMORY_ERROR, GNUTLS_E_SHORT_MEMORY_BUFFER
 from gnutls.library.constants import GNUTLS_E_FATAL_ALERT_RECEIVED, GNUTLS_A_BAD_CERTIFICATE
+from gnutls.library.constants import GNUTLS_E_REQUESTED_DATA_NOT_AVAILABLE
 from gnutls.library.constants import GNUTLS_A_UNKNOWN_CA, GNUTLS_A_INSUFFICIENT_SECURITY
 from gnutls.library.constants import GNUTLS_A_CERTIFICATE_EXPIRED, GNUTLS_A_CERTIFICATE_REVOKED
 from gnutls.library.functions import gnutls_strerror, gnutls_alert_get
@@ -57,6 +58,8 @@ def _check_status(retcode, function, args):
         alert = gnutls_alert_get(args[0])
         exception, reason = alertdict.get(alert, (GNUTLSError, ErrorMessage(retcode)))
         raise exception(reason)
+    elif retcode == GNUTLS_E_REQUESTED_DATA_NOT_AVAILABLE:
+        raise RequestedDataNotAvailable(gnutls_strerror(retcode))
     else:
         raise GNUTLSError(ErrorMessage(retcode))
 

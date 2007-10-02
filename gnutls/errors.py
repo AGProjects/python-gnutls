@@ -5,7 +5,7 @@
 
 __all__ = ['Error', 'GNUTLSError', 'OperationWouldBlock', 'OperationInterrupted',
            'CertificateError', 'CertificateAuthorityError', 'CertificateSecurityError',
-           'CertificateExpiredError', 'CertificateRevokedError']
+           'CertificateExpiredError', 'CertificateRevokedError', 'RequestedDataNotAvailable']
 
 class Error(Exception): pass
 
@@ -19,3 +19,4 @@ class CertificateSecurityError(CertificateError): pass
 class CertificateExpiredError(CertificateError): pass
 class CertificateRevokedError(CertificateError): pass
 
+class RequestedDataNotAvailable(GNUTLSError): pass

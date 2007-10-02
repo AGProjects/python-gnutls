@@ -21,6 +21,7 @@ from gnutls.library.constants import GNUTLS_CERT_SIGNER_NOT_FOUND, GNUTLS_CERT_S
 from gnutls.library.constants import GNUTLS_AL_FATAL, GNUTLS_A_BAD_CERTIFICATE
 from gnutls.library.constants import GNUTLS_A_UNKNOWN_CA, GNUTLS_A_INSUFFICIENT_SECURITY
 from gnutls.library.constants import GNUTLS_A_CERTIFICATE_EXPIRED, GNUTLS_A_CERTIFICATE_REVOKED
+from gnutls.library.constants import GNUTLS_NAME_DNS
 from gnutls.library.types     import gnutls_certificate_credentials_t, gnutls_session_t, gnutls_x509_crt_t
 from gnutls.library.functions import *
 
@@ -266,6 +267,34 @@ class Session(object):
             return None
         cert = cert_list[0]
         return X509Certificate(string_at(cert.data, cert.size), X509_FMT_DER)
+
+    def _get_server_name_extension(self):
+        data_length = c_size_t(256)
+        data = create_string_buffer(data_length.value)
+        hostname_type = c_uint()
+        for i in xrange(2**16):
+            try:
+                # Try to get the hostname type and required string length first
+                gnutls_server_name_get(self._c_object, data, byref(data_length), byref(hostname_type), i)
+            except RequestedDataNotAvailable:
+                break
+            except MemoryError:
+                if hostname_type.value != GNUTLS_NAME_DNS:
+                    continue
+                # Only if the hostname type is right reserve a string buffer and get the server name
+                # We need to add one byte for the terminating \0
+                data_length.value += 1
+                data = create_string_buffer(data_length.value)
+                gnutls_server_name_get(self._c_object, data, byref(data_length), byref(hostname_type), i)
+            if hostname_type.value != GNUTLS_NAME_DNS:
+                continue
+            return data.value
+        return None
+    @method_args(str)
+    def _set_server_name_extension(self, server_name):
+        gnutls_server_name_set(self._c_object, GNUTLS_NAME_DNS, c_char_p(server_name), len(server_name))
+    server_name_extension = property(_get_server_name_extension, _set_server_name_extension)
+    del _get_server_name_extension, _set_server_name_extension
 
     # Status checking after an operation was interrupted (these properties are
     # only useful to check after an operation was interrupted, otherwise their
