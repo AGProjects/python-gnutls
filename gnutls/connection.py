@@ -274,14 +274,11 @@ class Session(object):
         hostname_type = c_uint()
         for i in xrange(2**16):
             try:
-                # Try to get the hostname type and required string length first
                 gnutls_server_name_get(self._c_object, data, byref(data_length), byref(hostname_type), i)
             except RequestedDataNotAvailable:
                 break
             except MemoryError:
-                if hostname_type.value != GNUTLS_NAME_DNS:
-                    continue
-                # Only if the hostname type is right reserve a string buffer and get the server name
+                # 256 bytes may not be enough, allocate more
                 # We need to add one byte for the terminating \0
                 data_length.value += 1
                 data = create_string_buffer(data_length.value)
