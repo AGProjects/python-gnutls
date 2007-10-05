@@ -269,6 +269,8 @@ class Session(object):
         return X509Certificate(string_at(cert.data, cert.size), X509_FMT_DER)
 
     def _get_server_name_extension(self):
+        if self.session_type == GNUTLS_CLIENT:
+            return self._server_name_extension
         data_length = c_size_t(256)
         data = create_string_buffer(data_length.value)
         hostname_type = c_uint()
@@ -290,6 +292,7 @@ class Session(object):
     @method_args(str)
     def _set_server_name_extension(self, server_name):
         gnutls_server_name_set(self._c_object, GNUTLS_NAME_DNS, c_char_p(server_name), len(server_name))
+        self._server_name_extension = server_name
     server_name_extension = property(_get_server_name_extension, _set_server_name_extension)
     del _get_server_name_extension, _set_server_name_extension
 
