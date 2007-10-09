@@ -25,7 +25,7 @@ __all__ = [
     ## X509 certificate/private key formats
     'X509_FMT_DER', 'X509_FMT_PEM',
 
-    ## Miscelaneous
+    ## Miscellaneous
     'CERT_REQUEST', 'CERT_REQUIRE', 'SHUT_RDWR', 'SHUT_WR'
 ]
 
