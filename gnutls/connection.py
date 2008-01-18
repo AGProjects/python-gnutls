@@ -23,6 +23,7 @@ from gnutls.library.constants import GNUTLS_A_UNKNOWN_CA, GNUTLS_A_INSUFFICIENT_
 from gnutls.library.constants import GNUTLS_A_CERTIFICATE_EXPIRED, GNUTLS_A_CERTIFICATE_REVOKED
 from gnutls.library.constants import GNUTLS_NAME_DNS
 from gnutls.library.types     import gnutls_certificate_credentials_t, gnutls_session_t, gnutls_x509_crt_t
+from gnutls.library.types     import gnutls_certificate_server_retrieve_function
 from gnutls.library.functions import *
 
 
@@ -268,9 +269,9 @@ class Session(object):
         cert = cert_list[0]
         return X509Certificate(string_at(cert.data, cert.size), X509_FMT_DER)
 
-    def _get_server_name_extension(self):
+    def _get_server_name(self):
         if self.session_type == GNUTLS_CLIENT:
-            return self._server_name_extension
+            return self._server_name
         data_length = c_size_t(256)
         data = create_string_buffer(data_length.value)
         hostname_type = c_uint()
@@ -290,11 +291,11 @@ class Session(object):
             return data.value
         return None
     @method_args(str)
-    def _set_server_name_extension(self, server_name):
+    def _set_server_name(self, server_name):
         gnutls_server_name_set(self._c_object, GNUTLS_NAME_DNS, c_char_p(server_name), len(server_name))
-        self._server_name_extension = server_name
-    server_name_extension = property(_get_server_name_extension, _set_server_name_extension)
-    del _get_server_name_extension, _set_server_name_extension
+        self._server_name = server_name
+    server_name = property(_get_server_name, _set_server_name)
+    del _get_server_name, _set_server_name
 
     # Status checking after an operation was interrupted (these properties are
     # only useful to check after an operation was interrupted, otherwise their
@@ -389,19 +390,35 @@ class ClientSession(Session):
 class ServerSession(Session):
     session_type = GNUTLS_SERVER
 
-    def __init__(self, socket, credentials):
+    def __init__(self, socket, credentials, server_name_credentials):
         Session.__init__(self, socket, credentials)
+        gnutls_certificate_server_set_retrieve_function(credentials._c_object, gnutls_certificate_server_retrieve_function(self._cb_retrieve_certificate))
         gnutls_certificate_server_set_request(self._c_object, CERT_REQUEST)
+        self.server_name_credentials = server_name_credentials
+
+    def _cb_retrieve_certificate(self, session, retr_st):
+        server_name = self.server_name
+        if server_name is not None and self.server_name_credentials.has_key(server_name):
+            credentials = self.server_name_credentials[server_name]
+        else:
+            credentials = self.credentials
+        retr_st.contents.type = GNUTLS_CRT_X509
+        retr_st.contents.cert.x509 = pointer(credentials.cert._c_object)
+        retr_st.contents.ncerts = 1
+        retr_st.contents.key.x509 = credentials.key._c_object
+        retr_st.contents.deinit_all = 0
+        return 0
 
 
 class ServerSessionFactory(object):
 
-    def __init__(self, socket, credentials, session_class=ServerSession):
+    def __init__(self, socket, credentials, server_name_credentials = {}, session_class=ServerSession):
         if not issubclass(session_class, ServerSession):
             raise TypeError, "session_class must be a subclass of ServerSession"
         self.socket = socket
         self.credentials = credentials
         self.session_class = session_class
+        self.server_name_credentials = server_name_credentials
 
     def __getattr__(self, name):
         ## Generic wrapper for the underlying socket methods and attributes
@@ -415,7 +432,7 @@ class ServerSessionFactory(object):
 
     def accept(self):
         new_sock, address = self.socket.accept()
-        session = self.session_class(new_sock, self.credentials)
+        session = self.session_class(new_sock, self.credentials, self.server_name_credentials)
         return (session, address)
 
     def shutdown(self, how=SOCKET_SHUT_RDWR):
