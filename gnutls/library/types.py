@@ -18,7 +18,7 @@ class gnutls_session_int(Structure):
 class gnutls_datum_t(Structure):
     pass
 gnutls_openpgp_recv_key_func = CFUNCTYPE(c_int, POINTER(gnutls_session_int), POINTER(c_ubyte), c_uint, POINTER(gnutls_datum_t))
-size_t = c_uint
+size_t = c_size_t
 gnutls_ia_avp_func = CFUNCTYPE(c_int, POINTER(gnutls_session_int), c_void_p, STRING, c_uint, POINTER(STRING), POINTER(size_t))
 class gnutls_ia_server_credentials_st(Structure):
     pass
