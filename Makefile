@@ -20,6 +20,10 @@ gnutls-library: gnutls.xml
 	for cb in $$CALLBACKS; do \
 	    sed -i -r "s/POINTER\($$cb\)/$$cb/g" gnutls/library/functions.py; \
 	done
+	@echo "Fixing 64 bit architecture issues"
+	@cp gnutls/library/types.py gnutls/library/types.py.bak; \
+	sed -i -r "s/size_t = c_uint/size_t = c_size_t/g" gnutls/library/types.py; \
+	sed -i -r "s/__ssize_t = c_int/__ssize_t = c_long/g" gnutls/library/types.py
 
 gnutls.xml: $(HEADER_FILES)
 	h2xml.py $(HEADER_FILES) -o gnutls.xml -q -c
