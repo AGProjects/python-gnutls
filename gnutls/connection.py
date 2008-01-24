@@ -215,6 +215,7 @@ class Session(object):
         gnutls_handshake_set_private_extensions(self._c_object, 1)
         self.socket = socket
         self.credentials = credentials
+        self._server_name = None ## will hold the server name if set by a client session subclass
         self._update_params()
 
     def __del__(self):
