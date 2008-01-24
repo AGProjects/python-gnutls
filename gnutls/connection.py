@@ -393,9 +393,9 @@ class ServerSession(Session):
 
     def __init__(self, socket, credentials, server_name_credentials):
         Session.__init__(self, socket, credentials)
+        self.server_name_credentials = server_name_credentials
         gnutls_certificate_server_set_retrieve_function(credentials._c_object, gnutls_certificate_server_retrieve_function(self._cb_retrieve_certificate))
         gnutls_certificate_server_set_request(self._c_object, CERT_REQUEST)
-        self.server_name_credentials = server_name_credentials
 
     def _cb_retrieve_certificate(self, session, retr_st):
         server_name = self.server_name
