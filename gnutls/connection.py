@@ -1,4 +1,4 @@
-# Copyright (C) 2007 AG Projects. See LICENSE for details.
+# Copyright (C) 2007-2008 AG Projects. See LICENSE for details.
 #
 
 """GNUTLS connection support"""
