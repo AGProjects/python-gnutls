@@ -143,7 +143,7 @@ class TLSClient(TLSMixin, tcp.Client):
     
     implementsOnly(interfaces.ISSLTransport, *[i for i in implementedBy(tcp.Client) if i != interfaces.ITLSTransport])
     
-    def __init__(self, host, port, bindAddress, credentials, server_name, connector, reactor=None):
+    def __init__(self, host, port, bindAddress, credentials, connector, reactor=None, server_name=None):
         self.credentials = credentials
         self.server_name = server_name
         self.__watchdog = None
@@ -151,10 +151,7 @@ class TLSClient(TLSMixin, tcp.Client):
 
     def createInternetSocket(self):
         sock = tcp.Client.createInternetSocket(self)
-        session = ClientSession(sock, self.credentials)
-        if self.server_name:
-            session.server_name = self.server_name
-        return session
+        return ClientSession(sock, self.credentials, self.server_name)
 
     def _recurrentVerify(self):
         if not self.connected or self.disconnecting:
@@ -235,7 +232,7 @@ class TLSClient(TLSMixin, tcp.Client):
 
 
 class TLSConnector(base.BaseConnector):
-    def __init__(self, host, port, factory, credentials, server_name, timeout, bindAddress, reactor=None):
+    def __init__(self, host, port, factory, credentials, timeout, bindAddress, reactor=None, server_name=None):
         self.host = host
         self.port = port
         self.bindAddress = bindAddress
@@ -244,7 +241,7 @@ class TLSConnector(base.BaseConnector):
         base.BaseConnector.__init__(self, factory, timeout, reactor)
 
     def _makeTransport(self):
-        return TLSClient(self.host, self.port, self.bindAddress, self.credentials, self.server_name, self, self.reactor)
+        return TLSClient(self.host, self.port, self.bindAddress, self.credentials, self, self.reactor, self.server_name)
 
 
 class TLSServer(TLSMixin, tcp.Server):
@@ -331,17 +328,17 @@ class TLSServer(TLSMixin, tcp.Server):
 
 class TLSPort(tcp.Port):
     """Add TLS capabilities to a TCP port"""
-    
+
     transport = TLSServer
 
-    def __init__(self, port, factory, credentials, server_name_credentials, backlog=50, interface='', reactor=None):
+    def __init__(self, port, factory, credentials, backlog=50, interface='', reactor=None, server_name_credentials={}):
         tcp.Port.__init__(self, port, factory, backlog, interface, reactor)
         self.credentials = credentials
         self.server_name_credentials = server_name_credentials
 
     def createInternetSocket(self):
         sock = tcp.Port.createInternetSocket(self)
-        return ServerSessionFactory(sock, self.credentials, self.server_name_credentials, ServerSession)
+        return ServerSessionFactory(sock, self.credentials, ServerSession, self.server_name_credentials)
 
     def _preMakeConnection(self, transport):
         transport.protocol.makeConnection = lambda *args: None
@@ -350,14 +347,14 @@ class TLSPort(tcp.Port):
         return tcp.Port._preMakeConnection(self, transport)
 
 
-def connectTLS(reactor, host, port, factory, credentials, server_name=None, timeout=30, bindAddress=None):
-    c = TLSConnector(host, port, factory, credentials, server_name, timeout, bindAddress, reactor)
+def connectTLS(reactor, host, port, factory, credentials, timeout=30, bindAddress=None, server_name=None):
+    c = TLSConnector(host, port, factory, credentials, timeout, bindAddress, reactor, server_name)
     c.connect()
     return c
 
 
-def listenTLS(reactor, port, factory, credentials, server_name_credentials = {}, backlog=50, interface=''):
-    p = TLSPort(port, factory, credentials, server_name_credentials, backlog, interface, reactor)
+def listenTLS(reactor, port, factory, credentials, backlog=50, interface='', server_name_credentials={}):
+    p = TLSPort(port, factory, credentials, backlog, interface, reactor, server_name_credentials)
     p.startListening()
     return p
 

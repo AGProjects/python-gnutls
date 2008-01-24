@@ -387,11 +387,16 @@ class Session(object):
 class ClientSession(Session):
     session_type = GNUTLS_CLIENT
 
+    def __init__(self, socket, credentials, server_name=None):
+        Session.__init__(self, socket, credentials)
+        if server_name is not None:
+            self.server_name = server_name
+
 
 class ServerSession(Session):
     session_type = GNUTLS_SERVER
 
-    def __init__(self, socket, credentials, server_name_credentials):
+    def __init__(self, socket, credentials, server_name_credentials={}):
         Session.__init__(self, socket, credentials)
         self.server_name_credentials = server_name_credentials
         gnutls_certificate_server_set_retrieve_function(credentials._c_object, gnutls_certificate_server_retrieve_function(self._cb_retrieve_certificate))
@@ -413,7 +418,7 @@ class ServerSession(Session):
 
 class ServerSessionFactory(object):
 
-    def __init__(self, socket, credentials, server_name_credentials = {}, session_class=ServerSession):
+    def __init__(self, socket, credentials, session_class=ServerSession, server_name_credentials={}):
         if not issubclass(session_class, ServerSession):
             raise TypeError, "session_class must be a subclass of ServerSession"
         self.socket = socket
