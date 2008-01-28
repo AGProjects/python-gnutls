@@ -409,7 +409,7 @@ class ServerSession(Session):
         else:
             credentials = self.credentials
         retr_st.contents.type = GNUTLS_CRT_X509
-        retr_st.contents.cert.x509 = pointer(credentials.cert._c_object)
+        retr_st.contents.cert.x509.contents = credentials.cert._c_object
         retr_st.contents.ncerts = 1
         retr_st.contents.key.x509 = credentials.key._c_object
         retr_st.contents.deinit_all = 0
