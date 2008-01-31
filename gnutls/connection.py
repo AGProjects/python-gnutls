@@ -296,9 +296,7 @@ class Session(object):
             except RequestedDataNotAvailable:
                 break
             except MemoryError:
-                # 256 bytes may not be enough, allocate more
-                # We need to add one byte for the terminating \0
-                data_length.value += 1
+                data_length.value += 1 ## one extra byte for the terminating 0
                 data = create_string_buffer(data_length.value)
                 gnutls_server_name_get(self._c_object, data, byref(data_length), byref(hostname_type), i)
             if hostname_type.value != GNUTLS_NAME_DNS:
