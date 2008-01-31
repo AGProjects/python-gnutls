@@ -68,7 +68,6 @@ class X509Credentials(object):
         elif (cert, key) != (None, None):
             raise ValueError("Specify neither or both the certificate and private key")
         gnutls_certificate_server_set_retrieve_function(self._c_object, _retrieve_server_certificate)
-        # this generates core dumping - gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
         self._max_depth = 5
         self._max_bits  = 8200
         self._type = CRED_CERTIFICATE
@@ -99,13 +98,6 @@ class X509Credentials(object):
         reference = self.rsa_params ## keep a reference to preserve it until replaced
         X509Credentials.rsa_params = RSAParams(bits)
         del reference
-
-    def __get_params(self, session, type, st):
-        """Callback function that is used when a session requests DH or RSA parameters"""
-        # static int get_params( gnutls_session_t session, gnutls_params_type_t type, gnutls_params_st *st)
-        # see example http://www.gnu.org/software/gnutls/manual/gnutls.html#Parameters-stored-in-credentials -Mircea
-        print "get_params callback:", session, type, st
-        return 0
 
     # Properties
 
