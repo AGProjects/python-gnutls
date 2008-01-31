@@ -5,6 +5,7 @@
 
 __all__ = ['X509Credentials', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
 
+import weakref
 from time import time
 from socket import SHUT_RDWR as SOCKET_SHUT_RDWR
 
@@ -25,6 +26,22 @@ from gnutls.library.constants import GNUTLS_NAME_DNS
 from gnutls.library.types     import gnutls_certificate_credentials_t, gnutls_session_t, gnutls_x509_crt_t
 from gnutls.library.types     import gnutls_certificate_server_retrieve_function
 from gnutls.library.functions import *
+
+
+@gnutls_certificate_server_retrieve_function
+def _retrieve_server_certificate(c_session, retr_st):
+    session = gnutls_session_get_ptr(c_session)
+    server_name = session.server_name
+    if server_name is not None and session.server_name_credentials.has_key(server_name):
+        credentials = session.server_name_credentials[server_name]
+    else:
+        credentials = session.credentials
+    retr_st.contents.type = GNUTLS_CRT_X509
+    retr_st.contents.cert.x509.contents = credentials.cert._c_object
+    retr_st.contents.ncerts = 1
+    retr_st.contents.key.x509 = credentials.key._c_object
+    retr_st.contents.deinit_all = 0
+    return 0
 
 
 class X509Credentials(object):
@@ -50,6 +67,7 @@ class X509Credentials(object):
             gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         elif (cert, key) != (None, None):
             raise ValueError("Specify neither or both the certificate and private key")
+        gnutls_certificate_server_set_retrieve_function(self._c_object, _retrieve_server_certificate)
         # this generates core dumping - gnutls_certificate_set_params_function(self._c_object, gnutls_params_function(self.__get_params))
         self._max_depth = 5
         self._max_bits  = 8200
@@ -210,6 +228,10 @@ class Session(object):
 
     def __init__(self, socket, credentials):
         gnutls_init(byref(self._c_object), self.session_type)
+        ## Store a weak reference to self on the C session and keep it
+        ## around to prevent it from being garbage collected.
+        self._c_object._py_session = py_object(weakref.proxy(self))
+        gnutls_session_set_ptr(self._c_object, self._c_object._py_session)
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
         gnutls_handshake_set_private_extensions(self._c_object, 1)
@@ -399,21 +421,7 @@ class ServerSession(Session):
     def __init__(self, socket, credentials, server_name_credentials={}):
         Session.__init__(self, socket, credentials)
         self.server_name_credentials = server_name_credentials
-        gnutls_certificate_server_set_retrieve_function(credentials._c_object, gnutls_certificate_server_retrieve_function(self._cb_retrieve_certificate))
         gnutls_certificate_server_set_request(self._c_object, CERT_REQUEST)
-
-    def _cb_retrieve_certificate(self, session, retr_st):
-        server_name = self.server_name
-        if server_name is not None and self.server_name_credentials.has_key(server_name):
-            credentials = self.server_name_credentials[server_name]
-        else:
-            credentials = self.credentials
-        retr_st.contents.type = GNUTLS_CRT_X509
-        retr_st.contents.cert.x509.contents = credentials.cert._c_object
-        retr_st.contents.ncerts = 1
-        retr_st.contents.key.x509 = credentials.key._c_object
-        retr_st.contents.deinit_all = 0
-        return 0
 
 
 class ServerSessionFactory(object):
