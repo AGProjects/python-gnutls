@@ -71,9 +71,9 @@ class X509Credentials(object):
         self._max_depth = 5
         self._max_bits  = 8200
         self._type = CRED_CERTIFICATE
+        self._cert = cert
+        self._key = key
         self._trusted = ()
-        self.cert = cert
-        self.key = key
         self.add_trusted(trusted)
         self.crl_list = crl_list
         self.session_params = SessionParams(self._type)
@@ -100,6 +100,14 @@ class X509Credentials(object):
         del reference
 
     # Properties
+
+    @property
+    def cert(self):
+        return self._cert
+
+    @property
+    def key(self):
+        return self._key
 
     @property
     def trusted(self):
