@@ -8,7 +8,7 @@ __all__ = ['X509Name', 'X509Certificate', 'X509CRL', 'X509PrivateKey', 'DHParams
 import re
 from ctypes import *
 
-from gnutls.validators import method_args, none, ignore, list_of, one_of
+from gnutls.validators import method_args, list_of, one_of
 from gnutls.constants import X509_FMT_DER, X509_FMT_PEM
 from gnutls.errors import *
 
