@@ -237,7 +237,6 @@ class Session(object):
         gnutls_handshake_set_private_extensions(self._c_object, 1)
         self.socket = socket
         self.credentials = credentials
-        self._server_name = None ## will hold the server name if set by a client session subclass
         self._update_params()
 
     def __del__(self):
@@ -291,32 +290,6 @@ class Session(object):
             return None
         cert = cert_list[0]
         return X509Certificate(string_at(cert.data, cert.size), X509_FMT_DER)
-
-    def _get_server_name(self):
-        if self.session_type == GNUTLS_CLIENT:
-            return self._server_name
-        data_length = c_size_t(256)
-        data = create_string_buffer(data_length.value)
-        hostname_type = c_uint()
-        for i in xrange(2**16):
-            try:
-                gnutls_server_name_get(self._c_object, data, byref(data_length), byref(hostname_type), i)
-            except RequestedDataNotAvailable:
-                break
-            except MemoryError:
-                data_length.value += 1 ## one extra byte for the terminating 0
-                data = create_string_buffer(data_length.value)
-                gnutls_server_name_get(self._c_object, data, byref(data_length), byref(hostname_type), i)
-            if hostname_type.value != GNUTLS_NAME_DNS:
-                continue
-            return data.value
-        return None
-    @method_args(str)
-    def _set_server_name(self, server_name):
-        gnutls_server_name_set(self._c_object, GNUTLS_NAME_DNS, c_char_p(server_name), len(server_name))
-        self._server_name = server_name
-    server_name = property(_get_server_name, _set_server_name)
-    del _get_server_name, _set_server_name
 
     # Status checking after an operation was interrupted (these properties are
     # only useful to check after an operation was interrupted, otherwise their
@@ -409,8 +382,18 @@ class ClientSession(Session):
 
     def __init__(self, socket, credentials, server_name=None):
         Session.__init__(self, socket, credentials)
+        self._server_name = None
         if server_name is not None:
             self.server_name = server_name
+
+    def _get_server_name(self):
+        return self._server_name
+    @method_args(str)
+    def _set_server_name(self, server_name):
+        gnutls_server_name_set(self._c_object, GNUTLS_NAME_DNS, c_char_p(server_name), len(server_name))
+        self._server_name = server_name
+    server_name = property(_get_server_name, _set_server_name)
+    del _get_server_name, _set_server_name
 
 
 class ServerSession(Session):
@@ -419,6 +402,25 @@ class ServerSession(Session):
     def __init__(self, socket, credentials):
         Session.__init__(self, socket, credentials)
         gnutls_certificate_server_set_request(self._c_object, CERT_REQUEST)
+
+    @property
+    def server_name(self):
+        data_length = c_size_t(256)
+        data = create_string_buffer(data_length.value)
+        hostname_type = c_uint()
+        for i in xrange(2**16):
+            try:
+                gnutls_server_name_get(self._c_object, data, byref(data_length), byref(hostname_type), i)
+            except RequestedDataNotAvailable:
+                break
+            except MemoryError:
+                data_length.value += 1 ## one extra byte for the terminating 0
+                data = create_string_buffer(data_length.value)
+                gnutls_server_name_get(self._c_object, data, byref(data_length), byref(hostname_type), i)
+            if hostname_type.value != GNUTLS_NAME_DNS:
+                continue
+            return data.value
+        return None
 
 
 class ServerSessionFactory(object):
