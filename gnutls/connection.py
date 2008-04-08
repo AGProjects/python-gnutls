@@ -416,21 +416,19 @@ class ClientSession(Session):
 class ServerSession(Session):
     session_type = GNUTLS_SERVER
 
-    def __init__(self, socket, credentials, server_name_credentials={}):
+    def __init__(self, socket, credentials):
         Session.__init__(self, socket, credentials)
-        self.server_name_credentials = server_name_credentials
         gnutls_certificate_server_set_request(self._c_object, CERT_REQUEST)
 
 
 class ServerSessionFactory(object):
 
-    def __init__(self, socket, credentials, session_class=ServerSession, server_name_credentials={}):
+    def __init__(self, socket, credentials, session_class=ServerSession):
         if not issubclass(session_class, ServerSession):
             raise TypeError, "session_class must be a subclass of ServerSession"
         self.socket = socket
         self.credentials = credentials
         self.session_class = session_class
-        self.server_name_credentials = server_name_credentials
 
     def __getattr__(self, name):
         ## Generic wrapper for the underlying socket methods and attributes
@@ -444,7 +442,7 @@ class ServerSessionFactory(object):
 
     def accept(self):
         new_sock, address = self.socket.accept()
-        session = self.session_class(new_sock, self.credentials, self.server_name_credentials)
+        session = self.session_class(new_sock, self.credentials)
         return (session, address)
 
     def shutdown(self, how=SOCKET_SHUT_RDWR):
