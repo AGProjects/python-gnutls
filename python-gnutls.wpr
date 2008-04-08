@@ -1,34 +1,15 @@
 #!wing
-#!version=2.0
+#!version=3.0
 ##################################################################
 # Wing IDE project file                                          #
 ##################################################################
 [project attributes]
-proj.file-list = [loc('examples/client.py'),
-                  loc('examples/crypto.py'),
-                  loc('examples/server.py'),
-                  loc('examples/twisted-client.py'),
-                  loc('examples/twisted-server.py'),
-                  loc('gnutls/connection.py'),
-                  loc('gnutls/constants.py'),
-                  loc('gnutls/crypto.py'),
-                  loc('gnutls/errors.py'),
-                  loc('gnutls/interfaces/twisted/__init__.py'),
-                  loc('gnutls/interfaces/__init__.py'),
-                  loc('gnutls/library/constants.py'),
-                  loc('gnutls/library/errors.py'),
-                  loc('gnutls/library/functions.py'),
-                  loc('gnutls/library/types.py'),
-                  loc('gnutls/library/_gnutls_init.c'),
-                  loc('gnutls/library/__init__.py'),
-                  loc('gnutls/validators.py'),
-                  loc('gnutls/__init__.py'),
-                  loc('test/gnutls-client.c'),
-                  loc('test/gnutls-server'),
-                  loc('test/Makefile'),
-                  loc('test/openssl-server'),
-                  loc('test/tc-gnutls.py'),
-                  loc('test/tc-openssl.py'),
-                  loc('test/ts-gnutls.py'),
-                  loc('test/ts-openssl.py')]
+proj.directory-list = [{'dirloc': loc('.'),
+                        'excludes': [u'_darcs',
+                                     u'gnutls.xml',
+                                     u'examples/certs'],
+                        'filter': 'All Source Files',
+                        'include_hidden': 1,
+                        'recursive': 1,
+                        'watch_for_changes': 1}]
 proj.file-type = 'shared'
