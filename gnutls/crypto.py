@@ -12,6 +12,8 @@ from gnutls.validators import method_args, list_of, one_of
 from gnutls.constants import X509_FMT_DER, X509_FMT_PEM
 from gnutls.errors import *
 
+from gnutls.library.constants import GNUTLS_SAN_DNSNAME, GNUTLS_SAN_RFC822NAME, GNUTLS_SAN_URI
+from gnutls.library.constants import GNUTLS_SAN_IPADDRESS, GNUTLS_SAN_OTHERNAME, GNUTLS_SAN_DN
 from gnutls.library.constants import GNUTLS_E_SHORT_MEMORY_BUFFER
 from gnutls.library.types     import *
 from gnutls.library.functions import *
@@ -57,12 +59,22 @@ class X509Name(str):
         str.__setattr__(self, name, value)
 
 
+class AlternativeNames(object):
+    __slots__ = {'dns': GNUTLS_SAN_DNSNAME, 'email': GNUTLS_SAN_RFC822NAME, 'uri': GNUTLS_SAN_URI,
+                 'ip': GNUTLS_SAN_IPADDRESS, 'other': GNUTLS_SAN_OTHERNAME, 'dn': GNUTLS_SAN_DN}
+    def __init__(self, names):
+        object.__init__(self)
+        for name, key in self.__slots__.iteritems():
+            setattr(self, name, tuple(names.get(key, ())))
+
+
 class X509Certificate(object):
 
     def __new__(cls, *args, **kwargs):
         instance = object.__new__(cls)
         instance.__deinit = gnutls_x509_crt_deinit
         instance._c_object = gnutls_x509_crt_t()
+        instance._alternative_names = None
         return instance
 
     @method_args(str, one_of(X509_FMT_PEM, X509_FMT_DER))
@@ -95,6 +107,25 @@ class X509Certificate(object):
             dname = create_string_buffer(size.value)
             gnutls_x509_crt_get_issuer_dn(self._c_object, dname, byref(size))
         return X509Name(dname.value)
+
+    @property
+    def alternative_names(self):
+        if self._alternative_names is not None:
+            return self._alternative_names
+        names = {}
+        size = c_size_t(256)
+        alt_name = create_string_buffer(size.value)
+        for i in xrange(65536):
+            try:
+                name_type = gnutls_x509_crt_get_subject_alt_name(self._c_object, i, alt_name, byref(size), None)
+            except RequestedDataNotAvailable:
+                break
+            except MemoryError:
+                alt_name = create_string_buffer(size.value)
+                name_type = gnutls_x509_crt_get_subject_alt_name(self._c_object, i, alt_name, byref(size), None)
+            names.setdefault(name_type, []).append(alt_name.value)
+        self._alternative_names = AlternativeNames(names)
+        return self._alternative_names
 
     @property
     def serial_number(self):
