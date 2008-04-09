@@ -7,7 +7,7 @@ from gnutls.library import types
 from gnutls.library import errors
 from gnutls.library import functions
 
-__need_version__ = '1.4.4'
+__need_version__ = '2.0.1'
 
 if functions.gnutls_check_version(__need_version__) is None:
     version = functions.gnutls_check_version(None)

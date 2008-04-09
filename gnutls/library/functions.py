@@ -24,9 +24,12 @@ from gnutls.library.constants import gnutls_kx_algorithm_t
 from gnutls.library.constants import gnutls_mac_algorithm_t
 from gnutls.library.constants import gnutls_compression_method_t
 from gnutls.library.constants import gnutls_certificate_type_t
+from gnutls.library.constants import gnutls_protocol_t
 from gnutls.library.constants import gnutls_handshake_description_t
 from gnutls.library.constants import gnutls_server_name_type_t
-from gnutls.library.constants import gnutls_protocol_t
+from gnutls.library.constants import gnutls_supplemental_data_format_type_t
+from gnutls.library.types import gnutls_authz_recv_callback_func
+from gnutls.library.types import gnutls_authz_send_callback_func
 from gnutls.library.types import gnutls_db_retr_func
 from gnutls.library.types import gnutls_db_remove_func
 from gnutls.library.types import gnutls_db_store_func
@@ -55,9 +58,11 @@ from gnutls.library.types import gnutls_srp_server_credentials_t
 from gnutls.library.types import gnutls_srp_server_credentials_function
 from gnutls.library.types import gnutls_srp_client_credentials_function
 from gnutls.library.types import gnutls_psk_client_credentials_t
+from gnutls.library.constants import gnutls_psk_key_flags
 from gnutls.library.types import gnutls_psk_server_credentials_t
 from gnutls.library.types import gnutls_psk_server_credentials_function
 from gnutls.library.types import gnutls_psk_client_credentials_function
+from gnutls.library.types import gnutls_sign_func
 from gnutls.library.types import gnutls_certificate_client_retrieve_function
 from gnutls.library.types import gnutls_certificate_server_retrieve_function
 from gnutls.library.constants import gnutls_certificate_request_t
@@ -67,6 +72,9 @@ from gnutls.library.types import gnutls_openpgp_privkey_t
 from gnutls.library.types import gnutls_openpgp_keyring_t
 from gnutls.library.types import gnutls_openpgp_trustdb_t
 from gnutls.library.constants import gnutls_x509_subject_alt_name_t
+from gnutls.library.types import gnutls_certificate_print_formats_t
+from gnutls.library.types import gnutls_x509_dn_t
+from gnutls.library.types import gnutls_x509_ava_st
 from gnutls.library.types import gnutls_pkcs7_t
 from gnutls.library.types import gnutls_x509_crq_t
 
@@ -224,6 +232,27 @@ gnutls_kx_get_name.argtypes = [gnutls_kx_algorithm_t]
 gnutls_certificate_type_get_name = _libraries['libgnutls.so.13'].gnutls_certificate_type_get_name
 gnutls_certificate_type_get_name.restype = STRING
 gnutls_certificate_type_get_name.argtypes = [gnutls_certificate_type_t]
+gnutls_cipher_list = _libraries['libgnutls.so.13'].gnutls_cipher_list
+gnutls_cipher_list.restype = POINTER(gnutls_cipher_algorithm_t)
+gnutls_cipher_list.argtypes = []
+gnutls_mac_list = _libraries['libgnutls.so.13'].gnutls_mac_list
+gnutls_mac_list.restype = POINTER(gnutls_mac_algorithm_t)
+gnutls_mac_list.argtypes = []
+gnutls_compression_list = _libraries['libgnutls.so.13'].gnutls_compression_list
+gnutls_compression_list.restype = POINTER(gnutls_compression_method_t)
+gnutls_compression_list.argtypes = []
+gnutls_protocol_list = _libraries['libgnutls.so.13'].gnutls_protocol_list
+gnutls_protocol_list.restype = POINTER(gnutls_protocol_t)
+gnutls_protocol_list.argtypes = []
+gnutls_certificate_type_list = _libraries['libgnutls.so.13'].gnutls_certificate_type_list
+gnutls_certificate_type_list.restype = POINTER(gnutls_certificate_type_t)
+gnutls_certificate_type_list.argtypes = []
+gnutls_kx_list = _libraries['libgnutls.so.13'].gnutls_kx_list
+gnutls_kx_list.restype = POINTER(gnutls_kx_algorithm_t)
+gnutls_kx_list.argtypes = []
+gnutls_cipher_suite_info = _libraries['libgnutls.so.13'].gnutls_cipher_suite_info
+gnutls_cipher_suite_info.restype = STRING
+gnutls_cipher_suite_info.argtypes = [size_t, STRING, POINTER(gnutls_kx_algorithm_t), POINTER(gnutls_cipher_algorithm_t), POINTER(gnutls_mac_algorithm_t), POINTER(gnutls_protocol_t)]
 gnutls_error_is_fatal = _libraries['libgnutls.so.13'].gnutls_error_is_fatal
 gnutls_error_is_fatal.restype = c_int
 gnutls_error_is_fatal.argtypes = [c_int]
@@ -275,6 +304,24 @@ gnutls_server_name_set.argtypes = [gnutls_session_t, gnutls_server_name_type_t, 
 gnutls_server_name_get = _libraries['libgnutls.so.13'].gnutls_server_name_get
 gnutls_server_name_get.restype = c_int
 gnutls_server_name_get.argtypes = [gnutls_session_t, c_void_p, POINTER(size_t), POINTER(c_uint), c_uint]
+gnutls_supplemental_get_name = _libraries['libgnutls.so.13'].gnutls_supplemental_get_name
+gnutls_supplemental_get_name.restype = STRING
+gnutls_supplemental_get_name.argtypes = [gnutls_supplemental_data_format_type_t]
+gnutls_authz_enable = _libraries['libgnutls.so.13'].gnutls_authz_enable
+gnutls_authz_enable.restype = None
+gnutls_authz_enable.argtypes = [gnutls_session_t, POINTER(c_int), POINTER(c_int), gnutls_authz_recv_callback_func, gnutls_authz_send_callback_func]
+gnutls_authz_send_x509_attr_cert = _libraries['libgnutls.so.13'].gnutls_authz_send_x509_attr_cert
+gnutls_authz_send_x509_attr_cert.restype = c_int
+gnutls_authz_send_x509_attr_cert.argtypes = [gnutls_session_t, STRING, size_t]
+gnutls_authz_send_saml_assertion = _libraries['libgnutls.so.13'].gnutls_authz_send_saml_assertion
+gnutls_authz_send_saml_assertion.restype = c_int
+gnutls_authz_send_saml_assertion.argtypes = [gnutls_session_t, STRING, size_t]
+gnutls_authz_send_x509_attr_cert_url = _libraries['libgnutls.so.13'].gnutls_authz_send_x509_attr_cert_url
+gnutls_authz_send_x509_attr_cert_url.restype = c_int
+gnutls_authz_send_x509_attr_cert_url.argtypes = [gnutls_session_t, STRING, size_t, gnutls_mac_algorithm_t, STRING]
+gnutls_authz_send_saml_assertion_url = _libraries['libgnutls.so.13'].gnutls_authz_send_saml_assertion_url
+gnutls_authz_send_saml_assertion_url.restype = c_int
+gnutls_authz_send_saml_assertion_url.argtypes = [gnutls_session_t, STRING, size_t, gnutls_mac_algorithm_t, STRING]
 gnutls_cipher_set_priority = _libraries['libgnutls.so.13'].gnutls_cipher_set_priority
 gnutls_cipher_set_priority.restype = c_int
 gnutls_cipher_set_priority.argtypes = [gnutls_session_t, POINTER(c_int)]
@@ -530,6 +577,12 @@ gnutls_transport_set_push_function.argtypes = [gnutls_session_t, gnutls_push_fun
 gnutls_transport_set_pull_function = _libraries['libgnutls.so.13'].gnutls_transport_set_pull_function
 gnutls_transport_set_pull_function.restype = None
 gnutls_transport_set_pull_function.argtypes = [gnutls_session_t, gnutls_pull_func]
+gnutls_transport_set_errno = _libraries['libgnutls.so.13'].gnutls_transport_set_errno
+gnutls_transport_set_errno.restype = None
+gnutls_transport_set_errno.argtypes = [gnutls_session_t, c_int]
+gnutls_transport_set_global_errno = _libraries['libgnutls.so.13'].gnutls_transport_set_global_errno
+gnutls_transport_set_global_errno.restype = None
+gnutls_transport_set_global_errno.argtypes = [c_int]
 gnutls_session_set_ptr = _libraries['libgnutls.so.13'].gnutls_session_set_ptr
 gnutls_session_set_ptr.restype = None
 gnutls_session_set_ptr.argtypes = [gnutls_session_t, py_object]
@@ -592,7 +645,7 @@ gnutls_psk_allocate_client_credentials.restype = c_int
 gnutls_psk_allocate_client_credentials.argtypes = [POINTER(gnutls_psk_client_credentials_t)]
 gnutls_psk_set_client_credentials = _libraries['libgnutls.so.13'].gnutls_psk_set_client_credentials
 gnutls_psk_set_client_credentials.restype = c_int
-gnutls_psk_set_client_credentials.argtypes = [gnutls_psk_client_credentials_t, STRING, POINTER(gnutls_datum_t), c_uint]
+gnutls_psk_set_client_credentials.argtypes = [gnutls_psk_client_credentials_t, STRING, POINTER(gnutls_datum_t), gnutls_psk_key_flags]
 gnutls_psk_free_server_credentials = _libraries['libgnutls.so.13'].gnutls_psk_free_server_credentials
 gnutls_psk_free_server_credentials.restype = None
 gnutls_psk_free_server_credentials.argtypes = [gnutls_psk_server_credentials_t]
@@ -656,6 +709,12 @@ gnutls_rsa_export_get_pubkey.argtypes = [gnutls_session_t, POINTER(gnutls_datum_
 gnutls_rsa_export_get_modulus_bits = _libraries['libgnutls.so.13'].gnutls_rsa_export_get_modulus_bits
 gnutls_rsa_export_get_modulus_bits.restype = c_int
 gnutls_rsa_export_get_modulus_bits.argtypes = [gnutls_session_t]
+gnutls_sign_callback_set = _libraries['libgnutls.so.13'].gnutls_sign_callback_set
+gnutls_sign_callback_set.restype = None
+gnutls_sign_callback_set.argtypes = [gnutls_session_t, gnutls_sign_func, c_void_p]
+gnutls_sign_callback_get = _libraries['libgnutls.so.13'].gnutls_sign_callback_get
+gnutls_sign_callback_get.restype = gnutls_sign_func
+gnutls_sign_callback_get.argtypes = [gnutls_session_t, POINTER(c_void_p)]
 gnutls_certificate_client_set_retrieve_function = _libraries['libgnutls.so.13'].gnutls_certificate_client_set_retrieve_function
 gnutls_certificate_client_set_retrieve_function.restype = None
 gnutls_certificate_client_set_retrieve_function.argtypes = [gnutls_certificate_credentials_t, gnutls_certificate_client_retrieve_function]
@@ -731,7 +790,7 @@ gnutls_openpgp_key_get_name = _libraries['libgnutls-extra.so.13'].gnutls_openpgp
 gnutls_openpgp_key_get_name.restype = c_int
 gnutls_openpgp_key_get_name.argtypes = [gnutls_openpgp_key_t, c_int, STRING, POINTER(size_t)]
 gnutls_openpgp_key_get_pk_algorithm = _libraries['libgnutls-extra.so.13'].gnutls_openpgp_key_get_pk_algorithm
-gnutls_openpgp_key_get_pk_algorithm.restype = c_int
+gnutls_openpgp_key_get_pk_algorithm.restype = gnutls_pk_algorithm_t
 gnutls_openpgp_key_get_pk_algorithm.argtypes = [gnutls_openpgp_key_t, POINTER(c_uint)]
 gnutls_openpgp_key_get_version = _libraries['libgnutls-extra.so.13'].gnutls_openpgp_key_get_version
 gnutls_openpgp_key_get_version.restype = c_int
@@ -758,11 +817,14 @@ gnutls_openpgp_privkey_deinit = _libraries['libgnutls-extra.so.13'].gnutls_openp
 gnutls_openpgp_privkey_deinit.restype = None
 gnutls_openpgp_privkey_deinit.argtypes = [gnutls_openpgp_privkey_t]
 gnutls_openpgp_privkey_get_pk_algorithm = _libraries['libgnutls-extra.so.13'].gnutls_openpgp_privkey_get_pk_algorithm
-gnutls_openpgp_privkey_get_pk_algorithm.restype = c_int
+gnutls_openpgp_privkey_get_pk_algorithm.restype = gnutls_pk_algorithm_t
 gnutls_openpgp_privkey_get_pk_algorithm.argtypes = [gnutls_openpgp_privkey_t, POINTER(c_uint)]
 gnutls_openpgp_privkey_import = _libraries['libgnutls-extra.so.13'].gnutls_openpgp_privkey_import
 gnutls_openpgp_privkey_import.restype = c_int
 gnutls_openpgp_privkey_import.argtypes = [gnutls_openpgp_privkey_t, POINTER(gnutls_datum_t), gnutls_openpgp_key_fmt_t, STRING, c_uint]
+gnutls_openpgp_privkey_sign_hash = _libraries['libgnutls-extra.so.13'].gnutls_openpgp_privkey_sign_hash
+gnutls_openpgp_privkey_sign_hash.restype = c_int
+gnutls_openpgp_privkey_sign_hash.argtypes = [gnutls_openpgp_privkey_t, POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
 gnutls_openpgp_keyring_init = _libraries['libgnutls-extra.so.13'].gnutls_openpgp_keyring_init
 gnutls_openpgp_keyring_init.restype = c_int
 gnutls_openpgp_keyring_init.argtypes = [POINTER(gnutls_openpgp_keyring_t)]
@@ -832,6 +894,9 @@ gnutls_x509_crt_check_hostname.argtypes = [gnutls_x509_crt_t, STRING]
 gnutls_x509_crt_get_signature_algorithm = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_signature_algorithm
 gnutls_x509_crt_get_signature_algorithm.restype = c_int
 gnutls_x509_crt_get_signature_algorithm.argtypes = [gnutls_x509_crt_t]
+gnutls_x509_crt_get_signature = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_signature
+gnutls_x509_crt_get_signature.restype = c_int
+gnutls_x509_crt_get_signature.argtypes = [gnutls_x509_crt_t, STRING, POINTER(size_t)]
 gnutls_x509_crt_get_version = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_version
 gnutls_x509_crt_get_version.restype = c_int
 gnutls_x509_crt_get_version.argtypes = [gnutls_x509_crt_t]
@@ -877,15 +942,24 @@ gnutls_x509_crt_get_pk_dsa_raw.argtypes = [gnutls_x509_crt_t, POINTER(gnutls_dat
 gnutls_x509_crt_get_subject_alt_name = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_subject_alt_name
 gnutls_x509_crt_get_subject_alt_name.restype = c_int
 gnutls_x509_crt_get_subject_alt_name.argtypes = [gnutls_x509_crt_t, c_uint, c_void_p, POINTER(size_t), POINTER(c_uint)]
+gnutls_x509_crt_get_subject_alt_othername_oid = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_subject_alt_othername_oid
+gnutls_x509_crt_get_subject_alt_othername_oid.restype = c_int
+gnutls_x509_crt_get_subject_alt_othername_oid.argtypes = [gnutls_x509_crt_t, c_uint, c_void_p, POINTER(size_t)]
 gnutls_x509_crt_get_ca_status = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_ca_status
 gnutls_x509_crt_get_ca_status.restype = c_int
 gnutls_x509_crt_get_ca_status.argtypes = [gnutls_x509_crt_t, POINTER(c_uint)]
+gnutls_x509_crt_get_basic_constraints = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_basic_constraints
+gnutls_x509_crt_get_basic_constraints.restype = c_int
+gnutls_x509_crt_get_basic_constraints.argtypes = [gnutls_x509_crt_t, POINTER(c_uint), POINTER(c_int), POINTER(c_int)]
 gnutls_x509_crt_get_key_usage = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_key_usage
 gnutls_x509_crt_get_key_usage.restype = c_int
 gnutls_x509_crt_get_key_usage.argtypes = [gnutls_x509_crt_t, POINTER(c_uint), POINTER(c_uint)]
 gnutls_x509_crt_set_key_usage = _libraries['libgnutls.so.13'].gnutls_x509_crt_set_key_usage
 gnutls_x509_crt_set_key_usage.restype = c_int
 gnutls_x509_crt_set_key_usage.argtypes = [gnutls_x509_crt_t, c_uint]
+gnutls_x509_crt_get_proxy = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_proxy
+gnutls_x509_crt_get_proxy.restype = c_int
+gnutls_x509_crt_get_proxy.argtypes = [gnutls_x509_crt_t, POINTER(c_uint), POINTER(c_int), POINTER(STRING), POINTER(STRING), POINTER(size_t)]
 gnutls_x509_dn_oid_known = _libraries['libgnutls.so.13'].gnutls_x509_dn_oid_known
 gnutls_x509_dn_oid_known.restype = c_int
 gnutls_x509_dn_oid_known.argtypes = [STRING]
@@ -895,6 +969,12 @@ gnutls_x509_crt_get_extension_oid.argtypes = [gnutls_x509_crt_t, c_int, c_void_p
 gnutls_x509_crt_get_extension_by_oid = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_extension_by_oid
 gnutls_x509_crt_get_extension_by_oid.restype = c_int
 gnutls_x509_crt_get_extension_by_oid.argtypes = [gnutls_x509_crt_t, STRING, c_int, c_void_p, POINTER(size_t), POINTER(c_uint)]
+gnutls_x509_crt_get_extension_info = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_extension_info
+gnutls_x509_crt_get_extension_info.restype = c_int
+gnutls_x509_crt_get_extension_info.argtypes = [gnutls_x509_crt_t, c_int, c_void_p, POINTER(size_t), POINTER(c_int)]
+gnutls_x509_crt_get_extension_data = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_extension_data
+gnutls_x509_crt_get_extension_data.restype = c_int
+gnutls_x509_crt_get_extension_data.argtypes = [gnutls_x509_crt_t, c_int, c_void_p, POINTER(size_t)]
 gnutls_x509_crt_set_extension_by_oid = _libraries['libgnutls.so.13'].gnutls_x509_crt_set_extension_by_oid
 gnutls_x509_crt_set_extension_by_oid.restype = c_int
 gnutls_x509_crt_set_extension_by_oid.argtypes = [gnutls_x509_crt_t, STRING, c_void_p, size_t, c_uint]
@@ -916,6 +996,9 @@ gnutls_x509_crt_set_key.argtypes = [gnutls_x509_crt_t, gnutls_x509_privkey_t]
 gnutls_x509_crt_set_ca_status = _libraries['libgnutls.so.13'].gnutls_x509_crt_set_ca_status
 gnutls_x509_crt_set_ca_status.restype = c_int
 gnutls_x509_crt_set_ca_status.argtypes = [gnutls_x509_crt_t, c_uint]
+gnutls_x509_crt_set_basic_constraints = _libraries['libgnutls.so.13'].gnutls_x509_crt_set_basic_constraints
+gnutls_x509_crt_set_basic_constraints.restype = c_int
+gnutls_x509_crt_set_basic_constraints.argtypes = [gnutls_x509_crt_t, c_uint, c_int]
 gnutls_x509_crt_set_subject_alternative_name = _libraries['libgnutls.so.13'].gnutls_x509_crt_set_subject_alternative_name
 gnutls_x509_crt_set_subject_alternative_name.restype = c_int
 gnutls_x509_crt_set_subject_alternative_name.argtypes = [gnutls_x509_crt_t, gnutls_x509_subject_alt_name_t, STRING]
@@ -937,6 +1020,24 @@ gnutls_x509_crt_set_serial.argtypes = [gnutls_x509_crt_t, c_void_p, size_t]
 gnutls_x509_crt_set_subject_key_id = _libraries['libgnutls.so.13'].gnutls_x509_crt_set_subject_key_id
 gnutls_x509_crt_set_subject_key_id.restype = c_int
 gnutls_x509_crt_set_subject_key_id.argtypes = [gnutls_x509_crt_t, c_void_p, size_t]
+gnutls_x509_crt_set_proxy_dn = _libraries['libgnutls.so.13'].gnutls_x509_crt_set_proxy_dn
+gnutls_x509_crt_set_proxy_dn.restype = c_int
+gnutls_x509_crt_set_proxy_dn.argtypes = [gnutls_x509_crt_t, gnutls_x509_crt_t, c_uint, c_void_p, c_uint]
+gnutls_x509_crt_set_proxy = _libraries['libgnutls.so.13'].gnutls_x509_crt_set_proxy
+gnutls_x509_crt_set_proxy.restype = c_int
+gnutls_x509_crt_set_proxy.argtypes = [gnutls_x509_crt_t, c_int, STRING, STRING, size_t]
+gnutls_x509_crt_print = _libraries['libgnutls.so.13'].gnutls_x509_crt_print
+gnutls_x509_crt_print.restype = c_int
+gnutls_x509_crt_print.argtypes = [gnutls_x509_crt_t, gnutls_certificate_print_formats_t, POINTER(gnutls_datum_t)]
+gnutls_x509_crl_print = _libraries['libgnutls.so.13'].gnutls_x509_crl_print
+gnutls_x509_crl_print.restype = c_int
+gnutls_x509_crl_print.argtypes = [gnutls_x509_crl_t, gnutls_certificate_print_formats_t, POINTER(gnutls_datum_t)]
+gnutls_x509_crt_get_raw_issuer_dn = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_raw_issuer_dn
+gnutls_x509_crt_get_raw_issuer_dn.restype = c_int
+gnutls_x509_crt_get_raw_issuer_dn.argtypes = [gnutls_x509_crt_t, POINTER(gnutls_datum_t)]
+gnutls_x509_crt_get_raw_dn = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_raw_dn
+gnutls_x509_crt_get_raw_dn.restype = c_int
+gnutls_x509_crt_get_raw_dn.argtypes = [gnutls_x509_crt_t, POINTER(gnutls_datum_t)]
 gnutls_x509_rdn_get = _libraries['libgnutls.so.13'].gnutls_x509_rdn_get
 gnutls_x509_rdn_get.restype = c_int
 gnutls_x509_rdn_get.argtypes = [POINTER(gnutls_datum_t), STRING, POINTER(size_t)]
@@ -946,6 +1047,15 @@ gnutls_x509_rdn_get_oid.argtypes = [POINTER(gnutls_datum_t), c_int, c_void_p, PO
 gnutls_x509_rdn_get_by_oid = _libraries['libgnutls.so.13'].gnutls_x509_rdn_get_by_oid
 gnutls_x509_rdn_get_by_oid.restype = c_int
 gnutls_x509_rdn_get_by_oid.argtypes = [POINTER(gnutls_datum_t), STRING, c_int, c_uint, c_void_p, POINTER(size_t)]
+gnutls_x509_crt_get_subject = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_subject
+gnutls_x509_crt_get_subject.restype = c_int
+gnutls_x509_crt_get_subject.argtypes = [gnutls_x509_crt_t, POINTER(gnutls_x509_dn_t)]
+gnutls_x509_crt_get_issuer = _libraries['libgnutls.so.13'].gnutls_x509_crt_get_issuer
+gnutls_x509_crt_get_issuer.restype = c_int
+gnutls_x509_crt_get_issuer.argtypes = [gnutls_x509_crt_t, POINTER(gnutls_x509_dn_t)]
+gnutls_x509_dn_get_rdn_ava = _libraries['libgnutls.so.13'].gnutls_x509_dn_get_rdn_ava
+gnutls_x509_dn_get_rdn_ava.restype = c_int
+gnutls_x509_dn_get_rdn_ava.argtypes = [gnutls_x509_dn_t, c_int, c_int, POINTER(gnutls_x509_ava_st)]
 gnutls_x509_crl_init = _libraries['libgnutls.so.13'].gnutls_x509_crl_init
 gnutls_x509_crl_init.restype = c_int
 gnutls_x509_crl_init.argtypes = [POINTER(gnutls_x509_crl_t)]
@@ -970,6 +1080,9 @@ gnutls_x509_crl_get_dn_oid.argtypes = [gnutls_x509_crl_t, c_int, c_void_p, POINT
 gnutls_x509_crl_get_signature_algorithm = _libraries['libgnutls.so.13'].gnutls_x509_crl_get_signature_algorithm
 gnutls_x509_crl_get_signature_algorithm.restype = c_int
 gnutls_x509_crl_get_signature_algorithm.argtypes = [gnutls_x509_crl_t]
+gnutls_x509_crl_get_signature = _libraries['libgnutls.so.13'].gnutls_x509_crl_get_signature
+gnutls_x509_crl_get_signature.restype = c_int
+gnutls_x509_crl_get_signature.argtypes = [gnutls_x509_crl_t, STRING, POINTER(size_t)]
 gnutls_x509_crl_get_version = _libraries['libgnutls.so.13'].gnutls_x509_crl_get_version
 gnutls_x509_crl_get_version.restype = c_int
 gnutls_x509_crl_get_version.argtypes = [gnutls_x509_crl_t]
@@ -1129,6 +1242,9 @@ gnutls_x509_privkey_verify_data.argtypes = [gnutls_x509_privkey_t, c_uint, POINT
 gnutls_x509_crt_verify_data = _libraries['libgnutls.so.13'].gnutls_x509_crt_verify_data
 gnutls_x509_crt_verify_data.restype = c_int
 gnutls_x509_crt_verify_data.argtypes = [gnutls_x509_crt_t, c_uint, POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
+gnutls_x509_privkey_sign_hash = _libraries['libgnutls.so.13'].gnutls_x509_privkey_sign_hash
+gnutls_x509_privkey_sign_hash.restype = c_int
+gnutls_x509_privkey_sign_hash.argtypes = [gnutls_x509_privkey_t, POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
 gnutls_x509_crq_init = _libraries['libgnutls.so.13'].gnutls_x509_crq_init
 gnutls_x509_crq_init.restype = c_int
 gnutls_x509_crq_init.argtypes = [POINTER(gnutls_x509_crq_t)]
@@ -1186,6 +1302,7 @@ gnutls_x509_crt_set_crq.argtypes = [gnutls_x509_crt_t, gnutls_x509_crq_t]
 __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_openpgp_privkey_init',
            'gnutls_certificate_activation_time_peers',
+           'gnutls_x509_crt_set_proxy_dn',
            'gnutls_db_set_remove_function',
            'gnutls_x509_crt_set_dn_by_oid',
            'gnutls_global_init_extra',
@@ -1204,12 +1321,13 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_x509_crt_get_pk_algorithm',
            'gnutls_x509_crt_set_crq', 'gnutls_certificate_free_keys',
            'gnutls_x509_crl_deinit',
-           'gnutls_certificate_free_ca_names',
+           'gnutls_certificate_free_ca_names', 'gnutls_cipher_list',
            'gnutls_x509_crq_export',
            'gnutls_certificate_client_set_retrieve_function',
            'gnutls_x509_crl_get_crt_serial',
            'gnutls_pkcs7_get_crt_count',
            'gnutls_certificate_set_x509_trust',
+           'gnutls_x509_crt_get_extension_data',
            'gnutls_ia_handshake_p', 'gnutls_openpgp_keyring_import',
            'gnutls_pkcs7_set_crl', 'gnutls_x509_crq_get_pk_algorithm',
            'gnutls_pkcs7_set_crl_raw',
@@ -1232,16 +1350,19 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_openpgp_keyring_deinit',
            'gnutls_srp_base64_encode_alloc',
            'gnutls_db_set_store_function',
+           'gnutls_supplemental_get_name',
            'gnutls_handshake_get_last_out',
            'gnutls_x509_privkey_export_pkcs8',
            'gnutls_x509_privkey_deinit',
            'gnutls_certificate_set_openpgp_keyserver',
            'gnutls_x509_privkey_import_rsa_raw',
+           'gnutls_transport_set_errno',
            'gnutls_x509_crt_get_issuer_dn', 'gnutls_ia_recv',
            'gnutls_x509_crt_get_pk_dsa_raw', 'gnutls_x509_crt_sign',
            'gnutls_certificate_verify_peers',
            'gnutls_srp_free_server_credentials',
-           'gnutls_server_name_set', 'gnutls_kx_set_priority',
+           'gnutls_x509_crt_print', 'gnutls_server_name_set',
+           'gnutls_kx_set_priority',
            'gnutls_transport_set_push_function',
            'gnutls_openpgp_key_check_hostname',
            'gnutls_x509_crt_sign2',
@@ -1271,28 +1392,35 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_x509_crt_get_extension_oid',
            'gnutls_x509_crl_sign', 'gnutls_dh_get_pubkey',
            'gnutls_record_get_max_size', 'gnutls_x509_crt_get_dn_oid',
+           'gnutls_x509_crt_get_extension_info',
            'gnutls_transport_get_ptr', 'gnutls_db_check_entry',
            'gnutls_ia_generate_challenge',
            'gnutls_certificate_server_set_retrieve_function',
            'gnutls_certificate_set_openpgp_key',
            'gnutls_srp_base64_encode', 'gnutls_db_get_ptr',
-           'gnutls_mac_set_priority', 'gnutls_openpgp_key_get_id',
+           'gnutls_mac_set_priority',
+           'gnutls_x509_crt_get_basic_constraints',
+           'gnutls_openpgp_key_get_id',
+           'gnutls_x509_crt_get_subject_alt_othername_oid',
            'gnutls_x509_crt_get_extension_by_oid',
            'gnutls_x509_crl_get_this_update',
            'gnutls_openpgp_key_get_creation_time',
            'gnutls_certificate_set_x509_crl',
            'gnutls_rsa_export_get_modulus_bits',
-           'gnutls_x509_crl_get_version',
+           'gnutls_x509_crl_get_version', 'gnutls_authz_enable',
            'gnutls_pkcs7_get_crl_count', 'gnutls_handshake',
            'gnutls_x509_crl_get_next_update',
            'gnutls_x509_crq_get_dn', 'gnutls_pkcs7_deinit',
+           'gnutls_authz_send_saml_assertion',
            'gnutls_protocol_get_name',
+           'gnutls_openpgp_privkey_sign_hash',
            'gnutls_srp_set_server_credentials_file',
            'gnutls_pkcs7_delete_crl', 'gnutls_rsa_params_init',
            'gnutls_x509_crt_set_key_purpose_oid', 'gnutls_mac_get',
-           'gnutls_certificate_set_x509_trust_mem',
-           'gnutls_record_get_direction', 'gnutls_session_get_ptr',
-           'gnutls_psk_set_server_dh_params', 'gnutls_record_send',
+           'gnutls_record_get_direction',
+           'gnutls_certificate_type_list', 'gnutls_session_get_ptr',
+           'gnutls_psk_set_server_dh_params',
+           'gnutls_x509_crt_get_raw_dn', 'gnutls_record_send',
            'gnutls_psk_allocate_client_credentials',
            'gnutls_certificate_set_x509_key',
            'gnutls_srp_base64_decode_alloc',
@@ -1306,12 +1434,15 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_certificate_type_get_name',
            'gnutls_x509_crq_get_dn_oid', 'gnutls_x509_dn_oid_known',
            'gnutls_alert_send', 'gnutls_x509_privkey_sign_data',
-           'gnutls_x509_crl_set_crt_serial', 'gnutls_credentials_set',
-           'gnutls_transport_set_ptr2',
+           'gnutls_x509_crl_set_crt_serial',
+           'gnutls_x509_crt_set_basic_constraints',
+           'gnutls_credentials_set', 'gnutls_transport_set_ptr2',
            'gnutls_x509_crt_set_issuer_dn_by_oid',
            'gnutls_rsa_params_deinit', 'gnutls_prf_raw',
            'gnutls_anon_allocate_server_credentials',
-           'gnutls_x509_crl_check_issuer',
+           'gnutls_x509_crl_get_signature',
+           'gnutls_x509_crl_check_issuer', 'gnutls_cipher_suite_info',
+           'gnutls_x509_crt_get_issuer',
            'gnutls_certificate_set_params_function',
            'gnutls_x509_crl_get_issuer_dn',
            'gnutls_x509_crt_check_revocation',
@@ -1332,7 +1463,8 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_certificate_type_get',
            'gnutls_auth_server_get_type',
            'gnutls_anon_set_params_function', 'gnutls_pkcs7_set_crt',
-           'gnutls_rsa_params_export_raw', 'gnutls_x509_crt_deinit',
+           'gnutls_rsa_params_export_raw',
+           'gnutls_x509_dn_get_rdn_ava', 'gnutls_x509_crt_deinit',
            'gnutls_session_get_client_random',
            'gnutls_openpgp_set_recv_key_function',
            'gnutls_x509_crl_set_this_update',
@@ -1341,24 +1473,29 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_ia_set_client_avp_ptr', 'gnutls_fingerprint',
            'gnutls_openpgp_privkey_import', 'gnutls_error_to_alert',
            'gnutls_x509_privkey_get_key_id',
+           'gnutls_x509_crt_get_subject',
+           'gnutls_authz_send_x509_attr_cert',
            'gnutls_openpgp_key_get_name',
            'gnutls_openpgp_key_verify_self', 'gnutls_cipher_get_name',
            'gnutls_ia_send', 'gnutls_x509_crt_set_extension_by_oid',
            'gnutls_x509_privkey_get_pk_algorithm',
            'gnutls_hex_encode', 'gnutls_rsa_params_import_raw',
-           'gnutls_mac_get_name', 'gnutls_psk_server_get_username',
+           'gnutls_protocol_set_priority', 'gnutls_mac_get_name',
+           'gnutls_psk_server_get_username',
            'gnutls_session_get_data2', 'gnutls_kx_get',
            'gnutls_x509_crq_set_version', 'gnutls_x509_privkey_cpy',
            'gnutls_dh_get_secret_bits',
            'gnutls_x509_crt_get_expiration_time', 'gnutls_pkcs7_init',
            'gnutls_transport_set_pull_function',
+           'gnutls_protocol_list',
            'gnutls_srp_set_client_credentials',
            'gnutls_openpgp_key_verify_trustdb',
            'gnutls_x509_crt_get_key_purpose_oid',
            'gnutls_certificate_verify_peers2', 'gnutls_x509_crq_sign',
            'gnutls_x509_privkey_init',
            'gnutls_openpgp_key_get_key_usage',
-           'gnutls_global_set_log_level', 'gnutls_x509_rdn_get',
+           'gnutls_global_set_log_level', 'gnutls_sign_callback_get',
+           'gnutls_x509_rdn_get',
            'gnutls_certificate_free_credentials',
            'gnutls_certificate_set_rsa_export_params',
            'gnutls_x509_crt_get_serial', 'gnutls_x509_crq_import',
@@ -1367,7 +1504,7 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_ia_extract_inner_secret',
            'gnutls_x509_crt_get_version', 'gnutls_ia_enable',
            'gnutls_x509_crt_set_key',
-           'gnutls_srp_free_client_credentials',
+           'gnutls_srp_free_client_credentials', 'gnutls_mac_list',
            'gnutls_dh_get_prime_bits', 'gnutls_certificate_free_cas',
            'gnutls_alert_get', 'gnutls_ia_permute_inner_secret',
            'gnutls_rehandshake',
@@ -1378,13 +1515,15 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_x509_crt_get_fingerprint',
            'gnutls_extra_check_version',
            'gnutls_srp_allocate_client_credentials',
-           'gnutls_x509_crt_check_issuer', 'gnutls_pkcs7_get_crl_raw',
+           'gnutls_x509_crl_get_issuer_dn_by_oid',
+           'gnutls_pkcs7_get_crl_raw',
            'gnutls_x509_crt_set_expiration_time',
            'gnutls_compression_set_priority',
            'gnutls_ia_allocate_server_credentials',
            'gnutls_ia_free_server_credentials',
            'gnutls_transport_set_lowat',
            'gnutls_x509_crt_set_crl_dist_points',
+           'gnutls_compression_list',
            'gnutls_x509_privkey_import_pkcs8',
            'gnutls_x509_crq_set_challenge_password',
            'gnutls_strerror', 'gnutls_x509_crt_get_dn',
@@ -1400,7 +1539,7 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_certificate_set_x509_key_file',
            'gnutls_pem_base64_encode_alloc',
            'gnutls_set_default_export_priority',
-           'gnutls_openpgp_key_verify_ring',
+           'gnutls_x509_crl_print', 'gnutls_openpgp_key_verify_ring',
            'gnutls_rsa_export_get_pubkey', 'gnutls_x509_crq_set_key',
            'gnutls_x509_crt_get_signature_algorithm',
            'gnutls_x509_crt_check_hostname',
@@ -1408,10 +1547,10 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_handshake_set_private_extensions',
            'gnutls_psk_set_client_credentials',
            'gnutls_server_name_get', 'gnutls_rsa_params_import_pkcs1',
-           'gnutls_session_set_ptr', 'gnutls_bye',
-           'gnutls_auth_client_get_type',
-           'gnutls_x509_crt_list_import', 'gnutls_session_get_data',
-           'gnutls_pkcs7_export', 'gnutls_pkcs7_get_crt_raw',
+           'gnutls_session_set_ptr', 'gnutls_bye', 'gnutls_kx_list',
+           'gnutls_auth_client_get_type', 'gnutls_pkcs7_export',
+           'gnutls_x509_crt_get_proxy', 'gnutls_session_get_data',
+           'gnutls_x509_crt_list_import', 'gnutls_pkcs7_get_crt_raw',
            'gnutls_openpgp_trustdb_init',
            'gnutls_psk_set_server_credentials_function',
            'gnutls_srp_set_server_credentials_function',
@@ -1420,9 +1559,10 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_certificate_server_set_request',
            'gnutls_certificate_set_x509_crl_mem',
            'gnutls_dh_params_export_raw',
-           'gnutls_protocol_set_priority',
+           'gnutls_x509_crt_get_raw_issuer_dn',
            'gnutls_psk_set_client_credentials_function',
            'gnutls_set_default_priority',
+           'gnutls_transport_set_global_errno',
            'gnutls_x509_crq_set_dn_by_oid', 'gnutls_dh_params_cpy',
            'gnutls_ia_handshake', 'gnutls_handshake_get_last_in',
            'gnutls_srp_verifier',
@@ -1435,20 +1575,23 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_certificate_set_x509_key_mem',
            'gnutls_session_get_server_random',
            'gnutls_ia_get_server_avp_ptr', 'gnutls_dh_params_deinit',
-           'gnutls_x509_crq_sign2', 'gnutls_global_deinit',
-           'gnutls_sign_algorithm_get_name',
+           'gnutls_x509_crt_get_signature', 'gnutls_x509_crq_sign2',
+           'gnutls_global_deinit', 'gnutls_sign_algorithm_get_name',
            'gnutls_anon_allocate_client_credentials',
            'gnutls_x509_crt_export', 'gnutls_certificate_get_peers',
            'gnutls_dh_params_import_pkcs3',
            'gnutls_openpgp_key_import', 'gnutls_openpgp_key_init',
            'gnutls_hex_decode', 'gnutls_openpgp_key_export',
            'gnutls_psk_set_params_function',
+           'gnutls_x509_crt_check_issuer',
            'gnutls_x509_crl_set_next_update',
            'gnutls_ia_allocate_client_credentials',
            'gnutls_record_check_pending',
            'gnutls_alert_send_appropriate',
            'gnutls_anon_set_server_dh_params',
-           'gnutls_x509_crl_export', 'gnutls_openpgp_privkey_deinit',
+           'gnutls_authz_send_x509_attr_cert_url',
+           'gnutls_x509_privkey_sign_hash', 'gnutls_x509_crl_export',
+           'gnutls_openpgp_privkey_deinit',
            'gnutls_pkcs7_set_crt_raw', 'gnutls_auth_get_type',
            'gnutls_openpgp_key_get_fingerprint',
            'gnutls_srp_allocate_server_credentials',
@@ -1457,11 +1600,13 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_psk_set_server_params_function',
            'gnutls_x509_crt_get_issuer_dn_by_oid',
            'gnutls_session_is_resumed',
+           'gnutls_pem_base64_decode_alloc',
            'gnutls_certificate_set_openpgp_key_file',
-           'gnutls_x509_crl_get_issuer_dn_by_oid',
+           'gnutls_certificate_set_x509_trust_mem',
            'gnutls_x509_privkey_verify_data', 'gnutls_deinit',
            'gnutls_x509_crt_import',
            'gnutls_db_set_retrieve_function',
+           'gnutls_authz_send_saml_assertion_url',
            'gnutls_x509_privkey_import',
            'gnutls_openpgp_trustdb_deinit',
            'gnutls_certificate_set_x509_simple_pkcs12_file',
@@ -1469,6 +1614,6 @@ __all__ = ['gnutls_ia_set_server_avp_ptr',
            'gnutls_db_set_cache_expiration',
            'gnutls_x509_crt_set_ca_status', 'gnutls_dh_get_group',
            'gnutls_x509_crt_to_xml', 'gnutls_x509_crl_verify',
-           'gnutls_pem_base64_decode_alloc',
+           'gnutls_x509_crt_set_proxy', 'gnutls_sign_callback_set',
            'gnutls_x509_crt_get_key_usage',
            'gnutls_x509_crt_get_crl_dist_points']
