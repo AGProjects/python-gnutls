@@ -44,6 +44,31 @@ def _retrieve_server_certificate(c_session, retr_st):
     return 0
 
 
+class _ServerNameIdentities(dict):
+    """Used internally by X509Credentials to map server names to X509 identities for the server name extension"""
+    def __init__(self, identities):
+        dict.__init__(self)
+        for identity in identities:
+            self.add(identity)
+    def add(self, identity):
+        for name in identity.cert.alternative_names.dns:
+            self[name.lower()] = identity
+        for ip in identity.cert.alternative_names.ip:
+            self[ip] = identity
+        subject = identity.cert.subject
+        if subject.CN is not None:
+            self[subject.CN.lower()] = identity
+    def get(self, server_name, default=None):
+        server_name = server_name.lower()
+        if server_name in self:
+            return self[server_name]
+        for name in (n for n in self if n.startswith('*.')):
+            suffix = name[1:]
+            if server_name.endswith(suffix) and '.' not in server_name[:-len(suffix)]:
+                return self[name]
+        return default
+
+
 class X509Credentials(object):
     DH_BITS  = 1024
     RSA_BITS = 1024
@@ -59,10 +84,10 @@ class X509Credentials(object):
         instance._c_object = c_object
         return instance
 
-    @method_args((X509Certificate, none), (X509PrivateKey, none), list_of(X509Certificate), list_of(X509CRL))
-    def __init__(self, cert=None, key=None, trusted=[], crl_list=[]):
-        """Credentials object containing an X509 certificate, a private key and 
-           optionally a list of trusted CAs and a list of CRLs."""
+    @method_args((X509Certificate, none), (X509PrivateKey, none), list_of(X509Certificate), list_of(X509CRL), list_of(X509Identity))
+    def __init__(self, cert=None, key=None, trusted=[], crl_list=[], identities=[]):
+        """Credentials contain a X509 certificate, a private key, a list of trusted CAs and a list of CRLs (all optional).
+        An optional list of additional X509 identities can be specified for applications that need more that one identity"""
         if cert and key:
             gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         elif (cert, key) != (None, None):
@@ -73,9 +98,13 @@ class X509Credentials(object):
         self._type = CRED_CERTIFICATE
         self._cert = cert
         self._key = key
+        self._identities = tuple(identities)
         self._trusted = ()
         self.add_trusted(trusted)
         self.crl_list = crl_list
+        self.server_name_identities = _ServerNameIdentities(identities)
+        if cert and key:
+            self.server_name_identities.add(X509Identity(cert, key))
         self.session_params = SessionParams(self._type)
 
     def __del__(self):
@@ -108,6 +137,10 @@ class X509Credentials(object):
     @property
     def key(self):
         return self._key
+
+    @property
+    def identities(self):
+        return self._identities
 
     @property
     def trusted(self):
