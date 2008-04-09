@@ -32,14 +32,15 @@ from gnutls.library.functions import *
 def _retrieve_server_certificate(c_session, retr_st):
     session = gnutls_session_get_ptr(c_session)
     server_name = session.server_name
-    if server_name is not None and session.server_name_credentials.has_key(server_name):
-        credentials = session.server_name_credentials[server_name]
+    credentials = session.credentials
+    if server_name is not None:
+        identity = credentials.server_name_identities.get(server_name, default=credentials)
     else:
-        credentials = session.credentials
+        identity = credentials
     retr_st.contents.type = GNUTLS_CRT_X509
-    retr_st.contents.cert.x509.contents = credentials.cert._c_object
+    retr_st.contents.cert.x509.contents = identity.cert._c_object
     retr_st.contents.ncerts = 1
-    retr_st.contents.key.x509 = credentials.key._c_object
+    retr_st.contents.key.x509 = identity.key._c_object
     retr_st.contents.deinit_all = 0
     return 0
 
