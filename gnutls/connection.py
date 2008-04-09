@@ -34,14 +34,17 @@ def _retrieve_server_certificate(c_session, retr_st):
     server_name = session.server_name
     credentials = session.credentials
     if server_name is not None:
-        identity = credentials.server_name_identities.get(server_name, default=credentials)
+        identity = credentials.server_name_identities.get(server_name)
     else:
         identity = credentials
     retr_st.contents.type = GNUTLS_CRT_X509
-    retr_st.contents.cert.x509.contents = identity.cert._c_object
-    retr_st.contents.ncerts = 1
-    retr_st.contents.key.x509 = identity.key._c_object
     retr_st.contents.deinit_all = 0
+    if identity is None:
+        retr_st.contents.ncerts = 0
+    else:
+        retr_st.contents.ncerts = 1
+        retr_st.contents.cert.x509.contents = identity.cert._c_object
+        retr_st.contents.key.x509 = identity.key._c_object
     return 0
 
 
