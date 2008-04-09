@@ -96,7 +96,7 @@ class X509Credentials(object):
             gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         elif (cert, key) != (None, None):
             raise ValueError("Specify neither or both the certificate and private key")
-        gnutls_certificate_server_set_retrieve_function(self._c_object, _retrieve_server_certificate)
+        #gnutls_certificate_server_set_retrieve_function(self._c_object, _retrieve_server_certificate)
         self._max_depth = 5
         self._max_bits  = 8200
         self._type = CRED_CERTIFICATE
