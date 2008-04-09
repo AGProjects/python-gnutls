@@ -3,7 +3,7 @@
 
 """GNUTLS crypto support"""
 
-__all__ = ['X509Name', 'X509Certificate', 'X509CRL', 'X509PrivateKey', 'DHParams', 'RSAParams']
+__all__ = ['X509Name', 'X509Certificate', 'X509PrivateKey', 'X509Identity', 'X509CRL', 'DHParams', 'RSAParams']
 
 import re
 from ctypes import *
@@ -203,6 +203,27 @@ class X509PrivateKey(object):
 
     def __del__(self):
         self.__deinit(self._c_object)
+
+
+class X509Identity(object):
+    """A X509 identity represents a X509 certificate and private key pair"""
+    
+    __slots__ = ('cert', 'key')
+    
+    @method_args(X509Certificate, X509PrivateKey)
+    def __init__(self, cert, key):
+        self.cert = cert
+        self.key = key
+    
+    def __setattr__(self, name, value):
+        if name in self.__slots__ and hasattr(self, name):
+            raise AttributeError("can't set attribute")
+        object.__setattr__(self, name, value)
+
+    def __delattr__(self, name):
+        if name in self.__slots__:
+            raise AttributeError("can't delete attribute")
+        object.__delattr__(self, name)
 
 
 class X509CRL(object):
