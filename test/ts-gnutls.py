@@ -58,11 +58,16 @@ parser.add_option("-p", "--port", dest="port", type="int", default=10000,
                   help="specify port to listen on (default = 10000)",
                   metavar="port")
 parser.add_option("-v", "--verify", dest="verify", action="store_true", default=0,
-                  help="verify peer certificates (default = no)")
+                  help="verify peer certificates")
 parser.add_option("-V", "--verbose", dest="verbose", action="store_true", default=0,
-                  help="verbose output (default = no)")
+                  help="verbose output")
+parser.add_option("-m", "--memory", dest="memory", action="store_true", default=0,
+                  help="debug memory leaks")
 
 options, args = parser.parse_args()
+
+if options.memory:
+    from application.debug.memory import *
 
 certs_path = os.path.join(gnutls_path, 'examples/certs')
 
@@ -75,4 +80,7 @@ cred.verify_peer = options.verify
 
 reactor.listenTLS(options.port, EchoFactory(), cred)
 reactor.run()
+
+if options.memory:
+    memory_dump()
 
