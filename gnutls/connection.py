@@ -31,12 +31,7 @@ from gnutls.library.functions import *
 @gnutls_certificate_server_retrieve_function
 def _retrieve_server_certificate(c_session, retr_st):
     session = PyObj_FromPtr(gnutls_session_get_ptr(c_session))
-    server_name = session.server_name
-    credentials = session.credentials
-    if server_name is not None:
-        identity = credentials.server_name_identities.get(server_name)
-    else:
-        identity = credentials
+    identity = session.credentials.select_server_identity(session)
     retr_st.contents.type = GNUTLS_CRT_X509
     retr_st.contents.deinit_all = 0
     if identity is None:
@@ -114,6 +109,8 @@ class X509Credentials(object):
     def __del__(self):
         self.__deinit(self._c_object)
 
+    # Methods to alter the credentials at runtime
+
     @method_args(list_of(X509Certificate))
     def add_trusted(self, trusted):
         size = len(trusted)
@@ -176,6 +173,8 @@ class X509Credentials(object):
     max_verify_bits = property(_get_max_verify_bits, _set_max_verify_bits)
     del _get_max_verify_bits, _set_max_verify_bits
 
+    # Methods to select and validate certificates
+
     def check_certificate(self, cert, cert_name='certificate'):
         """Verify activation, expiration and revocation for the given certificate"""
         now = time()
@@ -185,6 +184,17 @@ class X509Credentials(object):
             raise CertificateExpiredError("%s has expired" % cert_name)
         for crl in self.crl_list:
             crl.check_revocation(cert, cert_name=cert_name)
+
+    def select_server_identity(self, session):
+        """Select which identity the server will use for a given session. The default selection algorithm uses
+        the server name extension. A subclass can overwrite it if a different selection algorithm is desired."""
+        server_name = session.server_name
+        if server_name is not None:
+            return self.server_name_identities.get(server_name)
+        elif self.cert and self.key:
+            return self ## since we have the cert and key attributes we can behave like a X509Identity
+        else:
+            return None
 
 
 class SessionParams(object):
