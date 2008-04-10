@@ -24,9 +24,6 @@ gnutls-library: gnutls.xml
 	@cp gnutls/library/types.py gnutls/library/types.py.bak; \
 	sed -i -r "s/size_t = c_uint/size_t = c_size_t/g" gnutls/library/types.py; \
 	sed -i -r "s/__ssize_t = c_int/__ssize_t = c_long/g" gnutls/library/types.py
-	@echo "Changing session user data type from c_void_p to py_object"
-	@sed -i -r "s/(gnutls_session_get_ptr.restype) = c_void_p/\1 = py_object/g" gnutls/library/functions.py; \
-	sed -i -r "s/(gnutls_session_set_ptr.argtypes) = \[(gnutls_session_t), c_void_p\]/\1 = [\2, py_object]/g" gnutls/library/functions.py
 
 gnutls.xml: $(HEADER_FILES)
 	h2xml.py $(HEADER_FILES) -o gnutls.xml -q -c
