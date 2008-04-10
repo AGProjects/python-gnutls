@@ -5,10 +5,10 @@
 
 __all__ = ['X509Credentials', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
 
-import weakref
 from time import time
 from socket import SHUT_RDWR as SOCKET_SHUT_RDWR
 
+from _ctypes import PyObj_FromPtr
 from ctypes import *
 
 from gnutls.validators import *
@@ -30,7 +30,7 @@ from gnutls.library.functions import *
 
 @gnutls_certificate_server_retrieve_function
 def _retrieve_server_certificate(c_session, retr_st):
-    session = gnutls_session_get_ptr(c_session)
+    session = PyObj_FromPtr(gnutls_session_get_ptr(c_session))
     server_name = session.server_name
     credentials = session.credentials
     if server_name is not None:
@@ -96,7 +96,7 @@ class X509Credentials(object):
             gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         elif (cert, key) != (None, None):
             raise ValueError("Specify neither or both the certificate and private key")
-        #gnutls_certificate_server_set_retrieve_function(self._c_object, _retrieve_server_certificate)
+        gnutls_certificate_server_set_retrieve_function(self._c_object, _retrieve_server_certificate)
         self._max_depth = 5
         self._max_bits  = 8200
         self._type = CRED_CERTIFICATE
@@ -265,10 +265,8 @@ class Session(object):
 
     def __init__(self, socket, credentials):
         gnutls_init(byref(self._c_object), self.session_type)
-        ## Store a weak reference to self on the C session and keep it
-        ## around to prevent it from being garbage collected.
-        self._c_object._py_session = py_object(weakref.proxy(self))
-        gnutls_session_set_ptr(self._c_object, self._c_object._py_session)
+        ## Store a pointer to self on the C session
+        gnutls_session_set_ptr(self._c_object, id(self))
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
         gnutls_handshake_set_private_extensions(self._c_object, 1)
