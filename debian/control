@@ -2,8 +2,8 @@ Source: python-gnutls
 Section: python
 Priority: optional
 Maintainer: Dan Pascu <dan@ag-projects.com>
-Build-Depends: cdbs (>= 0.4.47), debhelper (>= 5.0.42), python-all-dev (>= 2.4.4-1), python-support, python-ctypeslib, libgnutls-dev (>= 1.4.4)
-Standards-Version: 3.7.2
+Build-Depends: cdbs (>= 0.4.47), debhelper (>= 5.0.42), python-all-dev (>= 2.4.4), python-support, python-ctypeslib, libgnutls-dev (>= 2.2.2)
+Standards-Version: 3.7.3
 
 Package: python-gnutls
 Architecture: any
@@ -16,12 +16,10 @@ Description: Python wrapper for the GNUTLS library
  functions via ctypes. The high level wrapper hides the details of
  accessing the GNUTLS library via ctypes behind a set of classes
  that encapsulate GNUTLS sessions, certificates and credentials and
- expose them to python applications using a simple API.
+ expose them to Python applications using a simple API.
  .
  The package also includes a Twisted interface that has seamless
  intergration with Twisted, providing connectTLS and listenTLS
  methods on the Twisted reactor once imported (the methods are
  automatically attached to the reactor by simply importing the
  GNUTLS Twisted interface module).
- .
-  Homepage: http://cheeseshop.python.org/pypi/python-gnutls
