@@ -2,8 +2,9 @@ python-gnutls (1.1.5) unstable; urgency=low
 
   * Added server name extension support.
   * Fixed 64-bit issues with size_t and ssize_t.
+  * Require libgnutls version 2.2.2 or higher.
 
- -- Dan Pascu <dan@ag-projects.com>  Sat, 26 Jan 2008 10:40:23 +0200
+ -- Dan Pascu <dan@ag-projects.com>  Tue, 29 Apr 2008 15:09:23 +0300
 
 python-gnutls (1.1.4) unstable; urgency=low
 
