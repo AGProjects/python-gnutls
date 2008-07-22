@@ -1,26 +1,22 @@
 from ctypes import *
 
-from gnutls.library.constants import gnutls_openpgp_crt_fmt
 STRING = c_char_p
 from gnutls.library.constants import gnutls_cipher_algorithm_t
+from gnutls.library.constants import gnutls_certificate_print_formats
 from gnutls.library.constants import gnutls_params_type_t
 from gnutls.library.constants import gnutls_psk_key_flags
 from gnutls.library.constants import gnutls_x509_subject_alt_name_t
 from gnutls.library.constants import gnutls_certificate_type_t
 from gnutls.library.constants import gnutls_pk_algorithm_t
+from gnutls.library.constants import gnutls_openpgp_crt_fmt
 from gnutls.library.constants import gnutls_certificate_import_flags
-from gnutls.library.constants import gnutls_certificate_print_formats
 from gnutls.library.constants import gnutls_certificate_verify_flags
 from gnutls.library.constants import gnutls_pkcs_encrypt_flags_t
 
 
-gnutls_openpgp_crt_fmt_t = gnutls_openpgp_crt_fmt
 class gnutls_session_int(Structure):
     pass
 gnutls_session_t = POINTER(gnutls_session_int)
-class gnutls_datum_t(Structure):
-    pass
-gnutls_openpgp_recv_key_func = CFUNCTYPE(c_int, gnutls_session_t, POINTER(c_ubyte), c_uint, POINTER(gnutls_datum_t))
 size_t = c_size_t
 gnutls_ia_avp_func = CFUNCTYPE(c_int, gnutls_session_t, c_void_p, STRING, size_t, POINTER(STRING), POINTER(size_t))
 class gnutls_ia_server_credentials_st(Structure):
@@ -33,6 +29,7 @@ class gnutls_ia_client_credentials_st(Structure):
 gnutls_ia_client_credentials_st._fields_ = [
 ]
 gnutls_ia_client_credentials_t = POINTER(gnutls_ia_client_credentials_st)
+gnutls_certificate_print_formats_t = gnutls_certificate_print_formats
 gnutls_transport_ptr_t = c_void_p
 gnutls_session_int._fields_ = [
 ]
@@ -51,6 +48,8 @@ class gnutls_priority_st(Structure):
 gnutls_priority_st._fields_ = [
 ]
 gnutls_priority_t = POINTER(gnutls_priority_st)
+class gnutls_datum_t(Structure):
+    pass
 gnutls_datum_t._fields_ = [
     ('data', POINTER(c_ubyte)),
     ('size', c_uint),
@@ -102,6 +101,11 @@ class gnutls_x509_crt_int(Structure):
 gnutls_x509_crt_int._fields_ = [
 ]
 gnutls_x509_crt_t = POINTER(gnutls_x509_crt_int)
+class gnutls_openpgp_keyring_int(Structure):
+    pass
+gnutls_openpgp_keyring_int._fields_ = [
+]
+gnutls_openpgp_keyring_t = POINTER(gnutls_openpgp_keyring_int)
 gnutls_alloc_function = CFUNCTYPE(c_void_p, size_t)
 gnutls_calloc_function = CFUNCTYPE(c_void_p, size_t, size_t)
 gnutls_is_secure_function = CFUNCTYPE(c_int, c_void_p)
@@ -170,12 +174,9 @@ gnutls_retr_st._fields_ = [
 gnutls_certificate_client_retrieve_function = CFUNCTYPE(c_int, gnutls_session_t, POINTER(gnutls_datum_t), c_int, POINTER(gnutls_pk_algorithm_t), c_int, POINTER(gnutls_retr_st))
 gnutls_certificate_server_retrieve_function = CFUNCTYPE(c_int, gnutls_session_t, POINTER(gnutls_retr_st))
 gnutls_sign_func = CFUNCTYPE(c_int, gnutls_session_t, c_void_p, gnutls_certificate_type_t, POINTER(gnutls_datum_t), POINTER(gnutls_datum_t), POINTER(gnutls_datum_t))
-class gnutls_openpgp_keyring_int(Structure):
-    pass
-gnutls_openpgp_keyring_int._fields_ = [
-]
-gnutls_openpgp_keyring_t = POINTER(gnutls_openpgp_keyring_int)
-gnutls_certificate_print_formats_t = gnutls_certificate_print_formats
+gnutls_openpgp_crt_fmt_t = gnutls_openpgp_crt_fmt
+gnutls_openpgp_keyid_t = c_ubyte * 8
+gnutls_openpgp_recv_key_func = CFUNCTYPE(c_int, gnutls_session_t, POINTER(c_ubyte), c_uint, POINTER(gnutls_datum_t))
 gnutls_x509_dn_t = c_void_p
 class gnutls_x509_ava_st(Structure):
     pass
@@ -194,17 +195,17 @@ class gnutls_x509_crq_int(Structure):
 gnutls_x509_crq_int._fields_ = [
 ]
 gnutls_x509_crq_t = POINTER(gnutls_x509_crq_int)
-__all__ = ['key', 'gnutls_transport_ptr_t', 'gnutls_session_int',
-           'gnutls_srp_server_credentials_st',
+__all__ = ['key', 'gnutls_certificate_print_formats_t',
+           'gnutls_session_int', 'gnutls_srp_server_credentials_st',
            'gnutls_oprfi_callback_func', '__ssize_t',
-           'gnutls_certificate_print_formats_t', 'gnutls_pkcs7_int',
+           'gnutls_transport_ptr_t', 'gnutls_pkcs7_int',
            'gnutls_psk_client_credentials_st', 'gnutls_priority_t',
            'gnutls_certificate_credentials_st',
            'gnutls_psk_server_credentials_t', 'gnutls_x509_crt_t',
-           'gnutls_psk_client_credentials_t', 'gnutls_x509_privkey_t',
-           'gnutls_openpgp_keyring_t', 'gnutls_x509_privkey_int',
-           'gnutls_push_func', 'gnutls_x509_crq_int',
-           'gnutls_psk_server_credentials_st', 'gnutls_openpgp_crt_t',
+           'gnutls_x509_privkey_t', 'gnutls_openpgp_keyring_t',
+           'gnutls_x509_privkey_int', 'gnutls_push_func',
+           'gnutls_x509_crq_int', 'gnutls_psk_server_credentials_st',
+           'gnutls_openpgp_crt_t',
            'gnutls_certificate_client_credentials', 'size_t',
            'gnutls_ia_avp_func', 'gnutls_params_st',
            'gnutls_anon_client_credentials_t', 'gnutls_dh_params_t',
@@ -224,10 +225,9 @@ __all__ = ['key', 'gnutls_transport_ptr_t', 'gnutls_session_int',
            'gnutls_is_secure_function', 'gnutls_db_retr_func',
            'gnutls_openpgp_keyring_int',
            'gnutls_srp_client_credentials_t',
-           'gnutls_openpgp_recv_key_func',
+           'gnutls_psk_client_credentials_t',
            'gnutls_anon_server_credentials_t', 'gnutls_dh_params_int',
-           'gnutls_datum_t',
-           'gnutls_certificate_server_retrieve_function',
+           'gnutls_datum_t', 'gnutls_openpgp_crt_fmt_t',
            'gnutls_ia_server_credentials_t', 'gnutls_x509_ava_st',
            'gnutls_alloc_function',
            'gnutls_psk_server_credentials_function',
@@ -235,12 +235,14 @@ __all__ = ['key', 'gnutls_transport_ptr_t', 'gnutls_session_int',
            'gnutls_params_function',
            'gnutls_srp_server_credentials_t',
            'gnutls_openpgp_crt_int', 'gnutls_log_func',
-           'gnutls_rsa_params_t', 'gnutls_openpgp_crt_fmt_t',
+           'gnutls_rsa_params_t',
+           'gnutls_certificate_server_retrieve_function',
            'gnutls_x509_dn_t', 'gnutls_x509_crq_t',
            'gnutls_pull_func', 'gnutls_db_remove_func',
            'gnutls_ia_client_credentials_t',
            'gnutls_certificate_credentials_t', 'gnutls_pkcs7_t',
            'gnutls_ia_client_credentials_st', 'gnutls_db_store_func',
-           'ssize_t', 'gnutls_openpgp_privkey_t',
+           'ssize_t', 'gnutls_openpgp_recv_key_func',
+           'gnutls_openpgp_privkey_t', 'gnutls_openpgp_keyid_t',
            'gnutls_free_function', 'gnutls_x509_crl_t',
            'gnutls_certificate_client_retrieve_function']
