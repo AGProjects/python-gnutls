@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 """Asynchronous client using Twisted with GNUTLS"""
 
