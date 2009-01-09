@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 count = 100
 host, port = 'localhost', 10000

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import sys, os
 script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
