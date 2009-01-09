@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 from distutils.core import setup, Extension
 from gnutls import __version__
