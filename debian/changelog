@@ -1,3 +1,13 @@
+python-gnutls (1.1.7) unstable; urgency=low
+
+  * Updated debian build dependency to libgnutls-dev 2.4.1 or newer
+  * Use the default python interpreter instead of /usr/bin/python in
+    example, test and setup scripts
+  * Improved detection of gnutls libraries by using libgnutls-config
+  * Fixed gnutls library location for Mac OSX installations
+
+ -- Dan Pascu <dan@ag-projects.com>  Fri, 09 Jan 2009 18:49:02 +0200
+
 python-gnutls (1.1.6) unstable; urgency=low
 
   * Require libgnutls version 2.4.1 or higher.
