@@ -1,3 +1,9 @@
+Changes in version 1.1.8
+------------------------
+
+  * Workaround for changed tcp.Server.__init__ signature in twisted 8.2.0
+  * Fixed DeprecationWarning when running with python2.6 or newer
+
 Changes in version 1.1.7
 ------------------------
 

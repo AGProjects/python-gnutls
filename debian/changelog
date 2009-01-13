@@ -1,3 +1,10 @@
+python-gnutls (1.1.8) unstable; urgency=low
+
+  * Workaround for changed tcp.Server.__init__ signature in twisted 8.2.0
+  * Fixed DeprecationWarning when running with python2.6 or newer
+
+ -- Dan Pascu <dan@ag-projects.com>  Tue, 13 Jan 2009 14:59:43 +0200
+
 python-gnutls (1.1.7) unstable; urgency=low
 
   * Updated debian build dependency to libgnutls-dev 2.4.1 or newer
