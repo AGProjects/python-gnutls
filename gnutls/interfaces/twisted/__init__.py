@@ -250,10 +250,10 @@ class TLSServer(TLSMixin, tcp.Server):
     #implements(interfaces.ISSLTransport)
     implementsOnly(interfaces.ISSLTransport, *[i for i in implementedBy(tcp.Server) if i != interfaces.ITLSTransport])
     
-    def __init__(self, sock, protocol, client, server, sessionno):
+    def __init__(self, sock, protocol, client, server, sessionno, *args, **kw):
         self.__watchdog = None
         self.credentials = server.credentials
-        tcp.Server.__init__(self, sock, protocol, client, server, sessionno)
+        tcp.Server.__init__(self, sock, protocol, client, server, sessionno, *args, **kw)
 
     def _recurrentVerify(self):
         if not self.connected or self.disconnecting:
