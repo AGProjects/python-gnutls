@@ -220,9 +220,10 @@ class TLSClient(TLSMixin, tcp.Client):
     def _connectDone(self):
         self.startTLS()
 
-    def loseConnection(self, reason=main.CONNECTION_DONE):
-        self._close_reason = reason
-        tcp.Client.loseConnection(self, failure.Failure(reason))
+    def loseConnection(self, reason=failure.Failure(main.CONNECTION_DONE)):
+        reason = failure.Failure(reason) # accept python exceptions too
+        self._close_reason = reason.value
+        tcp.Client.loseConnection(self, reason)
 
     def connectionLost(self, reason):
         if self.__watchdog is not None:
@@ -315,9 +316,10 @@ class TLSServer(TLSMixin, tcp.Server):
         self.doRead = self.doHandshake
         self.startReading()
 
-    def loseConnection(self, reason=main.CONNECTION_DONE):
-        self._close_reason = reason
-        tcp.Server.loseConnection(self, failure.Failure(reason))
+    def loseConnection(self, reason=failure.Failure(main.CONNECTION_DONE)):
+        reason = failure.Failure(reason) # accept python exceptions too
+        self._close_reason = reason.value
+        tcp.Server.loseConnection(self, reason)
 
     def connectionLost(self, reason):
         if self.__watchdog is not None:
