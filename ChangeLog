@@ -1,3 +1,10 @@
+Changes in version 1.1.9
+------------------------
+
+  * Made loseConnection signature match the corresponding one from twisted
+  * Bumped debian standards version to 3.8.2
+  * Fixed lintian warning about missing misc:Depends dependency
+
 Changes in version 1.1.8
 ------------------------
 

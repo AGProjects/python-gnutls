@@ -1,3 +1,11 @@
+python-gnutls (1.1.9) unstable; urgency=low
+
+  * Made loseConnection signature match the corresponding one from twisted
+  * Bumped debian standards version to 3.8.2
+  * Fixed lintian warning about missing misc:Depends dependency
+
+ -- Dan Pascu <dan@ag-projects.com>  Wed, 15 Jul 2009 16:26:55 +0300
+
 python-gnutls (1.1.8) unstable; urgency=low
 
   * Workaround for changed tcp.Server.__init__ signature in twisted 8.2.0
