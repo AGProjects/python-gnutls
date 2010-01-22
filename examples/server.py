@@ -43,7 +43,6 @@ while True:
         cred.check_certificate(peer_cert, cert_name='peer certificate')
     except Exception, e:
         print 'Handshake failed:', e
-        session.bye()
     else:
         while True:
             try:
@@ -60,5 +59,8 @@ while True:
             except Exception, e:
                 print "Error in reception: ", e
                 break
-    session.shutdown()
+    try:
+        session.shutdown()
+    except:
+        pass
     session.close()
