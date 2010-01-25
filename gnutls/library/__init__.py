@@ -1,11 +1,115 @@
-# Copyright (C) 2007 AG Projects. See LICENSE for details.
+# Copyright (C) 2007-2010 AG Projects. See LICENSE for details.
 #
 
-from gnutls.library import _gnutls_init
+
+__all__ = ['constants', 'errors', 'functions', 'types']
+
+
+def library_locations(name, version):
+    import os, platform
+    from ctypes.util import find_library
+    
+    system = platform.system().lower()
+    if system == 'darwin':
+        library_name = 'lib%s.%d.dylib' % (name, version)
+        library_alias = 'lib%s.dylib' % name
+        search_name = name
+        additional_paths = ['/usr/local/lib', '/opt/local/lib', '/sw/lib']
+    elif system == 'windows':
+        library_name = 'lib%s-%d.dll' % (name, version)
+        library_alias = 'lib%s.dll' % name
+        search_name = 'lib%s-%d' % (name, version)
+        additional_paths = []
+    else:
+        library_name = 'lib%s.so.%d' % (name, version)
+        library_alias = 'lib%s.so' % name
+        search_name = name
+        additional_paths = ['/usr/local/lib']
+    library = find_library(search_name)
+    if library is not None:
+        yield library
+    library = find_library(library_name)
+    if library is not None:
+        yield library
+    for path in additional_paths:
+        yield os.path.join(path, library_name)
+    for path in additional_paths:
+        yield os.path.join(path, library_alias)
+
+
+def load_library(name, version):
+    from ctypes import CDLL
+
+    for library in library_locations(name, version):
+        try:
+            return CDLL(library)
+        except OSError:
+            pass
+        else:
+            break
+    else:
+        raise RuntimeError('cannot find lib%s on this system' % name)
+
+
+def initialize_gcrypt():
+    import platform
+    from ctypes import c_void_p
+    from gnutls.library._init import gcrypt_thread_callbacks_ptr
+
+    GCRYCTL_SET_THREAD_CBS = 47
+
+    system = platform.system().lower()
+    if system == 'windows':
+        from ctypes import CDLL, FormatError, POINTER, byref, create_unicode_buffer, c_wchar_p, sizeof, windll
+        from ctypes.wintypes import BOOL, DWORD, HANDLE, HMODULE
+
+        GetCurrentProcess = windll.kernel32.GetCurrentProcess
+        GetCurrentProcess.argtypes = []
+        GetCurrentProcess.restype = HANDLE
+
+        try:
+            EnumProcessModules = windll.kernel32.EnumProcessModules
+        except AttributeError:
+            EnumProcessModules = windll.psapi.EnumProcessModules
+        EnumProcessModules.argtypes = [HANDLE, POINTER(HMODULE), DWORD, POINTER(DWORD)]
+        EnumProcessModules.restype = BOOL
+
+        GetModuleFileName = windll.kernel32.GetModuleFileNameW
+        GetModuleFileName.argtypes = [HMODULE, c_wchar_p, DWORD]
+        GetModuleFileName.restype = DWORD
+
+        module_handles = (HMODULE * 1024)()
+        module_name = create_unicode_buffer(65536)
+        needed = DWORD()
+
+        if EnumProcessModules(GetCurrentProcess(), module_handles, sizeof(module_handles), byref(needed)):
+            for i in xrange(needed.value / sizeof(HMODULE)):
+                if GetModuleFileName(module_handles[i], module_name, len(module_name)) and 'libgcrypt' in module_name.value:
+                    libgcrypt = CDLL(module_name.value)
+                    break
+            else:
+                raise RuntimeError('cannot find libgcrypt among the loaded dlls')
+        else:
+            raise RuntimeError('cannot obtain the process modules: %s' % FormatError())
+        gcry_control = libgcrypt.gcry_control
+    else:
+        gcry_control = libgnutls.gcry_control
+    gcry_control(GCRYCTL_SET_THREAD_CBS, c_void_p(gcrypt_thread_callbacks_ptr))
+
+
+libgnutls = load_library(name='gnutls', version=26)
+libgnutls_extra = load_library(name='gnutls-extra', version=26)
+
+initialize_gcrypt()
+libgnutls.gnutls_global_init()
+libgnutls_extra.gnutls_global_init_extra()
+
+
 from gnutls.library import constants
-from gnutls.library import types
 from gnutls.library import errors
 from gnutls.library import functions
+from gnutls.library import types
+
 
 __need_version__ = '2.4.1'
 
@@ -15,3 +119,7 @@ if functions.gnutls_check_version(__need_version__) is None:
 if functions.gnutls_extra_check_version(__need_version__) is None:
     version = functions.gnutls_extra_check_version(None)
     raise RuntimeError("Found GNUTLS extra library version %s, but at least version %s is required" % (version, __need_version__))
+
+
+del library_locations, load_library, initialize_gcrypt
+

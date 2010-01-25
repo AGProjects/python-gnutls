@@ -68,11 +68,8 @@ def _check_status(retcode, function, args):
 from gnutls.library import functions
 from ctypes import c_int, c_long
 
-for func in functions.__dict__.values():
-    if not hasattr(func, 'errcheck'):
-        continue ## not a function
-    if func.restype in (c_int, c_long):
-        func.errcheck = _check_status
+for func in (obj for name, obj in functions.__dict__.iteritems() if name in functions.__all__ and obj.restype in (c_int, c_long)):
+    func.errcheck = _check_status
 
 del c_int, c_long, func, functions
 
