@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-"""Synchronous server using python-gnutls"""
+"""Synchronous server that handles each connection in a thread"""
 
 import sys
 import os
 import socket
+from threading import Thread
 
 from gnutls.crypto import *
 from gnutls.connection import *
@@ -24,43 +25,57 @@ ssf = ServerSessionFactory(sock, cred)
 ssf.bind(('0.0.0.0', 10000))
 ssf.listen(100)
 
+
+class SessionHandler(Thread):
+    def __init__(self, session, address):
+        Thread.__init__(self, name='SessionHandler')
+        self.setDaemon(True)
+        self.session = session
+        self.address = address
+
+    def run(self):
+        session = self.session
+        try:
+            session.handshake()
+            peer_cert = session.peer_certificate
+            try:
+                peer_name = peer_cert.subject
+            except AttributeError:
+                peer_name = 'Unknown'
+            print '\nNew connection from:', peer_name
+            print 'Protocol:     ', session.protocol
+            print 'KX algorithm: ', session.kx_algorithm
+            print 'Cipher:       ', session.cipher
+            print 'MAC algorithm:', session.mac_algorithm
+            print 'Compression:  ', session.compression
+            session.verify_peer()
+            cred.check_certificate(peer_cert, cert_name='peer certificate')
+        except Exception, e:
+            print 'Handshake failed:', e
+        else:
+            while True:
+                try:
+                    buf = session.recv(1024)
+                    if not buf:
+                        print "Peer has closed the session"
+                        break
+                    else:
+                        if buf.strip().lower() == 'quit':
+                            print "Got quit command, closing connection"
+                            session.bye()
+                            break
+                    session.send(buf)
+                except Exception, e:
+                    print "Error in reception: ", e
+                    break
+        try:
+            session.shutdown()
+        except:
+            pass
+        session.close()
+
 while True:
     session, address = ssf.accept()
-    try:
-        session.handshake()
-        peer_cert = session.peer_certificate
-        try:
-            peer_name = peer_cert.subject
-        except AttributeError:
-            peer_name = 'Unknown'
-        print '\nNew connection from:', peer_name
-        print 'Protocol:     ', session.protocol
-        print 'KX algorithm: ', session.kx_algorithm
-        print 'Cipher:       ', session.cipher
-        print 'MAC algorithm:', session.mac_algorithm
-        print 'Compression:  ', session.compression
-        session.verify_peer()
-        cred.check_certificate(peer_cert, cert_name='peer certificate')
-    except Exception, e:
-        print 'Handshake failed:', e
-    else:
-        while True:
-            try:
-                buf = session.recv(1024)
-                if buf == 0 or buf == '':
-                    print "Peer has closed the session"
-                    break
-                else:
-                    if buf.strip().lower() == 'quit':
-                        print "Got quit command, closing connection"
-                        session.bye()
-                        break
-                session.send(buf)
-            except Exception, e:
-                print "Error in reception: ", e
-                break
-    try:
-        session.shutdown()
-    except:
-        pass
-    session.close()
+    handler = SessionHandler(session, address)
+    handler.start()
+
