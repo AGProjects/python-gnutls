@@ -27,6 +27,5 @@ session.send("test\r\n")
 buf = session.recv(1024)
 print 'Received: ', buf.rstrip()
 session.bye()
-session.shutdown()
 session.close()
 
