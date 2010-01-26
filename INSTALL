@@ -1,0 +1,107 @@
+
+Installation procedure
+----------------------
+
+Even though the installation procedures below indicate that python-gnutls
+works with python-2.4 or newer, we recommend that at least python-2.5 is
+used, or even better python-2.6. This is because starting with python-2.5
+python-ctypes was integrated in the standard python distribution and is no
+longer required as a separate dependency.
+
+
+1. Linux / UNIX
+
+Build dependencies:
+ - gcc
+ - python and python-dev (>= 2.4)
+
+Runtime dependencies:
+ - libgnutls (>= 2.4.1)
+ - the libgnutls dependencies (libgcrypt, libtasn1, libgpg-error, zlib)
+ - python (>= 2.4)
+ - python-ctypes (only when using python-2.4, othewrwise ctypes was
+   integrated in python starting with version 2.5.0)
+
+To build and install python-gnutls run:
+
+python setup.py build
+python setup.py install
+
+
+2. Mac OS X
+
+Build dependencies:
+ - Mac OS X Leopard (10.5) or Snow Leopard (10.6)
+ - Apple Developer Tools (XCode)
+
+Runtime dependencies:
+ - libgnutls (>= 2.4.1)
+ - the libgnutls dependencies (libgcrypt, libtasn1, libgpg-error, zlib)
+ - python (this is already preinstalled on every OS X)
+
+Note: libgnutls and its dependencies can be installed from macports, fink or
+by compiling and installing them from source.
+
+To build and install python-gnutls run:
+
+python setup.py build
+python setup.py install
+
+
+3. Windows
+
+This was only tested on Windows XP. Other Windows versions may work, but
+they were not tested.
+
+Build dependencies:
+ - Visual Studio (the version must match the one used to build the python
+   interpreter that will be used. For example the python-2.6 windows
+   binaries from python.org were built with Visual Studio 9)
+ - libpthreads (http://sourceware.org/pthreads-win32)
+ - python and python-dev (>= 2.4) (select include the development files
+   when installing python)
+
+Runtime dependencies:
+ - libgnutls (>= 2.4.1).
+ - the libgnutls dependencies: libgcrypt, libtasn1, libgpg-error, zlib.
+   (they are automatically installed when installing libgnutls form the
+   binary packages provided by gnutls.org)
+ - libpthreads
+ - python (>= 2.4)
+ - python-ctypes (only when using python-2.4, othewrwise ctypes was
+   integrated in python starting with version 2.5.0)
+
+Before building python-gnutls, copy the pthread header files (pthread.h,
+sched.h, semaphore.h) to C:\Developer\include\ and the pthread developer
+libraries (libpthread*.a and pthread*.lib) to C:\Developer\lib\ (create
+these directories first).
+ 
+To build and install python-gnutls run:
+
+python setup.py build
+python setup.py install
+
+In order to run an application based on python-gnutls, make sure that the
+DLLs mentioned in the runtime dependencies (pthread*.dll, libgnutls*.dll,
+etc) are somewhere in %PATH%
+
+
+4. Cygwin
+
+Build dependencies:
+ - cygwin (>= 1.7.1)
+ - gcc
+ - python and python-dev (>= 2.5)
+
+Runtime dependencies:
+ - libgnutls26 (>= 2.4.1)
+ - the libgnutls dependencies (libgcrypt11, libtasn1, libgpg-error, zlib)
+   (they will be installed automatically when libgnutls26 is installed)
+ - python (>= 2.5)
+
+To build and install python-gnutls run:
+
+python setup.py build
+python setup.py install
+
+
