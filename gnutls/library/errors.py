@@ -54,7 +54,8 @@ def _check_status(retcode, function, args):
             GNUTLS_A_UNKNOWN_CA: (CertificateAuthorityError, "peer does not trust our certificate authority"),
             GNUTLS_A_INSUFFICIENT_SECURITY: (CertificateSecurityError, "peer rejected us on insufficient security"),
             GNUTLS_A_CERTIFICATE_EXPIRED: (CertificateExpiredError, "peer rejected our certificate as expired"),
-            GNUTLS_A_CERTIFICATE_REVOKED: (CertificateRevokedError, "peer rejected our certificate as revoked")}
+            GNUTLS_A_CERTIFICATE_REVOKED: (CertificateRevokedError, "peer rejected our certificate as revoked")
+        }
         alert = gnutls_alert_get(args[0])
         exception, reason = alertdict.get(alert, (GNUTLSError, ErrorMessage(retcode)))
         raise exception(reason)
