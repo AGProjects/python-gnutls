@@ -5,11 +5,19 @@
 __all__ = ['constants', 'errors', 'functions', 'types']
 
 
+def get_system_name():
+    import platform
+    system = platform.system().lower()
+    if system.startswith('cygwin'):
+        system = 'cygwin'
+    return system
+
+
 def library_locations(name, version):
-    import os, platform
+    import os
     from ctypes.util import find_library
     
-    system = platform.system().lower()
+    system = get_system_name()
     if system == 'darwin':
         library_name = 'lib%s.%d.dylib' % (name, version)
         library_alias = 'lib%s.dylib' % name
@@ -20,6 +28,11 @@ def library_locations(name, version):
         library_alias = 'lib%s.dll' % name
         search_name = 'lib%s-%d' % (name, version)
         additional_paths = []
+    elif system == 'cygwin':
+        library_name = 'cyg%s-%d.dll' % (name, version)
+        library_alias = 'cyg%s.dll' % name
+        search_name = 'cyg%s-%d' % (name, version)
+        additional_paths = ['/usr/bin']
     else:
         library_name = 'lib%s.so.%d' % (name, version)
         library_alias = 'lib%s.so' % name
@@ -52,13 +65,18 @@ def load_library(name, version):
 
 
 def initialize_gcrypt():
-    import platform
     from ctypes import c_void_p
     from gnutls.library._init import gcrypt_thread_callbacks_ptr
 
+    GCRYCTL_INIT_SECMEM = 24
+    GCRYCTL_SUSPEND_SECMEM_WARN = 28
+    GCRYCTL_RESUME_SECMEM_WARN  = 29
+    GCRYCTL_DISABLE_SECMEM = 37
     GCRYCTL_SET_THREAD_CBS = 47
+    GCRYCTL_INITIALIZATION_FINISHED = 38
 
-    system = platform.system().lower()
+    system = get_system_name()
+
     if system == 'windows':
         from ctypes import CDLL, FormatError, POINTER, byref, create_unicode_buffer, c_wchar_p, sizeof, windll
         from ctypes.wintypes import BOOL, DWORD, HANDLE, HMODULE
@@ -92,9 +110,21 @@ def initialize_gcrypt():
         else:
             raise RuntimeError('cannot obtain the process modules: %s' % FormatError())
         gcry_control = libgcrypt.gcry_control
+    elif system == 'cygwin':
+        libgcrypt = load_library(name='gcrypt', version=11)
+        gcry_control = libgcrypt.gcry_control
     else:
         gcry_control = libgnutls.gcry_control
+
     gcry_control(GCRYCTL_SET_THREAD_CBS, c_void_p(gcrypt_thread_callbacks_ptr))
+    if system == 'cygwin':
+        gcry_control(GCRYCTL_DISABLE_SECMEM, 0)
+    else:
+        gcry_control(GCRYCTL_SUSPEND_SECMEM_WARN)
+        gcry_control(GCRYCTL_INIT_SECMEM, 32768, 0)
+        gcry_control(GCRYCTL_RESUME_SECMEM_WARN)
+    gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0)
+
 
 
 libgnutls = load_library(name='gnutls', version=26)
@@ -121,5 +151,5 @@ if functions.gnutls_extra_check_version(__need_version__) is None:
     raise RuntimeError("Found GNUTLS extra library version %s, but at least version %s is required" % (version, __need_version__))
 
 
-del library_locations, load_library, initialize_gcrypt
+del get_system_name, library_locations, load_library, initialize_gcrypt
 
