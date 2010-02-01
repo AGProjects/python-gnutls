@@ -2,7 +2,7 @@ Source: python-gnutls
 Section: python
 Priority: optional
 Maintainer: Dan Pascu <dan@ag-projects.com>
-Build-Depends: cdbs (>= 0.4.47), debhelper (>= 5.0.42), python-all-dev (>= 2.4.4), python-support, python-ctypeslib, libgnutls-dev (>= 2.4.1)
+Build-Depends: cdbs (>= 0.4.47), debhelper (>= 5.0.42), python-all-dev (>= 2.4.4), python-support
 Standards-Version: 3.8.3
 
 Package: python-gnutls
