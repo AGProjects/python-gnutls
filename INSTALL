@@ -58,13 +58,13 @@ Build dependencies:
    interpreter that will be used. For example the python-2.6 windows
    binaries from python.org were built with Visual Studio 9)
  - libpthreads (http://sourceware.org/pthreads-win32)
- - python and python-dev (>= 2.4) (select include the development files
+ - python and python-dev (>= 2.4) (select to include the development files
    when installing python)
 
 Runtime dependencies:
  - libgnutls (>= 2.4.1).
  - the libgnutls dependencies: libgcrypt, libtasn1, libgpg-error, zlib.
-   (they are automatically installed when installing libgnutls form the
+   (they are automatically installed when installing libgnutls from the
    binary packages provided by gnutls.org)
  - libpthreads
  - python (>= 2.4)
