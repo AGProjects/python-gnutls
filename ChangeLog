@@ -1,3 +1,18 @@
+Changes in version 1.2.0
+------------------------
+
+  * Fixed threading issue with ctypes older than 1.0.3
+  * Removed compile time dependency on gnutls and reorganized library code
+  * Improved finding the gnutls library at runtime
+  * Fixed the shutdown procedure in examples/server.py
+  * Remove unneeded shutdown call from examples/client.py
+  * Made examples/server.py threaded
+  * Simplified windows build procedure
+  * Added support for cygwin
+  * Improved error handling
+  * Added INSTALL file
+  * Bumped debian standards version to 3.8.3
+
 Changes in version 1.1.9
 ------------------------
 

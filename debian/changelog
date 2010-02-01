@@ -1,3 +1,19 @@
+python-gnutls (1.2.0) unstable; urgency=low
+
+  * Fixed threading issue with ctypes older than 1.0.3
+  * Removed compile time dependency on gnutls and reorganized library code
+  * Improved finding the gnutls library at runtime
+  * Fixed the shutdown procedure in examples/server.py
+  * Remove unneeded shutdown call from examples/client.py
+  * Made examples/server.py threaded
+  * Simplified windows build procedure
+  * Added support for cygwin
+  * Improved error handling
+  * Added INSTALL file
+  * Bumped debian standards version to 3.8.3
+
+ -- Dan Pascu <dan@ag-projects.com>  Mon, 01 Feb 2010 17:47:51 +0200
+
 python-gnutls (1.1.9) unstable; urgency=low
 
   * Made loseConnection signature match the corresponding one from twisted
