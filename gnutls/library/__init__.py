@@ -27,7 +27,7 @@ def library_locations(name, version):
         library_name = 'lib%s-%d.dll' % (name, version)
         library_alias = 'lib%s.dll' % name
         search_name = 'lib%s-%d' % (name, version)
-        additional_paths = []
+        additional_paths = ['.']
     elif system == 'cygwin':
         library_name = 'cyg%s-%d.dll' % (name, version)
         library_alias = 'cyg%s.dll' % name
