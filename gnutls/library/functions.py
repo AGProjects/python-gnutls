@@ -74,6 +74,7 @@ gnutls_bye.restype = c_int
 gnutls_certificate_activation_time_peers = libgnutls.gnutls_certificate_activation_time_peers
 gnutls_certificate_activation_time_peers.argtypes = [gnutls_session_t]
 gnutls_certificate_activation_time_peers.restype = time_t
+gnutls_certificate_activation_time_peers.errmsg = "cannot get certificate activation time"
 
 gnutls_certificate_allocate_credentials = libgnutls.gnutls_certificate_allocate_credentials
 gnutls_certificate_allocate_credentials.argtypes = [POINTER(gnutls_certificate_credentials_t)]
@@ -90,6 +91,7 @@ gnutls_certificate_client_set_retrieve_function.restype = None
 gnutls_certificate_expiration_time_peers = libgnutls.gnutls_certificate_expiration_time_peers
 gnutls_certificate_expiration_time_peers.argtypes = [gnutls_session_t]
 gnutls_certificate_expiration_time_peers.restype = time_t
+gnutls_certificate_expiration_time_peers.errmsg = "cannot get certificate expiration time"
 
 gnutls_certificate_free_ca_names = libgnutls.gnutls_certificate_free_ca_names
 gnutls_certificate_free_ca_names.argtypes = [gnutls_certificate_credentials_t]
@@ -1050,6 +1052,7 @@ gnutls_x509_crl_get_issuer_dn_by_oid.restype = c_int
 gnutls_x509_crl_get_next_update = libgnutls.gnutls_x509_crl_get_next_update
 gnutls_x509_crl_get_next_update.argtypes = [gnutls_x509_crl_t]
 gnutls_x509_crl_get_next_update.restype = time_t
+gnutls_x509_crl_get_next_update.errmsg = "cannot get CRL's next update time"
 
 gnutls_x509_crl_get_signature = libgnutls.gnutls_x509_crl_get_signature
 gnutls_x509_crl_get_signature.argtypes = [gnutls_x509_crl_t, c_char_p, POINTER(size_t)]
@@ -1062,6 +1065,7 @@ gnutls_x509_crl_get_signature_algorithm.restype = c_int
 gnutls_x509_crl_get_this_update = libgnutls.gnutls_x509_crl_get_this_update
 gnutls_x509_crl_get_this_update.argtypes = [gnutls_x509_crl_t]
 gnutls_x509_crl_get_this_update.restype = time_t
+gnutls_x509_crl_get_this_update.errmsg = "cannot get CRL's issue time"
 
 gnutls_x509_crl_get_version = libgnutls.gnutls_x509_crl_get_version
 gnutls_x509_crl_get_version.argtypes = [gnutls_x509_crl_t]
@@ -1206,6 +1210,7 @@ gnutls_x509_crt_export.restype = c_int
 gnutls_x509_crt_get_activation_time = libgnutls.gnutls_x509_crt_get_activation_time
 gnutls_x509_crt_get_activation_time.argtypes = [gnutls_x509_crt_t]
 gnutls_x509_crt_get_activation_time.restype = time_t
+gnutls_x509_crt_get_activation_time.errmsg = "cannot get X509 certificate activation time"
 
 gnutls_x509_crt_get_authority_key_id = libgnutls.gnutls_x509_crt_get_authority_key_id
 gnutls_x509_crt_get_authority_key_id.argtypes = [gnutls_x509_crt_t, c_void_p, POINTER(size_t), POINTER(c_uint)]
@@ -1238,6 +1243,7 @@ gnutls_x509_crt_get_dn_oid.restype = c_int
 gnutls_x509_crt_get_expiration_time = libgnutls.gnutls_x509_crt_get_expiration_time
 gnutls_x509_crt_get_expiration_time.argtypes = [gnutls_x509_crt_t]
 gnutls_x509_crt_get_expiration_time.restype = time_t
+gnutls_x509_crt_get_expiration_time.errmsg = "cannot get X509 certificate expiration time"
 
 gnutls_x509_crt_get_extension_by_oid = libgnutls.gnutls_x509_crt_get_extension_by_oid
 gnutls_x509_crt_get_extension_by_oid.argtypes = [gnutls_x509_crt_t, c_char_p, c_int, c_void_p, POINTER(size_t), POINTER(c_uint)]
@@ -1627,10 +1633,12 @@ else:
     gnutls_openpgp_crt_get_creation_time = libgnutls.gnutls_openpgp_crt_get_creation_time
     gnutls_openpgp_crt_get_creation_time.argtypes = [gnutls_openpgp_crt_t]
     gnutls_openpgp_crt_get_creation_time.restype = time_t
+    gnutls_openpgp_crt_get_creation_time.errmsg = "cannot get OpenPGP key creation time"
 
     gnutls_openpgp_crt_get_expiration_time = libgnutls.gnutls_openpgp_crt_get_expiration_time
     gnutls_openpgp_crt_get_expiration_time.argtypes = [gnutls_openpgp_crt_t]
     gnutls_openpgp_crt_get_expiration_time.restype = time_t
+    gnutls_openpgp_crt_get_expiration_time.errmsg = "cannot get OpenPGP key expiration time"
 
     gnutls_openpgp_crt_get_fingerprint = libgnutls.gnutls_openpgp_crt_get_fingerprint
     gnutls_openpgp_crt_get_fingerprint.argtypes = [gnutls_openpgp_crt_t, c_void_p, POINTER(size_t)]
@@ -1675,10 +1683,12 @@ else:
     gnutls_openpgp_crt_get_subkey_creation_time = libgnutls.gnutls_openpgp_crt_get_subkey_creation_time
     gnutls_openpgp_crt_get_subkey_creation_time.argtypes = [gnutls_openpgp_crt_t, c_uint]
     gnutls_openpgp_crt_get_subkey_creation_time.restype = time_t
+    gnutls_openpgp_crt_get_subkey_creation_time.errmsg = "cannot get OpenPGP subkey creation time"
 
     gnutls_openpgp_crt_get_subkey_expiration_time = libgnutls.gnutls_openpgp_crt_get_subkey_expiration_time
     gnutls_openpgp_crt_get_subkey_expiration_time.argtypes = [gnutls_openpgp_crt_t, c_uint]
     gnutls_openpgp_crt_get_subkey_expiration_time.restype = time_t
+    gnutls_openpgp_crt_get_subkey_expiration_time.errmsg = "cannot get OpenPGP subkey expiration time"
 
     gnutls_openpgp_crt_get_subkey_fingerprint = libgnutls.gnutls_openpgp_crt_get_subkey_fingerprint
     gnutls_openpgp_crt_get_subkey_fingerprint.argtypes = [gnutls_openpgp_crt_t, c_uint, c_void_p, POINTER(size_t)]
@@ -1815,10 +1825,12 @@ else:
     gnutls_openpgp_privkey_get_subkey_creation_time = libgnutls.gnutls_openpgp_privkey_get_subkey_creation_time
     gnutls_openpgp_privkey_get_subkey_creation_time.argtypes = [gnutls_openpgp_privkey_t, c_uint]
     gnutls_openpgp_privkey_get_subkey_creation_time.restype = time_t
+    gnutls_openpgp_privkey_get_subkey_creation_time.errmsg = "cannot get OpenPGP subkey creation time"
 
     gnutls_openpgp_privkey_get_subkey_expiration_time = libgnutls.gnutls_openpgp_privkey_get_subkey_expiration_time
     gnutls_openpgp_privkey_get_subkey_expiration_time.argtypes = [gnutls_openpgp_privkey_t, c_uint]
     gnutls_openpgp_privkey_get_subkey_expiration_time.restype = time_t
+    gnutls_openpgp_privkey_get_subkey_expiration_time.errmsg = "cannot get OpenPGP subkey expiration time"
 
     gnutls_openpgp_privkey_get_subkey_fingerprint = libgnutls.gnutls_openpgp_privkey_get_subkey_fingerprint
     gnutls_openpgp_privkey_get_subkey_fingerprint.argtypes = [gnutls_openpgp_privkey_t, c_uint, c_void_p, POINTER(size_t)]

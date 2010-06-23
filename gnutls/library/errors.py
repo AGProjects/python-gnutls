@@ -31,27 +31,12 @@ class ErrorHandler(object):
         GNUTLS_A_CERTIFICATE_REVOKED   : CertificateRevokedError("peer rejected our certificate as revoked")
     }
 
-    function_map = dict(
-        gnutls_certificate_activation_time_peers          = "cannot get certificate activation time",
-        gnutls_certificate_expiration_time_peers          = "cannot get certificate expiration time",
-        gnutls_x509_crl_get_next_update                   = "cannot get CRL's next update time",
-        gnutls_x509_crl_get_this_update                   = "cannot get CRL's issue time",
-        gnutls_x509_crt_get_activation_time               = "cannot get X509 certificate activation time",
-        gnutls_x509_crt_get_expiration_time               = "cannot get X509 certificate expiration time",
-        gnutls_openpgp_crt_get_creation_time              = "cannot get OpenPGP key creation time",
-        gnutls_openpgp_crt_get_expiration_time            = "cannot get OpenPGP key expiration time",
-        gnutls_openpgp_crt_get_subkey_creation_time       = "cannot get OpenPGP subkey creation time",
-        gnutls_openpgp_crt_get_subkey_expiration_time     = "cannot get OpenPGP subkey expiration time",
-        gnutls_openpgp_privkey_get_subkey_creation_time   = "cannot get OpenPGP subkey creation time",
-        gnutls_openpgp_privkey_get_subkey_expiration_time = "cannot get OpenPGP subkey expiration time"
-    )
-
     @classmethod
     def check_status(cls, retcode, function, args):
         if retcode >= 0:
             return retcode
         elif retcode == -1:
-            raise GNUTLSError(cls.function_map.get(function.__name__) or ErrorMessage(retcode))
+            raise GNUTLSError(getattr(function, 'errmsg', None) or ErrorMessage(retcode))
         elif retcode == GNUTLS_E_AGAIN:
             raise OperationWouldBlock(gnutls_strerror(retcode))
         elif retcode == GNUTLS_E_INTERRUPTED:
@@ -73,9 +58,6 @@ class ErrorHandler(object):
 #
 from gnutls.library import functions
 from ctypes import c_int, c_long
-
-if not set(functions.__all__).issuperset(ErrorHandler.function_map):
-    raise RuntimeError("ErrorHandler.function_map is not synchronized with the function names anymore")
 
 for func in (obj for name, obj in functions.__dict__.iteritems() if name in functions.__all__ and obj.restype in (c_int, c_long)):
     func.errcheck = ErrorHandler.check_status
