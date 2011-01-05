@@ -917,62 +917,6 @@ gnutls_sign_callback_set = libgnutls.gnutls_sign_callback_set
 gnutls_sign_callback_set.argtypes = [gnutls_session_t, gnutls_sign_func, c_void_p]
 gnutls_sign_callback_set.restype = None
 
-gnutls_srp_allocate_client_credentials = libgnutls.gnutls_srp_allocate_client_credentials
-gnutls_srp_allocate_client_credentials.argtypes = [POINTER(gnutls_srp_client_credentials_t)]
-gnutls_srp_allocate_client_credentials.restype = c_int
-
-gnutls_srp_allocate_server_credentials = libgnutls.gnutls_srp_allocate_server_credentials
-gnutls_srp_allocate_server_credentials.argtypes = [POINTER(gnutls_srp_server_credentials_t)]
-gnutls_srp_allocate_server_credentials.restype = c_int
-
-gnutls_srp_base64_decode = libgnutls.gnutls_srp_base64_decode
-gnutls_srp_base64_decode.argtypes = [POINTER(gnutls_datum_t), c_char_p, POINTER(size_t)]
-gnutls_srp_base64_decode.restype = c_int
-
-gnutls_srp_base64_decode_alloc = libgnutls.gnutls_srp_base64_decode_alloc
-gnutls_srp_base64_decode_alloc.argtypes = [POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
-gnutls_srp_base64_decode_alloc.restype = c_int
-
-gnutls_srp_base64_encode = libgnutls.gnutls_srp_base64_encode
-gnutls_srp_base64_encode.argtypes = [POINTER(gnutls_datum_t), c_char_p, POINTER(size_t)]
-gnutls_srp_base64_encode.restype = c_int
-
-gnutls_srp_base64_encode_alloc = libgnutls.gnutls_srp_base64_encode_alloc
-gnutls_srp_base64_encode_alloc.argtypes = [POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
-gnutls_srp_base64_encode_alloc.restype = c_int
-
-gnutls_srp_free_client_credentials = libgnutls.gnutls_srp_free_client_credentials
-gnutls_srp_free_client_credentials.argtypes = [gnutls_srp_client_credentials_t]
-gnutls_srp_free_client_credentials.restype = None
-
-gnutls_srp_free_server_credentials = libgnutls.gnutls_srp_free_server_credentials
-gnutls_srp_free_server_credentials.argtypes = [gnutls_srp_server_credentials_t]
-gnutls_srp_free_server_credentials.restype = None
-
-gnutls_srp_server_get_username = libgnutls.gnutls_srp_server_get_username
-gnutls_srp_server_get_username.argtypes = [gnutls_session_t]
-gnutls_srp_server_get_username.restype = c_char_p
-
-gnutls_srp_set_client_credentials = libgnutls.gnutls_srp_set_client_credentials
-gnutls_srp_set_client_credentials.argtypes = [gnutls_srp_client_credentials_t, c_char_p, c_char_p]
-gnutls_srp_set_client_credentials.restype = c_int
-
-gnutls_srp_set_client_credentials_function = libgnutls.gnutls_srp_set_client_credentials_function
-gnutls_srp_set_client_credentials_function.argtypes = [gnutls_srp_client_credentials_t, gnutls_srp_client_credentials_function]
-gnutls_srp_set_client_credentials_function.restype = None
-
-gnutls_srp_set_server_credentials_file = libgnutls.gnutls_srp_set_server_credentials_file
-gnutls_srp_set_server_credentials_file.argtypes = [gnutls_srp_server_credentials_t, c_char_p, c_char_p]
-gnutls_srp_set_server_credentials_file.restype = c_int
-
-gnutls_srp_set_server_credentials_function = libgnutls.gnutls_srp_set_server_credentials_function
-gnutls_srp_set_server_credentials_function.argtypes = [gnutls_srp_server_credentials_t, gnutls_srp_server_credentials_function]
-gnutls_srp_set_server_credentials_function.restype = None
-
-gnutls_srp_verifier = libgnutls.gnutls_srp_verifier
-gnutls_srp_verifier.argtypes = [c_char_p, c_char_p, POINTER(gnutls_datum_t), POINTER(gnutls_datum_t), POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
-gnutls_srp_verifier.restype = c_int
-
 gnutls_strerror = libgnutls.gnutls_strerror
 gnutls_strerror.argtypes = [c_int]
 gnutls_strerror.restype = c_char_p
@@ -1875,6 +1819,70 @@ else:
     gnutls_openpgp_set_recv_key_function = libgnutls.gnutls_openpgp_set_recv_key_function
     gnutls_openpgp_set_recv_key_function.argtypes = [gnutls_session_t, gnutls_openpgp_recv_key_func]
     gnutls_openpgp_set_recv_key_function.restype = None
+
+# The SRP related functions are not always present (some distributions do not compile SRP support into libgnutls)
+#
+
+try:
+    gnutls_srp_allocate_client_credentials = libgnutls.gnutls_srp_allocate_client_credentials
+except AttributeError:
+    pass
+else:
+    gnutls_srp_allocate_client_credentials = libgnutls.gnutls_srp_allocate_client_credentials
+    gnutls_srp_allocate_client_credentials.argtypes = [POINTER(gnutls_srp_client_credentials_t)]
+    gnutls_srp_allocate_client_credentials.restype = c_int
+
+    gnutls_srp_allocate_server_credentials = libgnutls.gnutls_srp_allocate_server_credentials
+    gnutls_srp_allocate_server_credentials.argtypes = [POINTER(gnutls_srp_server_credentials_t)]
+    gnutls_srp_allocate_server_credentials.restype = c_int
+
+    gnutls_srp_base64_decode = libgnutls.gnutls_srp_base64_decode
+    gnutls_srp_base64_decode.argtypes = [POINTER(gnutls_datum_t), c_char_p, POINTER(size_t)]
+    gnutls_srp_base64_decode.restype = c_int
+
+    gnutls_srp_base64_decode_alloc = libgnutls.gnutls_srp_base64_decode_alloc
+    gnutls_srp_base64_decode_alloc.argtypes = [POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
+    gnutls_srp_base64_decode_alloc.restype = c_int
+
+    gnutls_srp_base64_encode = libgnutls.gnutls_srp_base64_encode
+    gnutls_srp_base64_encode.argtypes = [POINTER(gnutls_datum_t), c_char_p, POINTER(size_t)]
+    gnutls_srp_base64_encode.restype = c_int
+
+    gnutls_srp_base64_encode_alloc = libgnutls.gnutls_srp_base64_encode_alloc
+    gnutls_srp_base64_encode_alloc.argtypes = [POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
+    gnutls_srp_base64_encode_alloc.restype = c_int
+
+    gnutls_srp_free_client_credentials = libgnutls.gnutls_srp_free_client_credentials
+    gnutls_srp_free_client_credentials.argtypes = [gnutls_srp_client_credentials_t]
+    gnutls_srp_free_client_credentials.restype = None
+
+    gnutls_srp_free_server_credentials = libgnutls.gnutls_srp_free_server_credentials
+    gnutls_srp_free_server_credentials.argtypes = [gnutls_srp_server_credentials_t]
+    gnutls_srp_free_server_credentials.restype = None
+
+    gnutls_srp_server_get_username = libgnutls.gnutls_srp_server_get_username
+    gnutls_srp_server_get_username.argtypes = [gnutls_session_t]
+    gnutls_srp_server_get_username.restype = c_char_p
+
+    gnutls_srp_set_client_credentials = libgnutls.gnutls_srp_set_client_credentials
+    gnutls_srp_set_client_credentials.argtypes = [gnutls_srp_client_credentials_t, c_char_p, c_char_p]
+    gnutls_srp_set_client_credentials.restype = c_int
+
+    gnutls_srp_set_client_credentials_function = libgnutls.gnutls_srp_set_client_credentials_function
+    gnutls_srp_set_client_credentials_function.argtypes = [gnutls_srp_client_credentials_t, gnutls_srp_client_credentials_function]
+    gnutls_srp_set_client_credentials_function.restype = None
+
+    gnutls_srp_set_server_credentials_file = libgnutls.gnutls_srp_set_server_credentials_file
+    gnutls_srp_set_server_credentials_file.argtypes = [gnutls_srp_server_credentials_t, c_char_p, c_char_p]
+    gnutls_srp_set_server_credentials_file.restype = c_int
+
+    gnutls_srp_set_server_credentials_function = libgnutls.gnutls_srp_set_server_credentials_function
+    gnutls_srp_set_server_credentials_function.argtypes = [gnutls_srp_server_credentials_t, gnutls_srp_server_credentials_function]
+    gnutls_srp_set_server_credentials_function.restype = None
+
+    gnutls_srp_verifier = libgnutls.gnutls_srp_verifier
+    gnutls_srp_verifier.argtypes = [c_char_p, c_char_p, POINTER(gnutls_datum_t), POINTER(gnutls_datum_t), POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
+    gnutls_srp_verifier.restype = c_int
 
 
 __all__ = sorted(name for name, obj in sys.modules[__name__].__dict__.iteritems() if name.startswith('gnutls_') and hasattr(obj, 'restype'))
