@@ -187,6 +187,17 @@ class X509Certificate(object):
         if not self.has_hostname(hostname):
             raise CertificateError("certificate doesn't match hostname")
 
+    @method_args(one_of(X509_FMT_PEM, X509_FMT_DER))
+    def export(self, format=X509_FMT_PEM):
+        size = c_size_t(4096)
+        pemdata = create_string_buffer(size.value)
+        try:
+            gnutls_x509_crt_export(self._c_object, format, cast(pemdata, c_void_p), byref(size))
+        except MemoryError:
+            pemdata = create_string_buffer(size.value)
+            gnutls_x509_crt_export(self._c_object, format, cast(pemdata, c_void_p), byref(size))
+        return pemdata.value
+
 
 class X509PrivateKey(object):
     def __new__(cls, *args, **kwargs):
@@ -203,6 +214,18 @@ class X509PrivateKey(object):
 
     def __del__(self):
         self.__deinit(self._c_object)
+
+    @method_args(one_of(X509_FMT_PEM, X509_FMT_DER))
+    def export(self, format=X509_FMT_PEM):
+        size = c_size_t(4096)
+        pemdata = create_string_buffer(size.value)
+        try:
+            gnutls_x509_privkey_export(self._c_object, format, cast(pemdata, c_void_p), byref(size))
+        except MemoryError:
+            pemdata = create_string_buffer(size.value)
+            gnutls_x509_privkey_export(self._c_object, format, cast(pemdata, c_void_p), byref(size))
+        return pemdata.value
+
 
 
 class X509Identity(object):
@@ -270,6 +293,18 @@ class X509CRL(object):
         """Raise CertificateRevokedError if the given certificate is revoked"""
         if self.is_revoked(cert):
             raise CertificateRevokedError("%s was revoked" % cert_name)
+
+    @method_args(one_of(X509_FMT_PEM, X509_FMT_DER))
+    def export(self, format=X509_FMT_PEM):
+        size = c_size_t(4096)
+        pemdata = create_string_buffer(size.value)
+        try:
+            gnutls_x509_crl_export(self._c_object, format, cast(pemdata, c_void_p), byref(size))
+        except MemoryError:
+            pemdata = create_string_buffer(size.value)
+            gnutls_x509_crl_export(self._c_object, format, cast(pemdata, c_void_p), byref(size))
+        return pemdata.value
+
 
 
 class DHParams(object):
