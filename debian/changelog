@@ -1,3 +1,19 @@
+python-gnutls (1.2.1) unstable; urgency=low
+
+  * Removed no longer needed dependencies from Build-Depends
+  * Add the current directory to the Windows search path
+  * Refactored error handling code to improve robustness
+  * Allow extension to be build with mingw on windows
+  * Use the system path separator when building the list of packages
+  * Only load SRP functions from libgnutls if available
+  * Fixed compatibility with Twisted 11.0
+  * Included support for more protocols, ciphers and MAC algorithms
+  * Added export methods on X509Certificate, X509PrivateKey and X509CRL
+  * Bumped Debian standards version to 3.9.1
+  * Added debian source format file
+
+ -- Dan Pascu <dan@ag-projects.com>  Fri, 20 May 2011 16:24:38 +0300
+
 python-gnutls (1.2.0) unstable; urgency=low
 
   * Fixed threading issue with ctypes older than 1.0.3
