@@ -255,6 +255,9 @@ class TLSServer(TLSMixin, tcp.Server):
         self.__watchdog = None
         self.credentials = server.credentials
         tcp.Server.__init__(self, sock, protocol, client, server, sessionno, *args, **kw)
+        self.protocol.makeConnection = lambda *args: None
+        self.protocol.transport = self ## because we may call connectionLost without connectionMade
+        self.startTLS()
 
     def _recurrentVerify(self):
         if not self.connected or self.disconnecting:
@@ -340,12 +343,6 @@ class TLSPort(tcp.Port):
     def createInternetSocket(self):
         sock = tcp.Port.createInternetSocket(self)
         return ServerSessionFactory(sock, self.credentials, ServerSession)
-
-    def _preMakeConnection(self, transport):
-        transport.protocol.makeConnection = lambda *args: None
-        transport.protocol.transport = transport ## because we may call connectionLost without connectionMade
-        transport.startTLS()
-        return tcp.Port._preMakeConnection(self, transport)
 
 
 def connectTLS(reactor, host, port, factory, credentials, timeout=30, bindAddress=None, server_name=None):
