@@ -14,7 +14,7 @@ from gnutls.constants import *
 #
 
 class ProtocolListValidator(tuple):
-    _protocols = set((PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3))
+    _protocols = set((PROTO_TLS1_2, PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3))
 
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
@@ -40,7 +40,7 @@ class KeyExchangeListValidator(tuple):
 
 
 class CipherListValidator(tuple):
-    _ciphers = set((CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128, CIPHER_AES_256_CBC, CIPHER_DES_CBC))
+    _ciphers = set((CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128, CIPHER_AES_256_CBC, CIPHER_DES_CBC, CIPHER_CAMELLIA_256_CBC, CIPHER_CAMELLIA_128_CBC))
 
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
@@ -53,7 +53,7 @@ class CipherListValidator(tuple):
 
 
 class MACListValidator(tuple):
-    _algorithms = set((MAC_SHA1, MAC_MD5, MAC_RMD160))
+    _algorithms = set((MAC_SHA512, MAC_SHA384, MAC_SHA256, MAC_SHA1, MAC_MD5, MAC_RMD160))
 
     def __new__(cls, arg):
         if not isinstance(arg, (tuple, list)):
