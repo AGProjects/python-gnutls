@@ -1,3 +1,11 @@
+python-gnutls (1.2.2) unstable; urgency=low
+
+  * Fixed compatibility with libgnutls 2.11
+  * Bumped debian standards version to 3.9.2
+  * Reworked debian packaging
+
+ -- Dan Pascu <dan@ag-projects.com>  Fri, 19 Aug 2011 12:52:51 +0300
+
 python-gnutls (1.2.1) unstable; urgency=low
 
   * Removed no longer needed dependencies from Build-Depends

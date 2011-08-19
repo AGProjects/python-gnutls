@@ -1,3 +1,10 @@
+Changes in version 1.2.2
+------------------------
+
+  * Fixed compatibility with libgnutls 2.11
+  * Bumped debian standards version to 3.9.2
+  * Reworked debian packaging
+
 Changes in version 1.2.1
 ------------------------
 
