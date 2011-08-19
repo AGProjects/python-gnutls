@@ -1808,10 +1808,6 @@ else:
     gnutls_openpgp_privkey_set_preferred_key_id.argtypes = [gnutls_openpgp_privkey_t, POINTER(c_ubyte)]
     gnutls_openpgp_privkey_set_preferred_key_id.restype = c_int
 
-    gnutls_openpgp_privkey_sign_hash = libgnutls.gnutls_openpgp_privkey_sign_hash
-    gnutls_openpgp_privkey_sign_hash.argtypes = [gnutls_openpgp_privkey_t, POINTER(gnutls_datum_t), POINTER(gnutls_datum_t)]
-    gnutls_openpgp_privkey_sign_hash.restype = c_int
-
     gnutls_openpgp_send_cert = libgnutls.gnutls_openpgp_send_cert
     gnutls_openpgp_send_cert.argtypes = [gnutls_session_t, gnutls_openpgp_crt_status_t]
     gnutls_openpgp_send_cert.restype = None
