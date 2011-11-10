@@ -15,39 +15,23 @@ def get_system_name():
 
 def library_locations(name, version):
     import os
-    from ctypes.util import find_library
-    
+
     system = get_system_name()
     if system == 'darwin':
         library_name = 'lib%s.%d.dylib' % (name, version)
-        library_alias = 'lib%s.dylib' % name
-        search_name = name
         additional_paths = ['/usr/local/lib', '/opt/local/lib', '/sw/lib']
     elif system == 'windows':
         library_name = 'lib%s-%d.dll' % (name, version)
-        library_alias = 'lib%s.dll' % name
-        search_name = 'lib%s-%d' % (name, version)
         additional_paths = ['.']
     elif system == 'cygwin':
         library_name = 'cyg%s-%d.dll' % (name, version)
-        library_alias = 'cyg%s.dll' % name
-        search_name = 'cyg%s-%d' % (name, version)
         additional_paths = ['/usr/bin']
     else:
         library_name = 'lib%s.so.%d' % (name, version)
-        library_alias = 'lib%s.so' % name
-        search_name = name
         additional_paths = ['/usr/local/lib']
-    library = find_library(search_name)
-    if library is not None:
-        yield library
-    library = find_library(library_name)
-    if library is not None:
-        yield library
+    yield library_name
     for path in additional_paths:
         yield os.path.join(path, library_name)
-    for path in additional_paths:
-        yield os.path.join(path, library_alias)
 
 
 def load_library(name, version):
