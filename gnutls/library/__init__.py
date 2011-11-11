@@ -19,16 +19,22 @@ def library_locations(name, version):
     system = get_system_name()
     if system == 'darwin':
         library_name = 'lib%s.%d.dylib' % (name, version)
+        dynamic_loader_env_vars = ['DYLD_LIBRARY_PATH', 'LD_LIBRARY_PATH']
         additional_paths = ['/usr/local/lib', '/opt/local/lib', '/sw/lib']
     elif system == 'windows':
         library_name = 'lib%s-%d.dll' % (name, version)
+        dynamic_loader_env_vars = ['PATH']
         additional_paths = ['.']
     elif system == 'cygwin':
         library_name = 'cyg%s-%d.dll' % (name, version)
+        dynamic_loader_env_vars = ['LD_LIBRARY_PATH']
         additional_paths = ['/usr/bin']
     else:
         library_name = 'lib%s.so.%d' % (name, version)
+        dynamic_loader_env_vars = ['LD_LIBRARY_PATH']
         additional_paths = ['/usr/local/lib']
+    for path in (path for env_var in dynamic_loader_env_vars for path in os.environ.get(env_var, '').split(':') if os.path.isdir(path)):
+        yield os.path.join(path, library_name)
     yield library_name
     for path in additional_paths:
         yield os.path.join(path, library_name)
