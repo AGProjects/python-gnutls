@@ -10,7 +10,7 @@ from time import time
 from errno import EWOULDBLOCK, EINTR
 
 from twisted.python import failure
-from twisted.internet import main, base, interfaces, address, tcp, error
+from twisted.internet import main, base, interfaces, address, abstract, tcp, error
 from twisted.internet.protocol import BaseProtocol
 
 from zope.interface import implements, implementsOnly, implementedBy
@@ -223,7 +223,7 @@ class TLSClient(TLSMixin, tcp.Client):
     def loseConnection(self, reason=failure.Failure(main.CONNECTION_DONE)):
         reason = failure.Failure(reason) # accept python exceptions too
         self._close_reason = reason.value
-        tcp.Client.loseConnection(self, reason)
+        abstract.FileDescriptor.loseConnection(self, reason)
 
     def connectionLost(self, reason):
         if self.__watchdog is not None:
