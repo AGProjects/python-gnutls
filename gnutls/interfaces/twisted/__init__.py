@@ -332,13 +332,14 @@ class TLSPort(tcp.Port):
 
     transport = TLSServer
 
-    def __init__(self, port, factory, credentials, backlog=50, interface='', reactor=None):
+    def __init__(self, port, factory, credentials, backlog=50, interface='', reactor=None, session_class=ServerSession):
         tcp.Port.__init__(self, port, factory, backlog, interface, reactor)
         self.credentials = credentials
+        self.session_class = session_class
 
     def createInternetSocket(self):
         sock = tcp.Port.createInternetSocket(self)
-        return ServerSessionFactory(sock, self.credentials, ServerSession)
+        return ServerSessionFactory(sock, self.credentials, self.session_class)
 
 
 def connectTLS(reactor, host, port, factory, credentials, timeout=30, bindAddress=None, server_name=None):
@@ -347,8 +348,8 @@ def connectTLS(reactor, host, port, factory, credentials, timeout=30, bindAddres
     return c
 
 
-def listenTLS(reactor, port, factory, credentials, backlog=50, interface=''):
-    p = TLSPort(port, factory, credentials, backlog, interface, reactor)
+def listenTLS(reactor, port, factory, credentials, backlog=50, interface='', session_class=ServerSession):
+    p = TLSPort(port, factory, credentials, backlog, interface, reactor, session_class)
     p.startListening()
     return p
 
