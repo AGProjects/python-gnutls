@@ -1,3 +1,13 @@
+python-gnutls (1.2.3) unstable; urgency=low
+
+  * Always use the gnutls library with the requested version
+  * Fixed issue with dlopen ignoring changes to LD_LIBRARY_PATH after launch
+  * Fixed the twisted interface to work with changes in twisted 11.1.0
+  * Removed unused imports and variables
+  * Allow specifying the server session class in TLSPort and reactor.listenTLS
+
+ -- Dan Pascu <dan@ag-projects.com>  Tue, 10 Jan 2012 20:36:29 +0200
+
 python-gnutls (1.2.2) unstable; urgency=low
 
   * Fixed compatibility with libgnutls 2.11

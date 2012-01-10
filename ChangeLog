@@ -1,3 +1,12 @@
+Changes in version 1.2.3
+------------------------
+
+  * Always use the gnutls library with the requested version
+  * Fixed issue with dlopen ignoring changes to LD_LIBRARY_PATH after launch
+  * Fixed the twisted interface to work with changes in twisted 11.1.0
+  * Removed unused imports and variables
+  * Allow specifying the server session class in TLSPort and reactor.listenTLS
+
 Changes in version 1.2.2
 ------------------------
 
