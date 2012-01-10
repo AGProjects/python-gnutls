@@ -5,15 +5,12 @@
 
 __all__ = ['X509Credentials', 'connectTLS', 'listenTLS']
 
-import socket
 from time import time
-from errno import EWOULDBLOCK, EINTR
 
 from twisted.python import failure
-from twisted.internet import main, base, interfaces, address, abstract, tcp, error
-from twisted.internet.protocol import BaseProtocol
+from twisted.internet import main, base, interfaces, abstract, tcp, error
 
-from zope.interface import implements, implementsOnly, implementedBy
+from zope.interface import implementsOnly, implementedBy
 
 from gnutls.connection import ClientSession, ServerSession, ServerSessionFactory
 from gnutls.connection import X509Credentials as _X509Credentials
@@ -111,7 +108,7 @@ class TLSMixin:
         try:
             self._sendCloseReason(reason)
             self._sendCloseAlert(SHUT_RDWR)
-        except Exception, e:
+        except Exception:
             pass
 
     def _postLoseConnection(self):
@@ -248,7 +245,6 @@ class TLSConnector(base.BaseConnector):
 class TLSServer(TLSMixin, tcp.Server):
     """Add TLS capabilities to a TCP server"""
     
-    #implements(interfaces.ISSLTransport)
     implementsOnly(interfaces.ISSLTransport, *[i for i in implementedBy(tcp.Server) if i != interfaces.ITLSTransport])
     
     def __init__(self, sock, protocol, client, server, sessionno, *args, **kw):
