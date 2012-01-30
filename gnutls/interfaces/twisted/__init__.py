@@ -318,7 +318,7 @@ class TLSServer(TLSMixin, tcp.Server):
     def loseConnection(self, reason=failure.Failure(main.CONNECTION_DONE)):
         reason = failure.Failure(reason) # accept python exceptions too
         self._close_reason = reason.value
-        tcp.Server.loseConnection(self, reason)
+        abstract.FileDescriptor.loseConnection(self, reason)
 
     def connectionLost(self, reason):
         if self.__watchdog is not None:
