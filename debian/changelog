@@ -1,3 +1,9 @@
+python-gnutls (1.2.4) unstable; urgency=low
+
+  * Fixed compatibility with twisted 11.1.0 for TLSServer as well
+
+ -- Dan Pascu <dan@ag-projects.com>  Mon, 30 Jan 2012 17:43:00 +0200
+
 python-gnutls (1.2.3) unstable; urgency=low
 
   * Always use the gnutls library with the requested version

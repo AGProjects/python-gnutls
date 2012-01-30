@@ -1,7 +1,7 @@
 # Copyright (C) 2007 AG Projects. See LICENSE for details.
 #
 
-__version__ = '1.2.3'
+__version__ = '1.2.4'
 
 
 # Fix threading issue with older ctypes. Prior to ctypes 1.0.3 string_at and

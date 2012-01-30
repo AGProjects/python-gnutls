@@ -1,3 +1,8 @@
+Changes in version 1.2.4
+------------------------
+
+  * Fixed compatibility with twisted 11.1.0 for TLSServer as well
+
 Changes in version 1.2.3
 ------------------------
 
