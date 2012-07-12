@@ -21,7 +21,7 @@ class EchoProtocol(LineOnlyReceiver):
         self.sendLine('echo')
 
     def lineReceived(self, line):
-        print 'received: ', line
+        print 'received: %s' % line
         self.transport.loseConnection()
 
     def connectionLost(self, reason):
