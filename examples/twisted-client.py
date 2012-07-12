@@ -26,14 +26,14 @@ class EchoProtocol(LineOnlyReceiver):
 
     def connectionLost(self, reason):
         if reason.type != ConnectionDone:
-            print reason.value
+            print "connection was lost: %s" % reason.value
         reactor.stop()
 
 class EchoFactory(ClientFactory):
     protocol = EchoProtocol
 
     def clientConnectionFailed(self, connector, err):
-        print err.value
+        print "connection failed: %s" % err.value
         reactor.stop()
 
 
