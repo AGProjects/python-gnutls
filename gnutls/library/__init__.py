@@ -107,6 +107,7 @@ def initialize_gcrypt():
         gcry_control = libgnutls.gcry_control
 
     gcry_control(GCRYCTL_SET_THREAD_CBS, c_void_p(gcrypt_thread_callbacks_ptr))
+    libgnutls.gcry_check_version('1.2.4')    # GNUTLS_MIN_LIBGCRYPT_VERSION
     if system == 'cygwin':
         gcry_control(GCRYCTL_DISABLE_SECMEM, 0)
     else:
