@@ -1,3 +1,10 @@
+python-gnutls (1.2.5) UNRELEASED; urgency=medium
+
+  * Fixed initializing libgcrypt
+  * Enhanced logging in example scripts
+
+ -- Saul Ibarra <saul@ag-projects.com>  Thu, 12 Dec 2013 17:12:02 +0100
+
 python-gnutls (1.2.4) unstable; urgency=low
 
   * Fixed compatibility with twisted 11.1.0 for TLSServer as well

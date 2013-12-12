@@ -1,3 +1,9 @@
+Changes in version 1.2.5
+------------------------
+
+  * Fixed initializing libgcrypt
+  * Enhanced logging in example scripts
+
 Changes in version 1.2.4
 ------------------------
 
