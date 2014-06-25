@@ -1,3 +1,15 @@
+Changes in version 2.0.0
+------------------------
+
+  * Swtich to GnuTLS 3 (>= 3.1.4)
+  * Added gnutls_certificate_verify_peers3
+  * Add dependency on libgnutls
+  * Remove no longer needed workaround for ctypes
+  * Avoid sending empty data to peer
+  * Add count command line option to tc-openssl
+  * Bumped Debian Standards-Version
+  * Only build Debian package for Python >= 2.7
+
 Changes in version 1.2.5
 ------------------------
 
