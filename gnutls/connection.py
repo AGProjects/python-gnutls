@@ -372,6 +372,8 @@ class Session(object):
     #@method_args((basestring, buffer))
     def send(self, data):
         data = str(data)
+        if not data:
+            return 0
         return gnutls_record_send(self._c_object, data, len(data))
 
     def sendall(self, data):
