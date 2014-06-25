@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-count = 100
-host, port = 'localhost', 10000
-
 import sys, os
 script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
 gnutls_path = os.path.realpath(os.path.join(script_path, '..'))
@@ -23,10 +20,6 @@ from twisted.python import reflect, util
 from application.process import process
 from application import log
 
-
-active = count
-succesful = 0
-failed = 0
 
 # Private - shared between all ServerContextFactories, counts up to
 # provide a unique session id for each context
@@ -204,8 +197,11 @@ class EchoFactory(ClientFactory):
 
 
 parser = OptionParser(usage="%prog [host]")
-parser.add_option("-p", "--port", dest="port", type="int", default=port,
-                  help="specify port to connect (default=%s)" % port,
+parser.add_option("-c", "--count", dest="count", type="int", default=100,
+                  help="how many connections to establish (default = 100)",
+                  metavar="N")
+parser.add_option("-p", "--port", dest="port", type="int", default=10000,
+                  help="specify port to connect (default = 10000)",
                   metavar="port")
 parser.add_option("-v", "--verify", dest="verify", action="store_true",
                   default=False, help="verify peer certificates")
@@ -214,8 +210,12 @@ parser.add_option("-n", "--no-certs", dest="send_certs", action="store_false",
 
 options, args = parser.parse_args()
 
-host, port = args and args[0] or host, options.port
+host, port = args and args[0] or 'localhost', options.port
+count = options.count
 
+active = count
+succesful = 0
+failed = 0
 
 certs_path = os.path.join(gnutls_path, 'examples/certs')
 
