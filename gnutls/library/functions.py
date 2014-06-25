@@ -217,6 +217,10 @@ gnutls_certificate_verify_peers2 = libgnutls.gnutls_certificate_verify_peers2
 gnutls_certificate_verify_peers2.argtypes = [gnutls_session_t, POINTER(c_uint)]
 gnutls_certificate_verify_peers2.restype = c_int
 
+gnutls_certificate_verify_peers3 = libgnutls.gnutls_certificate_verify_peers3
+gnutls_certificate_verify_peers3.argtypes = [gnutls_session_t, c_char_p, POINTER(c_uint)]
+gnutls_certificate_verify_peers3.restype = c_int
+
 gnutls_check_version = libgnutls.gnutls_check_version
 gnutls_check_version.argtypes = [c_char_p]
 gnutls_check_version.restype = c_char_p

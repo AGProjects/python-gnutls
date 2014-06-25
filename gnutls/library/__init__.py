@@ -66,7 +66,7 @@ from gnutls.library import functions
 from gnutls.library import types
 
 
-__need_version__ = '3.0.5'    # libgnutls-extra was removed in 3.0.5
+__need_version__ = '3.1.4'
 
 if functions.gnutls_check_version(__need_version__) is None:
     version = functions.gnutls_check_version(None)
