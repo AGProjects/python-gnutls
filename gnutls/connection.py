@@ -277,6 +277,7 @@ class Session(object):
         gnutls_init(byref(self._c_object), self.session_type)
         ## Store a pointer to self on the C session
         gnutls_session_set_ptr(self._c_object, id(self))
+        gnutls_set_default_priority(self._c_object)
         # gnutls_dh_set_prime_bits(session, DH_BITS)?
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
         gnutls_handshake_set_private_extensions(self._c_object, 1)
