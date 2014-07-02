@@ -1,3 +1,9 @@
+python-gnutls (2.0.1) unstable; urgency=medium
+
+  * Initialize default cipher priorities on Session
+
+ -- Saul Ibarra <saul@ag-projects.com>  Wed, 02 Jul 2014 13:02:49 +0200
+
 python-gnutls (2.0.0) unstable; urgency=medium
 
   * Swtich to GnuTLS 3 (>= 3.1.4)
