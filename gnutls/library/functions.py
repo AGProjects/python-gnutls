@@ -1398,7 +1398,7 @@ gnutls_x509_rdn_get_oid.restype = c_int
 #
 
 try:
-    gnutls_certificate_get_openpgp_key = libgnutls.gnutls_certificate_get_openpgp_key
+    gnutls_certificate_set_openpgp_key = libgnutls.gnutls_certificate_set_openpgp_key
 except AttributeError:
     pass
 else:
