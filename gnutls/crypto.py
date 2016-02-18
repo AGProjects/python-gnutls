@@ -3,7 +3,7 @@
 
 """GNUTLS crypto support"""
 
-__all__ = ['X509Name', 'X509Certificate', 'X509PrivateKey', 'X509Identity', 'X509CRL', 'DHParams', 'RSAParams']
+__all__ = ['X509Name', 'X509Certificate', 'X509PrivateKey', 'X509Identity', 'X509CRL', 'DHParams']
 
 import re
 from ctypes import *
@@ -318,28 +318,6 @@ class DHParams(object):
     def __init__(self, bits=1024):
         gnutls_dh_params_init(byref(self._c_object))
         gnutls_dh_params_generate2(self._c_object, bits)
-
-    def __get__(self, obj, type_=None):
-        return self._c_object
-
-    def __set__(self, obj, value):
-        raise AttributeError("Read-only attribute")
-
-    def __del__(self):
-        self.__deinit(self._c_object)
-
-
-class RSAParams(object):
-    def __new__(cls, *args, **kwargs):
-        instance = object.__new__(cls)
-        instance.__deinit = gnutls_rsa_params_deinit
-        instance._c_object = gnutls_rsa_params_t()
-        return instance
-
-    @method_args(int)
-    def __init__(self, bits=1024):
-        gnutls_rsa_params_init(byref(self._c_object))
-        gnutls_rsa_params_generate2(self._c_object, bits)
 
     def __get__(self, obj, type_=None):
         return self._c_object

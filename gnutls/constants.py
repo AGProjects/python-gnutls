@@ -4,21 +4,6 @@
 """GNUTLS constants"""
 
 __all__ = [
-    ## GNUTLS session protocols
-    'PROTO_TLS1_2', 'PROTO_TLS1_1', 'PROTO_TLS1_0', 'PROTO_SSL3',
-    
-    ## Key exchange algorithms
-    'KX_RSA', 'KX_DHE_DSS', 'KX_DHE_RSA', 'KX_RSA_EXPORT', 'KX_ANON_DH',
-    
-    ## Ciphers
-    'CIPHER_AES_128_CBC', 'CIPHER_3DES_CBC', 'CIPHER_ARCFOUR_128', 'CIPHER_AES_256_CBC', 'CIPHER_DES_CBC', 'CIPHER_CAMELLIA_256_CBC', 'CIPHER_CAMELLIA_128_CBC',
-    
-    ## MAC algorithms
-    'MAC_SHA512', 'MAC_SHA384', 'MAC_SHA256', 'MAC_SHA1', 'MAC_MD5', 'MAC_RMD160',
-    
-    ## Compressions
-    'COMP_DEFLATE', 'COMP_LZO', 'COMP_NULL',
-
     ## Credential types
     'CRED_CERTIFICATE', 'CRED_ANON',
 

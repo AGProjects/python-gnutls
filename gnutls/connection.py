@@ -24,20 +24,21 @@ from gnutls.library.constants import GNUTLS_A_UNKNOWN_CA, GNUTLS_A_INSUFFICIENT_
 from gnutls.library.constants import GNUTLS_A_CERTIFICATE_EXPIRED, GNUTLS_A_CERTIFICATE_REVOKED
 from gnutls.library.constants import GNUTLS_NAME_DNS
 from gnutls.library.types     import gnutls_certificate_credentials_t, gnutls_session_t, gnutls_x509_crt_t
-from gnutls.library.types     import gnutls_certificate_server_retrieve_function
+from gnutls.library.types     import gnutls_certificate_retrieve_function
+from gnutls.library.types     import gnutls_priority_t
 from gnutls.library.functions import *
 
 
-@gnutls_certificate_server_retrieve_function
-def _retrieve_server_certificate(c_session, retr_st):
+@gnutls_certificate_retrieve_function
+def _retrieve_certificate(c_session, req_ca_dn, nreqs, pk_algos, pk_algos_length, retr_st):
     session = PyObj_FromPtr(gnutls_session_get_ptr(c_session))
     identity = session.credentials.select_server_identity(session)
-    retr_st.contents.type = GNUTLS_CRT_X509
     retr_st.contents.deinit_all = 0
     if identity is None:
         retr_st.contents.ncerts = 0
     else:
         retr_st.contents.ncerts = 1
+        retr_st.contents.cert_type = GNUTLS_CRT_X509
         retr_st.contents.cert.x509.contents = identity.cert._c_object
         retr_st.contents.key.x509 = identity.key._c_object
     return 0
@@ -69,11 +70,8 @@ class _ServerNameIdentities(dict):
 
 
 class X509Credentials(object):
-    DH_BITS  = 1024
-    RSA_BITS = 1024
-
-    dh_params  = None
-    rsa_params = None
+    DH_BITS = 1024
+    dh_params = None
 
     def __new__(cls, *args, **kwargs):
         c_object = gnutls_certificate_credentials_t()
@@ -91,7 +89,7 @@ class X509Credentials(object):
             gnutls_certificate_set_x509_key(self._c_object, byref(cert._c_object), 1, key._c_object)
         elif (cert, key) != (None, None):
             raise ValueError("Specify neither or both the certificate and private key")
-        gnutls_certificate_server_set_retrieve_function(self._c_object, _retrieve_server_certificate)
+        gnutls_certificate_set_retrieve_function(self._c_object, _retrieve_certificate)
         self._max_depth = 5
         self._max_bits  = 8200
         self._type = CRED_CERTIFICATE
@@ -104,7 +102,7 @@ class X509Credentials(object):
         self.server_name_identities = _ServerNameIdentities(identities)
         if cert and key:
             self.server_name_identities.add(X509Identity(cert, key))
-        self.session_params = SessionParams(self._type)
+        self._session_params = None  # see http://gnutls.org/manual/html_node/Priority-Strings.html
 
     def __del__(self):
         self.__deinit(self._c_object)
@@ -122,11 +120,6 @@ class X509Credentials(object):
     def generate_dh_params(self, bits=DH_BITS):
         reference = self.dh_params ## keep a reference to preserve it until replaced
         X509Credentials.dh_params  = DHParams(bits)
-        del reference
-
-    def generate_rsa_params(self, bits=RSA_BITS):
-        reference = self.rsa_params ## keep a reference to preserve it until replaced
-        X509Credentials.rsa_params = RSAParams(bits)
         del reference
 
     # Properties
@@ -173,6 +166,20 @@ class X509Credentials(object):
     max_verify_bits = property(_get_max_verify_bits, _set_max_verify_bits)
     del _get_max_verify_bits, _set_max_verify_bits
 
+    def _get_session_params(self):
+        return self._session_params
+    def _set_session_params(self, value):
+        priority = gnutls_priority_t()
+        try:
+            gnutls_priority_init(byref(priority), value, None)
+        except GNUTLSError:
+            raise ValueError("invalid session parameters: %s" % value)
+        else:
+            gnutls_priority_deinit(priority)
+        self._session_params = value
+    session_params = property(_get_session_params, _set_session_params)
+    del _get_session_params, _set_session_params
+
     # Methods to select and validate certificates
 
     def check_certificate(self, cert, cert_name='certificate'):
@@ -195,68 +202,6 @@ class X509Credentials(object):
             return self ## since we have the cert and key attributes we can behave like a X509Identity
         else:
             return None
-
-
-class SessionParams(object):
-    _default_kx_algorithms = {
-        CRED_CERTIFICATE: (KX_RSA, KX_DHE_DSS, KX_DHE_RSA),
-        CRED_ANON: (KX_ANON_DH,)}
-    _all_kx_algorithms = {
-        CRED_CERTIFICATE: set((KX_RSA, KX_DHE_DSS, KX_DHE_RSA, KX_RSA_EXPORT)),
-        CRED_ANON: set((KX_ANON_DH,))}
-
-    def __new__(cls, credentials_type):
-        if credentials_type not in cls._default_kx_algorithms:
-            raise TypeError("Unknown credentials type: %r" % credentials_type)
-        return object.__new__(cls)
-
-    def __init__(self, credentials_type):
-        self._credentials_type = credentials_type
-        self._protocols = (PROTO_TLS1_1, PROTO_TLS1_0, PROTO_SSL3)
-        self._kx_algorithms = self._default_kx_algorithms[credentials_type]
-        self._ciphers = (CIPHER_AES_128_CBC, CIPHER_3DES_CBC, CIPHER_ARCFOUR_128)
-        self._mac_algorithms = (MAC_SHA1, MAC_MD5, MAC_RMD160)
-        self._compressions = (COMP_NULL,)
-
-    def _get_protocols(self):
-        return self._protocols
-    def _set_protocols(self, protocols):
-        self._protocols = ProtocolListValidator(protocols)
-    protocols = property(_get_protocols, _set_protocols)
-    del _get_protocols, _set_protocols
-
-    def _get_kx_algorithms(self):
-        return self._kx_algorithms
-    def _set_kx_algorithms(self, algorithms):
-        cred_type = self._credentials_type
-        algorithms = KeyExchangeListValidator(algorithms)
-        invalid = set(algorithms) - self._all_kx_algorithms[cred_type]
-        if invalid:
-            raise ValueError("Cannot specify %r with %r credentials" % (list(invalid), cred_type))
-        self._kx_algorithms = algorithms
-    kx_algorithms = property(_get_kx_algorithms, _set_kx_algorithms)
-    del _get_kx_algorithms, _set_kx_algorithms
-
-    def _get_ciphers(self):
-        return self._ciphers
-    def _set_ciphers(self, ciphers):
-        self._ciphers = CipherListValidator(ciphers)
-    ciphers = property(_get_ciphers, _set_ciphers)
-    del _get_ciphers, _set_ciphers
-
-    def _get_mac_algorithms(self):
-        return self._mac_algorithms
-    def _set_mac_algorithms(self, algorithms):
-        self._mac_algorithms = MACListValidator(algorithms)
-    mac_algorithms = property(_get_mac_algorithms, _set_mac_algorithms)
-    del _get_mac_algorithms, _set_mac_algorithms
-
-    def _get_compressions(self):
-        return self._compressions
-    def _set_compressions(self, compressions):
-        self._compressions = CompressionListValidator(compressions)
-    compressions = property(_get_compressions, _set_compressions)
-    del _get_compressions, _set_compressions
 
 
 class Session(object):
@@ -283,7 +228,7 @@ class Session(object):
         gnutls_handshake_set_private_extensions(self._c_object, 1)
         self.socket = socket
         self.credentials = credentials
-        self._update_params()
+        gnutls_priority_set_direct(self._c_object, credentials.session_params, None)
 
     def __del__(self):
         self.__deinit(self._c_object)
@@ -352,20 +297,6 @@ class Session(object):
         return gnutls_record_get_direction(self._c_object)==0
 
     # Session methods
-
-    def _update_params(self):
-        """Update the priorities of the session params using the credentials."""
-        def c_priority_list(priorities):
-            size = len(priorities) + 1
-            return (c_int * size)(*priorities)
-        session_params = self.credentials.session_params
-        # protocol order in the priority list is irrelevant (it always uses newer protocols first)
-        # the protocol list only specifies what protocols are to be enabled.
-        gnutls_protocol_set_priority(self._c_object, c_priority_list(session_params.protocols))
-        gnutls_kx_set_priority(self._c_object, c_priority_list(session_params.kx_algorithms))
-        gnutls_cipher_set_priority(self._c_object, c_priority_list(session_params.ciphers))
-        gnutls_mac_set_priority(self._c_object, c_priority_list(session_params.mac_algorithms))
-        gnutls_compression_set_priority(self._c_object, c_priority_list(session_params.compressions))
 
     def handshake(self):
         gnutls_handshake(self._c_object)

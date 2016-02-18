@@ -42,6 +42,7 @@ gnutls_openpgp_crt_status_t = c_int # enum
 gnutls_params_type_t = c_int # enum
 gnutls_pk_algorithm_t = c_int # enum
 gnutls_pkcs_encrypt_flags_t = c_int # enum
+gnutls_privkey_type_t = c_int # enum
 gnutls_protocol_t = c_int # enum
 gnutls_psk_key_flags = c_int # enum
 gnutls_server_name_type_t = c_int # enum
@@ -81,6 +82,10 @@ gnutls_rsa_params_t = POINTER(gnutls_x509_privkey_int)
 class params(Union):
     _fields_ = [('dh', gnutls_dh_params_t),
                 ('rsa_export', gnutls_rsa_params_t)]
+
+class gnutls_pkcs11_privkey_st(Structure):
+    _fields_ = []
+gnutls_pkcs11_privkey_t = POINTER(gnutls_pkcs11_privkey_st)
 
 class gnutls_priority_st(Structure):
     _fields_ = []
@@ -151,10 +156,12 @@ class cert(Union):
 
 class key(Union):
     _fields_ = [('x509', gnutls_x509_privkey_t),
-                ('pgp', gnutls_openpgp_privkey_t)]
+                ('pgp', gnutls_openpgp_privkey_t),
+                ('pkcs11', gnutls_pkcs11_privkey_t)]
 
-class gnutls_retr_st(Structure):
-    _fields_ = [('type', gnutls_certificate_type_t),
+class gnutls_retr2_st(Structure):
+    _fields_ = [('cert_type', gnutls_certificate_type_t),
+                ('key_type', gnutls_privkey_type_t),
                 ('cert', cert),
                 ('ncerts', c_uint),
                 ('key', key),
@@ -179,8 +186,7 @@ gnutls_x509_crq_t = POINTER(gnutls_x509_crq_int)
 
 gnutls_alloc_function = CFUNCTYPE(c_void_p, size_t)
 gnutls_calloc_function = CFUNCTYPE(c_void_p, size_t, size_t)
-gnutls_certificate_client_retrieve_function = CFUNCTYPE(c_int, gnutls_session_t, POINTER(gnutls_datum_t), c_int, POINTER(gnutls_pk_algorithm_t), c_int, POINTER(gnutls_retr_st))
-gnutls_certificate_server_retrieve_function = CFUNCTYPE(c_int, gnutls_session_t, POINTER(gnutls_retr_st))
+gnutls_certificate_retrieve_function = CFUNCTYPE(c_int, gnutls_session_t, POINTER(gnutls_datum_t), c_int, POINTER(gnutls_pk_algorithm_t), c_int, POINTER(gnutls_retr2_st))
 gnutls_db_remove_func = CFUNCTYPE(c_int, c_void_p, gnutls_datum_t)
 gnutls_db_retr_func = CFUNCTYPE(gnutls_datum_t, c_void_p, gnutls_datum_t)
 gnutls_db_store_func = CFUNCTYPE(c_int, c_void_p, gnutls_datum_t, gnutls_datum_t)

@@ -52,7 +52,7 @@ ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
 cred = X509Credentials(cert, key, [ca], [crl])
 cred.verify_peer = True
-cred.session_params.compressions = (COMP_LZO, COMP_DEFLATE, COMP_NULL)
+cred.session_params = "NORMAL:+COMP-DEFLATE"
 
 reactor.listenTLS(10000, EchoFactory(), cred)
 reactor.run()
