@@ -1,9 +1,6 @@
 # Copyright (C) 2007-2010 AG Projects. See LICENSE for details.
 #
 
-from ctypes import *
-
-
 GNUTLS_AL_FATAL = 2
 GNUTLS_AL_WARNING = 1
 GNUTLS_A_ACCESS_DENIED = 49
