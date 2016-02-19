@@ -1,3 +1,14 @@
+python-gnutls (3.0.0) UNRELEASED; urgency=medium
+
+  * Fixed check for OpenPGP support
+  * Don't force the reactor type in test scripts
+  * Support GnuTLS 3.4
+  * Refactor passing parameters to Session objects
+  * Added __info__ module with package details
+  * Minor improvements to the Debian packaging
+
+ -- Saul Ibarra <saul@ag-projects.com>  Fri, 19 Feb 2016 16:37:04 +0100
+
 python-gnutls (2.0.1) unstable; urgency=medium
 
   * Initialize default cipher priorities on Session
