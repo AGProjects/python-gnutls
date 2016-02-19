@@ -54,7 +54,7 @@ def load_library(abi_versions):
         else:
             break
     else:
-        raise RuntimeError('cannot find libgnutls on this system')
+        raise RuntimeError('cannot find a supported version of libgnutls on this system')
 
 
 libgnutls = load_library(abi_versions=(28, 30))  # will use the highest available of the ABI versions
