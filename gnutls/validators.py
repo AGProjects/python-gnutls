@@ -5,10 +5,6 @@ __all__ = ['function_args', 'method_args', 'none', 'ignore', 'list_of', 'one_of'
 
 from gnutls.constants import *
 
-#
-# Argument validating
-#
-
 # Helper functions (internal use)
 #
 
