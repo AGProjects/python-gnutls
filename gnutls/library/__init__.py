@@ -57,7 +57,7 @@ def load_library(abi_versions):
         raise RuntimeError('cannot find a supported version of libgnutls on this system')
 
 
-libgnutls = load_library(abi_versions=(28, 30))  # will use the highest available of the ABI versions
+libgnutls = load_library(abi_versions=(28, 30))  # will use the highest of the available ABI versions
 
 
 from gnutls.library import constants
