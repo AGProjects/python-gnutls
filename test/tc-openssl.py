@@ -9,7 +9,6 @@ from application.debug.timing import timer
 
 from optparse import OptionParser
 
-from twisted.internet import pollreactor; pollreactor.install()
 from twisted.internet.protocol import ClientFactory
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet import reactor

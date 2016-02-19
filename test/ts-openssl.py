@@ -7,7 +7,6 @@ sys.path[0:0] = [gnutls_path]
 
 from optparse import OptionParser
 
-from twisted.internet import pollreactor; pollreactor.install()
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet.error import CannotListenError, ConnectionDone
