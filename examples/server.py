@@ -18,10 +18,11 @@ key = X509PrivateKey(open(certs_path + '/valid.key').read())
 ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
 cred = X509Credentials(cert, key, [ca], [crl])
+context = TLSContext(cred)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-ssf = ServerSessionFactory(sock, cred)
+ssf = ServerSessionFactory(sock, context)
 ssf.bind(('0.0.0.0', 10000))
 ssf.listen(100)
 

@@ -18,7 +18,7 @@ from twisted.internet import reactor
 
 from gnutls.crypto import *
 from gnutls.errors import *
-from gnutls.interfaces.twisted import X509Credentials
+from gnutls.interfaces.twisted import TLSContext, X509Credentials
 
 class EchoProtocol(LineOnlyReceiver):
 
@@ -76,8 +76,9 @@ ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
 cred = X509Credentials(cert, key, [ca], [crl])
 cred.verify_peer = options.verify
+context = TLSContext(cred)
 
-reactor.listenTLS(options.port, EchoFactory(), cred)
+reactor.listenTLS(options.port, EchoFactory(), context)
 reactor.run()
 
 if options.memory:

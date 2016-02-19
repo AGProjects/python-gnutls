@@ -16,7 +16,7 @@ from twisted.internet import reactor
 from gnutls.crypto import *
 from gnutls.connection import *
 from gnutls.errors import *
-from gnutls.interfaces.twisted import X509Credentials
+from gnutls.interfaces.twisted import TLSContext, X509Credentials
 
 class EchoProtocol(LineOnlyReceiver):
 
@@ -82,13 +82,14 @@ if options.send_certs:
 else:
     cred = X509Credentials(trusted=[ca])
 cred.verify_peer = options.verify
+context = TLSContext(cred)
 
 echo_factory = EchoFactory()
 
 t = timer(count)
 
 for x in range(count):
-    reactor.connectTLS(host, port, echo_factory, cred)
+    reactor.connectTLS(host, port, echo_factory, context)
 reactor.run()
 
 t.end(rate=True, msg="with %s:%d" % (host, port))

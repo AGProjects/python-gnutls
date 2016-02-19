@@ -3,7 +3,7 @@
 
 """GNUTLS connection support"""
 
-__all__ = ['X509Credentials', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
+__all__ = ['X509Credentials', 'TLSContext', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
 
 from time import time
 from socket import SHUT_RDWR as SOCKET_SHUT_RDWR
@@ -70,9 +70,6 @@ class _ServerNameIdentities(dict):
 
 
 class X509Credentials(object):
-    DH_BITS = 1024
-    dh_params = None
-
     def __new__(cls, *args, **kwargs):
         c_object = gnutls_certificate_credentials_t()
         gnutls_certificate_allocate_credentials(byref(c_object))
@@ -102,7 +99,6 @@ class X509Credentials(object):
         self.server_name_identities = _ServerNameIdentities(identities)
         if cert and key:
             self.server_name_identities.add(X509Identity(cert, key))
-        self._session_params = None  # see http://gnutls.org/manual/html_node/Priority-Strings.html
 
     def __del__(self):
         self.__deinit(self._c_object)
@@ -116,11 +112,6 @@ class X509Credentials(object):
             ca_list = (gnutls_x509_crt_t * size)(*[cert._c_object for cert in trusted])
             gnutls_certificate_set_x509_trust(self._c_object, cast(byref(ca_list), POINTER(gnutls_x509_crt_t)), size)
             self._trusted = self._trusted + tuple(trusted)
-
-    def generate_dh_params(self, bits=DH_BITS):
-        reference = self.dh_params ## keep a reference to preserve it until replaced
-        X509Credentials.dh_params  = DHParams(bits)
-        del reference
 
     # Properties
 
@@ -166,20 +157,6 @@ class X509Credentials(object):
     max_verify_bits = property(_get_max_verify_bits, _set_max_verify_bits)
     del _get_max_verify_bits, _set_max_verify_bits
 
-    def _get_session_params(self):
-        return self._session_params
-    def _set_session_params(self, value):
-        priority = gnutls_priority_t()
-        try:
-            gnutls_priority_init(byref(priority), value, None)
-        except GNUTLSError:
-            raise ValueError("invalid session parameters: %s" % value)
-        else:
-            gnutls_priority_deinit(priority)
-        self._session_params = value
-    session_params = property(_get_session_params, _set_session_params)
-    del _get_session_params, _set_session_params
-
     # Methods to select and validate certificates
 
     def check_certificate(self, cert, cert_name='certificate'):
@@ -204,6 +181,27 @@ class X509Credentials(object):
             return None
 
 
+class TLSContext(object):
+    def __init__(self, credentials, session_parameters=None):
+        self.credentials = credentials
+        self.session_parameters = session_parameters
+
+    @property
+    def session_parameters(self):
+        return self.__dict__.get('session_parameters')
+
+    @session_parameters.setter
+    def session_parameters(self, value):
+        priority = gnutls_priority_t()
+        try:
+            gnutls_priority_init(byref(priority), value, None)
+        except GNUTLSError:
+            raise ValueError("invalid session parameters: %s" % value)
+        else:
+            gnutls_priority_deinit(priority)
+        self.__dict__['session_parameters'] = value
+
+
 class Session(object):
     """Abstract class representing a TLS session created from a TCP socket
        and a Credentials object."""
@@ -218,17 +216,16 @@ class Session(object):
         instance._c_object = gnutls_session_t()
         return instance
 
-    def __init__(self, socket, credentials):
+    def __init__(self, socket, context):
         gnutls_init(byref(self._c_object), self.session_type)
         ## Store a pointer to self on the C session
         gnutls_session_set_ptr(self._c_object, id(self))
         gnutls_set_default_priority(self._c_object)
-        # gnutls_dh_set_prime_bits(session, DH_BITS)?
+        gnutls_priority_set_direct(self._c_object, context.session_parameters, None)
         gnutls_transport_set_ptr(self._c_object, socket.fileno())
         gnutls_handshake_set_private_extensions(self._c_object, 1)
         self.socket = socket
-        self.credentials = credentials
-        gnutls_priority_set_direct(self._c_object, credentials.session_params, None)
+        self.credentials = context.credentials
 
     def __del__(self):
         self.__deinit(self._c_object)
@@ -301,7 +298,6 @@ class Session(object):
     def handshake(self):
         gnutls_handshake(self._c_object)
 
-    #@method_args((basestring, buffer))
     def send(self, data):
         data = str(data)
         if not data:
@@ -359,8 +355,8 @@ class Session(object):
 class ClientSession(Session):
     session_type = GNUTLS_CLIENT
 
-    def __init__(self, socket, credentials, server_name=None):
-        Session.__init__(self, socket, credentials)
+    def __init__(self, socket, context, server_name=None):
+        Session.__init__(self, socket, context)
         self._server_name = None
         if server_name is not None:
             self.server_name = server_name
@@ -378,8 +374,8 @@ class ClientSession(Session):
 class ServerSession(Session):
     session_type = GNUTLS_SERVER
 
-    def __init__(self, socket, credentials):
-        Session.__init__(self, socket, credentials)
+    def __init__(self, socket, context):
+        Session.__init__(self, socket, context)
         gnutls_certificate_server_set_request(self._c_object, CERT_REQUEST)
 
     @property

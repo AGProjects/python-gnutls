@@ -17,9 +17,10 @@ key = X509PrivateKey(open(certs_path + '/valid.key').read())
 ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
 cred = X509Credentials(cert, key)
+context = TLSContext(cred)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-session = ClientSession(sock, cred)
+session = ClientSession(sock, context)
 
 session.connect(('localhost', 10000))
 session.handshake()
