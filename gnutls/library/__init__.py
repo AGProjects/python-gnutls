@@ -46,7 +46,7 @@ def library_locations(abi_version):
 def load_library(abi_versions):
     from ctypes import CDLL
 
-    for library in chain(*(library_locations(abi_version) for abi_version in sorted(abi_versions, reverse=True))):
+    for library in chain.from_iterable(library_locations(abi_version) for abi_version in sorted(abi_versions, reverse=True)):
         try:
             return CDLL(library)
         except OSError:
