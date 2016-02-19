@@ -2,7 +2,6 @@
  *  Asynchronous gnutls test client, with X.509 authentication.
  *  Uses the WUtil library for connecting on the TCP level.
  *
- *  Copyright (c) 1999-2007 Dan Pascu
  *
  */
 

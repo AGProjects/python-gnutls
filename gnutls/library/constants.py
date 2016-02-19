@@ -1,5 +1,3 @@
-# Copyright (C) 2007-2010 AG Projects. See LICENSE for details.
-#
 
 GNUTLS_AL_FATAL = 2
 GNUTLS_AL_WARNING = 1

@@ -1,5 +1,3 @@
-# Copyright (C) 2007-2010 AG Projects. See LICENSE for details.
-#
 
 import sys
 from ctypes import *

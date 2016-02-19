@@ -1,5 +1,3 @@
-# Copyright (C) 2007-2008 AG Projects. See LICENSE for details.
-#
 
 """GNUTLS Twisted interface"""
 
