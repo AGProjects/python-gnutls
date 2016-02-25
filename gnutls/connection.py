@@ -398,11 +398,11 @@ class ServerSession(Session):
 
 class ServerSessionFactory(object):
 
-    def __init__(self, socket, credentials, session_class=ServerSession):
+    def __init__(self, socket, context, session_class=ServerSession):
         if not issubclass(session_class, ServerSession):
             raise TypeError, "session_class must be a subclass of ServerSession"
         self.socket = socket
-        self.credentials = credentials
+        self.context = context
         self.session_class = session_class
 
     def __getattr__(self, name):
@@ -417,7 +417,7 @@ class ServerSessionFactory(object):
 
     def accept(self):
         new_sock, address = self.socket.accept()
-        session = self.session_class(new_sock, self.credentials)
+        session = self.session_class(new_sock, self.context)
         return (session, address)
 
     def shutdown(self, how=SOCKET_SHUT_RDWR):
