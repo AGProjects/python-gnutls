@@ -1,3 +1,15 @@
+Changes in version 3.0.0
+------------------------
+
+  * Fixed check for OpenPGP support
+  * Don't force the reactor type in test scripts
+  * Support GnuTLS 3.4
+  * Refactor passing parameters to Session objects
+  * Added __info__ module with package details
+  * Minor improvements to the Debian packaging
+  * Updated installation instructions
+  * Fix tests with latest python-application
+
 Changes in version 2.0.1
 ------------------------
 
