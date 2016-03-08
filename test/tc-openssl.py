@@ -5,9 +5,8 @@ script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
 gnutls_path = os.path.realpath(os.path.join(script_path, '..'))
 sys.path[0:0] = [gnutls_path]
 
-from application.debug.timing import timer
-
 from optparse import OptionParser
+from time import time
 
 from twisted.internet.protocol import ClientFactory
 from twisted.protocols.basic import LineOnlyReceiver
@@ -228,13 +227,16 @@ else:
 
 echo_factory = EchoFactory()
 
-t = timer(count)
+start_time = time()
 
 for x in range(count):
     reactor.connectSSL(host, port, echo_factory, ctx_factory)
 reactor.run()
 
-t.end(rate=True, msg="with %s:%d" % (host, port))
+duration = time() - start_time
+rate = count / duration
+print "time={:.2f} sec; rate={} requests/sec with {}:{}".format(duration, int(rate), host, port)
+
 if failed > 0:
-    print "%d out of %d connections have failed" % (failed, count)
+    print "{} out of {} connections have failed".format(failed, count)
 
