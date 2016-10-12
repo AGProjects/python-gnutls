@@ -1,3 +1,10 @@
+python-gnutls (3.1.0) unstable; urgency=medium
+
+  * Add ability to set the client certificate request option for servers
+  * Don't depend on Python development libraries for building
+
+ -- Saul Ibarra <saul@ag-projects.com>  Wed, 12 Oct 2016 12:14:39 +0200
+
 python-gnutls (3.0.0) unstable; urgency=medium
 
   * Fixed check for OpenPGP support
