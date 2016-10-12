@@ -1,7 +1,7 @@
 
 """GNUTLS connection support"""
 
-__all__ = ['X509Credentials', 'TLSContext', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
+__all__ = ['X509Credentials', 'TLSContext', 'TLSContextServerOptions', 'ClientSession', 'ServerSession', 'ServerSessionFactory']
 
 from time import time
 from socket import SHUT_RDWR as SOCKET_SHUT_RDWR
@@ -179,10 +179,16 @@ class X509Credentials(object):
             return None
 
 
+class TLSContextServerOptions(object):
+    def __init__(self, certificate_request=CERT_REQUEST):
+        self.certificate_request = certificate_request
+
+
 class TLSContext(object):
-    def __init__(self, credentials, session_parameters=None):
+    def __init__(self, credentials, session_parameters=None, server_options=None):
         self.credentials = credentials
         self.session_parameters = session_parameters
+        self.server_options = server_options or TLSContextServerOptions()
 
     @property
     def session_parameters(self):
@@ -374,7 +380,8 @@ class ServerSession(Session):
 
     def __init__(self, socket, context):
         Session.__init__(self, socket, context)
-        gnutls_certificate_server_set_request(self._c_object, CERT_REQUEST)
+        if context.server_options.certificate_request is not None:
+            gnutls_certificate_server_set_request(self._c_object, context.server_options.certificate_request)
 
     @property
     def server_name(self):
