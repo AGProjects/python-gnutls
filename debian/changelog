@@ -1,3 +1,10 @@
+python-gnutls (3.1.2) unstable; urgency=medium
+
+  * Fixed truncated data for DER exported certificates/keys
+  * Removed obsolete pycompat/pyversions files
+
+ -- Dan Pascu <dan@ag-projects.com>  Wed, 03 Oct 2018 14:02:33 +0300
+
 python-gnutls (3.1.1) unstable; urgency=medium
 
   * Increased debian compatibility level to 9
