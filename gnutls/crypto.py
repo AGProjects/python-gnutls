@@ -194,7 +194,7 @@ class X509Certificate(object):
         except MemoryError:
             pemdata = create_string_buffer(size.value)
             gnutls_x509_crt_export(self._c_object, format, cast(pemdata, c_void_p), byref(size))
-        return pemdata.value
+        return pemdata.raw[:size.value]
 
 
 class X509PrivateKey(object):
@@ -222,7 +222,7 @@ class X509PrivateKey(object):
         except MemoryError:
             pemdata = create_string_buffer(size.value)
             gnutls_x509_privkey_export(self._c_object, format, cast(pemdata, c_void_p), byref(size))
-        return pemdata.value
+        return pemdata.raw[:size.value]
 
 
 
@@ -301,7 +301,7 @@ class X509CRL(object):
         except MemoryError:
             pemdata = create_string_buffer(size.value)
             gnutls_x509_crl_export(self._c_object, format, cast(pemdata, c_void_p), byref(size))
-        return pemdata.value
+        return pemdata.raw[:size.value]
 
 
 
