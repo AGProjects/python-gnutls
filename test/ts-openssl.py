@@ -119,12 +119,8 @@ class Certificate(object):
     """Configuration data type. Used to create a OpenSSL.crypto.X509 object from a file given in the configuration file."""
     def __new__(typ, value):
         if isinstance(value, basestring):
-            path = process.config_file(value)
-            if path is None:
-                log.warn("Certificate file '%s' is not readable" % value)
-                return None
             try:
-                f = open(path, 'rt')
+                f = open(value, 'rt')
             except:
                 log.warn("Certificate file '%s' could not be open" % value)
                 return None
@@ -144,12 +140,8 @@ class PrivateKey(object):
     """Configuration data type. Used to create a OpenSSL.crypto.PKey object from a file given in the configuration file."""
     def __new__(typ, value):
         if isinstance(value, basestring):
-            path = process.config_file(value)
-            if path is None:
-                log.warn("Private key file '%s' is not readable" % value)
-                return None
             try:
-                f = open(path, 'rt')
+                f = open(value, 'rt')
             except:
                 log.warn("Private key file '%s' could not be open" % value)
                 return None
