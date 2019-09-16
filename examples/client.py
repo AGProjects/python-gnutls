@@ -8,6 +8,7 @@ import socket
 
 from gnutls.crypto import *
 from gnutls.connection import *
+from gnutls.errors import GNUTLSError
 
 script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
 certs_path = os.path.join(script_path, 'certs')
@@ -22,11 +23,15 @@ context = TLSContext(cred)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 session = ClientSession(sock, context)
 
-session.connect(('localhost', 10000))
-session.handshake()
-session.send("test\r\n")
-buf = session.recv(1024)
-print 'Received: ', buf.rstrip()
-session.bye()
-session.close()
-
+try:
+    session.connect(('localhost', 10000))
+    session.handshake()
+    session.verify_peer()
+    session.send("test\r\n")
+    buf = session.recv(1024)
+    print 'Received: ', buf.rstrip()
+    session.bye()
+    session.close()
+except GNUTLSError as e:
+    print('Connection failed: {}'.format(e))
+    sys.exit(1)
