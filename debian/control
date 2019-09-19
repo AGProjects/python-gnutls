@@ -2,12 +2,12 @@ Source: python-gnutls
 Section: python
 Priority: optional
 Maintainer: Dan Pascu <dan@ag-projects.com>
-Build-Depends: debhelper (>= 9), dh-python, python (>= 2.7)
+Build-Depends: debhelper (>= 11), dh-python, python
 Standards-Version: 3.9.8
 
 Package: python-gnutls
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, libgnutls-deb0-28 (>= 3.2) | libgnutls30
+Depends: ${python:Depends}, ${misc:Depends}, libgnutls30
 Recommends: python-twisted-core
 Provides: ${python:Provides}
 Description: Python wrapper for the GnuTLS library
