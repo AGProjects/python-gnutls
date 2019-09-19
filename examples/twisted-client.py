@@ -44,7 +44,7 @@ cert = X509Certificate(open(certs_path + '/valid.crt').read())
 key = X509PrivateKey(open(certs_path + '/valid.key').read())
 ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
-cred = X509Credentials(cert, key, [ca])
+cred = X509Credentials(cert, key, [ca], [crl])
 cred.verify_peer = True
 context = TLSContext(cred, session_parameters="NORMAL:-COMP-ALL:+COMP-DEFLATE:+COMP-NULL")
 

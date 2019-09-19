@@ -17,7 +17,7 @@ cert = X509Certificate(open(certs_path + '/valid.crt').read())
 key = X509PrivateKey(open(certs_path + '/valid.key').read())
 ca = X509Certificate(open(certs_path + '/ca.pem').read())
 crl = X509CRL(open(certs_path + '/crl.pem').read())
-cred = X509Credentials(cert, key)
+cred = X509Credentials(cert, key, [ca], [crl])
 context = TLSContext(cred)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
