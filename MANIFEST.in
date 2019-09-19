@@ -1,3 +1,7 @@
-recursive-include examples README crypto.py client.py server.py twisted-*.py
-recursive-include examples certs/*.pem certs/valid.* certs/revoked.*
-include MANIFEST.in ChangeLog INSTALL LICENSE
+include ChangeLog
+include INSTALL
+include README
+include LICENSE
+include MANIFEST.in
+
+graft examples
