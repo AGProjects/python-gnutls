@@ -3,5 +3,5 @@
 exec gnutls-serv --x509cafile ../examples/certs/ca.pem \
                  --x509keyfile ../examples/certs/valid.key \
                  --x509certfile ../examples/certs/valid.crt \
-                 --quiet --port 10000 $@
+                 --quiet --port 10000 "$@"
 
