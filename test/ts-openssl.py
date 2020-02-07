@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 import sys, os
 script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -194,4 +194,3 @@ echo_factory = EchoFactory()
 
 reactor.listenSSL(options.port, EchoFactory(), ctx_factory)
 reactor.run()
-

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 import sys, os
 script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -230,4 +230,3 @@ print "time={:.2f} sec; rate={} requests/sec with {}:{}".format(duration, int(ra
 
 if failed > 0:
     print "{} out of {} connections have failed".format(failed, count)
-

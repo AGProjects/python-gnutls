@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 """Asynchronous client using Twisted with GNUTLS"""
 
@@ -50,4 +50,3 @@ context = TLSContext(cred, session_parameters="NORMAL:-COMP-ALL:+COMP-DEFLATE:+C
 
 reactor.connectTLS('localhost', 10000, EchoFactory(), context)
 reactor.run()
-

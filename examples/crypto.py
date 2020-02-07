@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 """Cryptographic examples using python-gnutls"""
 
@@ -81,4 +81,3 @@ print 'Cert activation:', time.ctime(cert.activation_time)
 print 'Cert expiration:', time.ctime(cert.expiration_time)
 print 'Cert is revoked:', crl.is_revoked(cert)
 print ''
-

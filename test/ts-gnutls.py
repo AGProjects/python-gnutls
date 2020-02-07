@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 import sys, os
 script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -83,4 +83,3 @@ reactor.run()
 
 if options.memory:
     memory_dump()
-

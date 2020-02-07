@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 import sys, os
 script_path = os.path.realpath(os.path.dirname(sys.argv[0]))
@@ -102,4 +102,3 @@ if failed > 0:
 
 if options.memory:
     memory_dump()
-

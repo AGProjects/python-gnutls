@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 """Synchronous server that handles each connection in a thread"""
 
@@ -79,4 +79,3 @@ while True:
     session, address = ssf.accept()
     handler = SessionHandler(session, address)
     handler.start()
-

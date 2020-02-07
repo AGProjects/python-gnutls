@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 import os
 
@@ -34,4 +34,3 @@ setup(
 
     packages=find_packages('gnutls')
 )
-
