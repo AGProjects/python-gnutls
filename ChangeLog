@@ -1,3 +1,16 @@
+Changes in version 3.1.3
+------------------------
+
+  * Removed unnecessary code
+  * Fixed blocking client example
+  * Updated TLS certificates
+  * Fixed X509Credentials for client examples
+  * Simplified and made MANIFEST.in more explicit
+  * Explicitly use python2 in shebang lines
+  * Preserve quoted arguments when passing them along in shell scripts
+  * Updated copyright years
+  * Updated license
+
 Changes in version 3.1.2
 ------------------------
 
